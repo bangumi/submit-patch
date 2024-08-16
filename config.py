@@ -25,11 +25,6 @@ BGM_TV_APP_SECRET = os.environ["BGM_TV_APP_SECRET"]
 PG_DSN = os.environ["PG_DSN"]
 REDIS_DSN = os.environ["REDIS_DSN"]
 
-S3_BUCKET_NAME = os.environ["S3_BUCKET_NAME"]
-S3_ACCESS_KEY = os.environ["S3_ACCESS_KEY"]
-S3_SECRET_KEY = os.environ["S3_SECRET_KEY"]
-
-
 __py_project = tomli.loads(PROJECT_PATH.joinpath("pyproject.toml").read_text(encoding="utf-8"))
 
 VERSION = "v" + __py_project["tool"]["poetry"]["version"]
