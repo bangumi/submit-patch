@@ -27,7 +27,7 @@ jobs:
           linters: mypy
 
       - name: mypy
-        run: mypy --show-column-numbers rtorrent_rpc
+        run: mypy --show-column-numbers .
 
   pre-commit:
     runs-on: ubuntu-latest
