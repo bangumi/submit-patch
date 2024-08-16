@@ -5,12 +5,14 @@ import litestar
 from litestar.config.csrf import CSRFConfig
 from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.exceptions import (
+    InternalServerException,
     NotAuthorizedException,
     NotFoundException,
 )
 from litestar.response import Template
 from litestar.stores.redis import RedisStore
 from litestar.template import TemplateConfig
+from loguru import logger
 from redis.asyncio.client import Redis
 
 from config import (
@@ -46,15 +48,6 @@ async def index(request: Request) -> Template:
     return Template("wiki/index.html.jinja2", context={"rows": rows})
 
 
-@litestar.get("/patches/{user_id:int}")
-async def show_patches(user_id: int, request: Request) -> Template:
-    rows = await pg.fetch(
-        "select * from patch where from_user_id = $1 and deleted_at is NULL",
-        request.auth.user_id,
-    )
-    return Template("contrib/index.html.jinja2", context={"rows": rows})
-
-
 @litestar.get("/patch/{patch_id:str}")
 async def get_patch(patch_id: str, request: Request) -> Template:
     p = await pg.fetchrow("""select * from patch where id = $1 and deleted_at is NULL""", patch_id)
@@ -65,12 +58,18 @@ async def get_patch(patch_id: str, request: Request) -> Template:
 
     name_patch = ""
     if patch.name is not None:
+        if patch.original_name is None:
+            logger.error("broken patch {!r}", patch_id)
+            raise InternalServerException
         name_patch = "".join(
             difflib.unified_diff([patch.original_name], [patch.name], "name", "name")
         )
 
     infobox_patch = ""
     if patch.infobox is not None:
+        if patch.original_infobox is None:
+            logger.error("broken patch {!r}", patch_id)
+            raise InternalServerException
         infobox_patch = "".join(
             difflib.unified_diff(
                 patch.original_infobox.splitlines(True),
@@ -82,6 +81,9 @@ async def get_patch(patch_id: str, request: Request) -> Template:
 
     summary_patch = ""
     if patch.summary is not None:
+        if patch.original_summary is None:
+            logger.error("broken patch {!r}", patch_id)
+            raise InternalServerException
         summary_patch = "".join(
             difflib.unified_diff(
                 patch.original_summary.splitlines(True),
@@ -140,7 +142,6 @@ app = litestar.Litestar(
         get_patch,
         delete_patch,
         review_patch,
-        show_patches,
     ],
     template_config=TemplateConfig(
         engine=JinjaTemplateEngine(engine_instance=tmpl.engine),
