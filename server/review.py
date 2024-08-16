@@ -4,7 +4,7 @@ from typing import Annotated, Any
 
 import litestar
 from litestar.enums import RequestEncodingType
-from litestar.exceptions import NotFoundException
+from litestar.exceptions import NotAuthorizedException, NotFoundException
 from litestar.params import Body
 from litestar.response import Redirect, Template
 
@@ -25,6 +25,15 @@ def __strip_none(d: dict[str, Any]) -> dict[str, Any]:
 
 @litestar.post("/api/review-patch/{patch_id:str}", guards=[require_user_editor])
 async def review_patch(
+    patch_id: str,
+    request: AuthorizedRequest,
+    data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
+) -> Any:
+    raise NotAuthorizedException("暂不支持")
+
+
+@litestar.post("/api/review-patch/{patch_id:str}", guards=[require_user_editor])
+async def review_patch2(
     patch_id: str,
     request: AuthorizedRequest,
     data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
