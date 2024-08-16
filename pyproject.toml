@@ -1,0 +1,112 @@
+[tool.poetry]
+name = "bgm_tv_wiki_lint"
+version = "0.0.1"
+description = ""
+authors = ["Trim21 <trim21.me@gmail.com>"]
+
+packages = [
+    { include = "lint" },
+    { include = "bgm" },
+    { include = "server" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+#
+aiohttp = "^3.10.3"
+asyncpg = "^0.29.0"
+botocore = "^1.34.162"
+httpx = { extras = ["http2"], version = "^0.23.0" }
+jinja2 = "^3.1.4"
+loguru = "^0.6.0"
+litestar = { version = "^2.10.0", extras = ['jinja', 'standard'] }
+orjson = "^3.6.4"
+pydantic = "^2.0.0"
+python-dotenv = "^1.0.1"
+psycopg = { extras = ["binary", "pool"], version = "^3.1.19" }
+redis = { extras = ["hiredis"], version = "^4.6.0" }
+regex = "^2024.7.24"
+tqdm = "^4.62.3"
+tomli = "^1.2.2"
+uvicorn = { version = "^0.30.6", extras = ['standard'] }
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.11.1"
+pytest = "^6.2.5"
+pre-commit = "^2.15.0"
+types-redis = "^4.6.0.20240806"
+types-tqdm = "^4.66.0.20240417"
+types-python-dateutil = "^2.9.0.20240316"
+types-regex = "^2024.7.24.20240726"
+types-pyyaml = "^6.0.12.20240808"
+types-botocore = "^1.0.2"
+asyncpg-stubs = "^0.29.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+cache-dir = ".venv/.cache/ruff"
+line-length = 100
+target-version = 'py310'
+
+exclude = ['dist', '.venv']
+
+[tool.ruff.format]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint]
+select = ['ALL']
+#extend-select = ["I", 'PLE', 'E402', 'PLR0402', 'UP', 'F401', 'TID252', 'DTZ']
+unfixable = ['F841']
+ignore = [
+    "A001", "A002",
+    "ANN",
+    "ARG001", "ARG002",
+    "C",
+    "COM",
+    "CPY001",
+    "D100", "D101", "D103", "D107", "D102", "D104", "D105", "D415",
+    "DOC201", "DOC501",
+    "E501",
+    "EM",
+    "ERA001",
+    "FBT",
+    "INP001",
+    "ISC001",
+    "N815", "N818",
+    "PERF401",
+    "PGH003",
+    "PLR0911", "PLR0912", "PLR0913", "PLR0914", "PLR0915", "PLR0917", "PLR2004", "PLR6104", "PLR6301",
+    "PLW2901",
+    "PTH",
+    "PYI041",
+    "RET503", "RET504",
+    "RSE102",
+    "RUF001", "RUF003", "RUF029",
+    "S101",
+    "SIM102", "SIM108", "SIM110", "SIM117",
+    "T20",
+    "TCH001", "TCH002", "TCH003",
+    "TRY002", "TRY003", "TRY201", "TRY300",
+    "UP027", "UP027", "UP032",
+    "FLY002", "SIM103",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ['N999']
+
+[tool.ruff.lint.flake8-tidy-imports]
+# Disallow all relative imports.
+ban-relative-imports = "all"
+
+[tool.ruff.lint.isort]
+#length-sort = true
+lines-after-imports = 2
+known-first-party = ["lint", "bgm"]

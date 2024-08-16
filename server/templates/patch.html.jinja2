@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+          crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+            crossorigin="anonymous"></script>
+    <link
+            rel="stylesheet"
+            type="text/css"
+            href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css"
+    />
+    <script type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html-ui.min.js"></script>
+
+    <style>
+        #nameDiffElement, #infoboxDiffElement, #summaryDiffElement {
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="row">
+        <a href="https://bgm.tv/subject/{{ patch.subject_id }}" target="_blank"
+           rel="noopener">
+            <h1>bangumi 链接</h1>
+        </a>
+    </div>
+
+    <h2>修改原因</h2>
+
+    <div class="row">
+        <blockquote class="blockquote" style="background-color: #f7f7f9">
+            <p class="mb-0"> {{ patch.description }}</p>
+        </blockquote>
+    </div>
+
+    <h2>具体变动</h2>
+
+    {% if name_patch %}
+        <div class="row">
+            <div id="nameDiffElement"></div>
+        </div>
+    {% endif %}
+
+    {% if infobox_patch %}
+        <div class="row">
+            <div id="infoboxDiffElement"></div>
+        </div>
+    {% endif %}
+
+    {% if summary_patch %}
+        <div class="row">
+            <div id="summaryDiffElement"></div>
+        </div>
+    {% endif %}
+
+    <div class="row">
+        {% if auth.allow_edit %}
+            <div class="col">
+                <form action="/api/review-patch/{{ patch.id }}" method="post"
+                      enctype="application/x-www-form-urlencoded">
+                    {{ csrf_input | safe }}
+                    <input name="react" value="accept" hidden="hidden"/>
+                    <button type="submit" class="btn btn-success">Accept</button>
+                </form>
+            </div>
+
+            <div class="col">
+                <form action="/api/review-patch/{{ patch.id }}" method="post"
+                      enctype="application/x-www-form-urlencoded">
+                    {{ csrf_input | safe }}
+                    <input name="react" value="reject" hidden="hidden"/>
+                    <button type="submit" class="btn btn-secondary">Reject</button>
+                </form>
+            </div>
+        {% endif %}
+
+        {% if patch.from_user_id == auth.user_id %}
+            <div class="col">
+                <form action="/api/delete-patch/{{ patch.id }}" method="post">
+                    {{ csrf_input | safe }}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% if name_patch %}
+    <script>
+        (() => {
+            const diffString = {{ name_patch | tojson }};
+            const targetElement = document.getElementById('nameDiffElement');
+            const configuration = {
+                drawFileList: false,
+                fileListToggle: false,
+                fileListStartVisible: false,
+                fileContentToggle: false,
+                maxLineSizeInBlockForComparison: 80,
+                matching: 'words',
+                outputFormat: 'line-by-line',
+                synchronisedScroll: true,
+                renderNothingWhenEmpty: false,
+            };
+            const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+            diff2htmlUi.draw();
+        })()
+    </script>
+{% endif %}
+
+{% if infobox_patch %}
+    <script>
+        (() => {
+            const diffString = {{ infobox_patch | tojson }};
+            const targetElement = document.getElementById('infoboxDiffElement');
+            const configuration = {
+                drawFileList: false,
+                fileListToggle: false,
+                fileListStartVisible: false,
+                fileContentToggle: false,
+                matching: 'lines',
+                maxLineSizeInBlockForComparison: 80,
+                outputFormat: 'side-by-side',
+                synchronisedScroll: true,
+                renderNothingWhenEmpty: false,
+            };
+            const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+            diff2htmlUi.draw();
+        })()
+    </script>
+{% endif %}
+
+{% if summary_patch %}
+    <script>
+        (() => {
+            const diffString = {{ summary_patch | tojson }};
+            const targetElement = document.getElementById('summaryDiffElement');
+            const configuration = {
+                drawFileList: false,
+                fileListToggle: false,
+                fileListStartVisible: false,
+                maxLineSizeInBlockForComparison: 80,
+                fileContentToggle: false,
+                matching: 'lines',
+                outputFormat: 'side-by-side',
+                synchronisedScroll: true,
+                renderNothingWhenEmpty: false,
+            };
+            const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+            diff2htmlUi.draw();
+        })()
+    </script>
+{% endif %}
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+          crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+            crossorigin="anonymous"></script>
+</head>
+
+<body>
+<div class="container p-1">
+    <a href="/suggest">添加Patch</a>
+
+    <div class="row">
+        <ul class="list-group">
+            {% for patch in rows %}
+                <a href="/patch/{{ patch.id }}" id="{{ patch.id }}"
+                   class="list-group-item list-group-item-action flex-column align-items-start">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ patch.description }}</h5>
+                        <small>{{ patch.created_at | rel_time }}</small>
+                    </div>
+                    <p class="mb-1"></p>
+                    <small>subject: {{ patch.subject_id }}</small>
+                    <small>from: {{ patch.from_user_id }}</small>
+                </a>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+</body>
+
+</html>

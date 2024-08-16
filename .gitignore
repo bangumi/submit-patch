@@ -1,0 +1,8 @@
+.pytest_cache/
+.venv/
+log/
+*.py[cod]
+# editor
+.idea/
+.vscode/
+.task/
