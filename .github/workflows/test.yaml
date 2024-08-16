@@ -1,0 +1,67 @@
+name: test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: "ubuntu-latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+
+      - run: pip install -e '.[dev]'
+
+      - name: run tests
+        run: coverage run -a -m pytest tests
+
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # required
+
+  e2e:
+    runs-on: 'ubuntu-latest'
+    strategy:
+      fail-fast: false
+      matrix:
+        python: [ "3.8", "3.9", "3.10", "3.11", "3.12" ]
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose up -d
+        working-directory: ./e2e/fixtures
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+
+      - run: pip install -e '.[dev]'
+
+      - run: docker compose ps
+        working-directory: ./e2e/fixtures
+
+      - run: docker compose logs rtorrent-unix
+        working-directory: ./e2e/fixtures
+
+      - run: docker compose logs rtorrent-tcp
+        working-directory: ./e2e/fixtures
+
+      - name: run tests
+        run: coverage run -a -m pytest e2e
+
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # required
