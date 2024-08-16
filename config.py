@@ -18,7 +18,6 @@ CSRF_SECRET_TOKEN = os.environ.get("CSRF_SECRET_TOKEN", secrets.token_urlsafe(32
 
 SERVER_BASE_URL = os.environ["SERVER_BASE_URL"]
 
-BGM_TV_TOKEN = os.environ["BGM_TV_TOKEN"]
 BGM_TV_APP_ID = os.environ["BGM_TV_APP_ID"]
 BGM_TV_APP_SECRET = os.environ["BGM_TV_APP_SECRET"]
 

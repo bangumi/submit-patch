@@ -1,10 +1,3 @@
-create table if not exists session
-(
-    pk       varchar(255) primary key,
-    user_id  int not null,
-    group_id int not null
-);
-
 create table if not exists patch
 (
     id               uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
