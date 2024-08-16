@@ -17,7 +17,8 @@ ENV PYTHONPATH=/app
 
 COPY --from=poetry /app/requirements.txt ./requirements.txt
 
-RUN pip install -r requirements.txt --no-cache-dir
+RUN pip install -U pip && \
+    pip install -r requirements.txt --no-cache-dir
 
 WORKDIR /app
 
