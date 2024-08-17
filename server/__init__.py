@@ -38,14 +38,13 @@ async def index(request: Request) -> Template:
             "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
             request.auth.user_id,
         )
-        return Template("contrib/index.html.jinja2", context={"rows": rows})
+        return Template("index.html.jinja2", context={"rows": rows, "auth": request.auth})
 
     rows = await pg.fetch(
-        "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
-        request.auth.user_id,
+        "select * from patch where deleted_at is NULL order by created_at desc",
     )
 
-    return Template("wiki/index.html.jinja2", context={"rows": rows})
+    return Template("index.html.jinja2", context={"rows": rows, "auth": request.auth})
 
 
 @litestar.get("/patch/{patch_id:str}")

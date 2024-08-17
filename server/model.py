@@ -10,10 +10,10 @@ class User:
 
     @property
     def allow_edit(self):
-        # return self.group_id in {2, 11}
-        return self.group_id in {
-            11,
-        }
+        return self.group_id in {2, 11}
+        # return self.group_id in {
+        #     11,
+        # }
 
 
 class State(enum.IntEnum):

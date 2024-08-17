@@ -42,7 +42,7 @@ def format_duration(seconds: timedelta) -> str:
     dd = int(seconds.total_seconds())
 
     if dd <= 60:
-        return "now"
+        return "just now"
 
     for unit, unit_s in _Duration_Unit:
         dd, mod = divmod(dd, unit)

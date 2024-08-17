@@ -10,7 +10,7 @@ from litestar.response import Redirect, Template
 
 from config import UTC
 from server.auth import require_user_editor
-from server.base import AuthorizedRequest, http_client, pg
+from server.base import AuthorizedRequest, BadRequestException, http_client, pg
 from server.model import Patch, React, State
 
 
@@ -29,6 +29,33 @@ async def review_patch(
     request: AuthorizedRequest,
     data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
 ) -> Any:
+    async with pg.acquire() as conn:
+        async with conn.transaction():
+            p = await pg.fetchrow(
+                """select * from patch where id = $1 and deleted_at is NULL FOR UPDATE""", patch_id
+            )
+            if not p:
+                raise NotFoundException()
+
+            if p["state"] != State.Pending:
+                raise BadRequestException("patch already reviewed")
+
+            if data.react == React.Reject:
+                await conn.execute(
+                    """
+                    update patch set
+                        state = $1,
+                        wiki_user_id = $2,
+                        updated_at = $3
+                    where id = $4 and deleted_at is NULL
+                    """,
+                    State.Rejected,
+                    request.auth.user_id,
+                    datetime.now(tz=UTC),
+                    patch_id,
+                )
+                return Redirect("/")
+
     raise NotAuthorizedException("暂不支持")
 
 
@@ -44,7 +71,7 @@ async def review_patch2(
                 """select * from patch where id = $1 and deleted_at is NULL FOR UPDATE""", patch_id
             )
             if not p:
-                raise NotFoundException()
+                raise BadRequestException("patch already reviewed")
 
             if data.react == React.Reject:
                 await conn.execute(

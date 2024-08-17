@@ -16,16 +16,34 @@
 </head>
 
 <body>
-<div class="container p-1">
-    <a href="/suggest">添加Patch</a>
+<div class="container p-2">
+    {% if not auth.allow_edit %}
+        <div class="row m-1">
+            <a href="/suggest">添加Patch</a>
+        </div>
+    {% endif %}
 
-    <div class="row">
+    <div class="row mt-4">
         <ul class="list-group">
             {% for patch in rows %}
                 <a href="/patch/{{ patch.id }}" id="{{ patch.id }}"
-                   class="list-group-item list-group-item-action flex-column align-items-start">
+                   class="list-group-item list-group-item-action flex-column align-items-start"
+                >
                     <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">{{ patch.description }}</h5>
+                        <h5 class="mb-1">
+                            {% if patch.state == 1 %}
+                                {# accept #}
+                                <span class="badge bg-success">Accept</span>
+                            {% elif patch.state == 2 %}
+                                {# rejected #}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% elif patch.state == 3 %}
+                                <span class="badge bg-secondary">Outdated</span>
+                            {% endif %}
+
+                            {{ patch.description }}
+                        </h5>
+
                         <small>{{ patch.created_at | rel_time }}</small>
                     </div>
                     <p class="mb-1"></p>
