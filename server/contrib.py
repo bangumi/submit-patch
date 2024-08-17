@@ -3,9 +3,9 @@ from typing import Annotated
 
 import litestar
 from litestar.enums import RequestEncodingType
-from litestar.exceptions import PermissionDeniedException, ValidationException
+from litestar.exceptions import HTTPException, PermissionDeniedException, ValidationException
 from litestar.params import Body
-from litestar.response import Template
+from litestar.response import Redirect, Template
 
 from server.base import Request, http_client, pg
 from server.model import Wiki
@@ -34,7 +34,7 @@ async def suggest_api(
     subject_id: int,
     data: Annotated[CreateSuggestion, Body(media_type=RequestEncodingType.URL_ENCODED)],
     request: Request,
-) -> CreateSuggestion:
+) -> Redirect:
     if not request.auth:
         raise PermissionDeniedException
     if request.auth.allow_edit:
@@ -79,10 +79,14 @@ async def suggest_api(
     if original.nsfw != data.nsfw:
         nsfw = data.nsfw
 
-    await pg.execute(
+    if (name is None) and (summary is None) and (infobox is None) and (nsfw is None):
+        raise HTTPException("no changes found", status_code=400)
+
+    pk = await pg.fetchval(
         """
         insert into patch (subject_id, from_user_id, description, name, infobox, summary, nsfw,original_name,original_infobox,original_summary)
         VALUES ($1, $2, $3, $4, $5, $6, $7,$8,$9,$10)
+        returning patch.id
     """,
         subject_id,
         request.auth.user_id,
@@ -96,4 +100,4 @@ async def suggest_api(
         original_summary,
     )
 
-    return data
+    return Redirect(f"/patch/{pk}")
