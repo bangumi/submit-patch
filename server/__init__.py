@@ -6,7 +6,6 @@ from litestar.config.csrf import CSRFConfig
 from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.exceptions import (
     InternalServerException,
-    NotAuthorizedException,
     NotFoundException,
 )
 from litestar.response import Template
@@ -23,7 +22,7 @@ from config import (
 from server import tmpl
 from server.auth import callback, login, session_auth_config
 from server.base import Request, pg, pg_pool_startup
-from server.contrib import suggest_api, suggest_ui
+from server.contrib import delete_patch, suggest_api, suggest_ui
 from server.model import Patch
 from server.review import review_patch
 
@@ -102,29 +101,6 @@ async def get_patch(patch_id: str, request: Request) -> Template:
             "summary_patch": summary_patch,
         },
     )
-
-
-@litestar.post("/api/delete-patch/{patch_id:str}")
-async def delete_patch(patch_id: str, request: Request) -> Template:
-    if not request.auth:
-        raise NotAuthorizedException
-
-    p = await pg.fetchrow("""select * from patch where id = $1 and deleted_at is NULL""", patch_id)
-    if not p:
-        raise NotFoundException()
-
-    patch = Patch(**p)
-
-    if patch.from_user_id != request.auth.user_id:
-        raise NotAuthorizedException
-
-    await pg.execute(
-        "update patch set deleted_at = $1 where id = $2 ",
-        datetime.now(tz=UTC),
-        patch_id,
-    )
-
-    return Template("patch.html.jinja2", context={"patch": p, "auth": request.auth})
 
 
 def before_req(req: litestar.Request):

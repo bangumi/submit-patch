@@ -1,10 +1,12 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Annotated
 
 import litestar
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import (
     HTTPException,
+    NotAuthorizedException,
     NotFoundException,
     PermissionDeniedException,
     ValidationException,
@@ -12,8 +14,9 @@ from litestar.exceptions import (
 from litestar.params import Body
 from litestar.response import Redirect, Template
 
+from config import UTC
 from server.base import Request, http_client, pg
-from server.model import Wiki
+from server.model import Patch, Wiki
 
 
 @litestar.get("/suggest")
@@ -110,3 +113,30 @@ async def suggest_api(
     )
 
     return Redirect(f"/patch/{pk}")
+
+
+@litestar.post("/api/delete-patch/{patch_id:str}")
+async def delete_patch(patch_id: str, request: Request) -> Redirect:
+    if not request.auth:
+        raise NotAuthorizedException
+
+    async with pg.acquire() as conn:
+        async with conn.transaction():
+            p = await conn.fetchrow(
+                """select * from patch where id = $1 and deleted_at is NULL""", patch_id
+            )
+            if not p:
+                raise NotFoundException()
+
+            patch = Patch(**p)
+
+            if patch.from_user_id != request.auth.user_id:
+                raise NotAuthorizedException
+
+            await conn.execute(
+                "update patch set deleted_at = $1 where id = $2 ",
+                datetime.now(tz=UTC),
+                patch_id,
+            )
+
+            return Redirect("/")
