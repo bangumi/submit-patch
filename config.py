@@ -1,5 +1,4 @@
 import os
-import secrets
 import sys
 from datetime import timezone
 from pathlib import Path
@@ -18,8 +17,8 @@ PROJECT_PATH = Path(__file__, "..").resolve()
 
 load_dotenv(PROJECT_PATH.joinpath(".env"))
 
-SECRET_TOKEN = bytes.fromhex(os.environ.get("SECRET_TOKEN", secrets.token_hex(32)))
-CSRF_SECRET_TOKEN = os.environ.get("CSRF_SECRET_TOKEN", secrets.token_urlsafe(32))
+SECRET_TOKEN = bytes.fromhex(os.environ["SECRET_TOKEN"])
+CSRF_SECRET_TOKEN = os.environ["CSRF_SECRET_TOKEN"]
 
 SERVER_BASE_URL = os.environ["SERVER_BASE_URL"]
 

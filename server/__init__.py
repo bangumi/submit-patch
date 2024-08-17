@@ -123,7 +123,7 @@ app = litestar.Litestar(
     ),
     stores={"sessions": RedisStore(Redis.from_url(REDIS_DSN), handle_client_shutdown=False)},
     on_startup=[pg_pool_startup],
-    csrf_config=CSRFConfig(secret=CSRF_SECRET_TOKEN, cookie_name="csrf-token"),
+    csrf_config=CSRFConfig(secret=CSRF_SECRET_TOKEN, cookie_name="s-csrf-token"),
     before_request=before_req,
     middleware=[session_auth_config.middleware],
     debug=True,
