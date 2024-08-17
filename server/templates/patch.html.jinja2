@@ -96,16 +96,19 @@
                 </div>
             {% endif %}
         {% elif patch.state == 1 %}
+            <hr>
             <div class="col">
-                <h1> 已被 <span class="badge bg-success"> 接受 </span> by {{ patch.wiki_user_id }}</h1>
+                <h2> 已被 {{ patch.wiki_user_id }} <span class="badge bg-success"> 接受 </span> </h2>
             </div>
         {% elif patch.state == 2 %}
+            <hr>
             <div class="col">
-                <h1> 已被 <span class="badge bg-danger"> 拒绝 </span> by {{ patch.wiki_user_id }}</h1>
+                <h2> 已被 {{ patch.wiki_user_id }} <span class="badge bg-danger"> 拒绝 </span> </h2>
             </div>
         {% elif patch.state == 3 %}
+            <hr>
             <div class="col">
-                <h1> 已过期 </h1>
+                <h2> 已过期 </h2>
             </div>
         {% endif %}
 
