@@ -30,22 +30,26 @@
 
 <body>
 <div class="container">
+    <div class="row"><a href="/"><h1>返回首页</h1></a></div>
+
+    <hr>
+
     <div class="row">
         <a href="https://bgm.tv/subject/{{ patch.subject_id }}" target="_blank"
            rel="noopener">
-            <h1>bangumi 链接</h1>
+            <h3>条目链接</h3>
         </a>
     </div>
 
 
     <div class="row">
-        <h2>修改原因</h2>
+        <h3>修改原因</h3>
         <blockquote class="blockquote" style="background-color: #f7f7f9">
             <p class="mb-0"> {{ patch.description }}</p>
         </blockquote>
     </div>
 
-    <h2>具体变动</h2>
+    <h3>具体变动</h3>
 
     {% if name_patch %}
         <div class="row">
@@ -98,12 +102,14 @@
         {% elif patch.state == 1 %}
             <hr>
             <div class="col">
-                <h2> 已被 {{ patch.wiki_user_id }} <span class="badge bg-success"> 接受 </span> </h2>
+                <h2> 已被 {{ patch.wiki_user_id }} <span
+                        class="badge bg-success"> 接受 </span></h2>
             </div>
         {% elif patch.state == 2 %}
             <hr>
             <div class="col">
-                <h2> 已被 {{ patch.wiki_user_id }} <span class="badge bg-danger"> 拒绝 </span> </h2>
+                <h2> 已被 {{ patch.wiki_user_id }} <span
+                        class="badge bg-danger"> 拒绝 </span></h2>
             </div>
         {% elif patch.state == 3 %}
             <hr>
