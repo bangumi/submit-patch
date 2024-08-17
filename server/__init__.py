@@ -62,7 +62,7 @@ async def get_patch(patch_id: str, request: Request) -> Template:
             logger.error("broken patch {!r}", patch_id)
             raise InternalServerException
         name_patch = "".join(
-            difflib.unified_diff([patch.original_name], [patch.name], "name", "name")
+            difflib.unified_diff([patch.original_name + "\n"], [patch.name + "\n"], "name", "name")
         )
 
     infobox_patch = ""
