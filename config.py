@@ -1,11 +1,14 @@
 import os
 import secrets
+import sys
 from datetime import timezone
 from pathlib import Path
 
 import tomli
 from dotenv import load_dotenv
 
+
+DEV = sys.platform == "win32"
 
 UTC = timezone.utc
 
