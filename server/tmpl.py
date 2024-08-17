@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 import jinja2
-from jinja2 import pass_context
+from jinja2 import pass_context, select_autoescape
 from jinja2.runtime import Context
 from litestar import Request
 
@@ -9,7 +9,7 @@ from config import DEV, PROJECT_PATH, UTC
 
 
 engine = jinja2.Environment(
-    autoescape=True,
+    autoescape=select_autoescape(default=True),
     loader=jinja2.FileSystemLoader(PROJECT_PATH.joinpath("server", "templates")),
     cache_size=int(DEV) * 400,
     auto_reload=not DEV,

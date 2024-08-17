@@ -31,7 +31,7 @@ from server.review import review_patch
 @litestar.get("/")
 async def index(request: Request) -> Template:
     if not request.auth:
-        return Template("index-login.html")
+        return Template("login.html")
 
     if not request.auth.allow_edit:
         rows = await pg.fetch(
@@ -143,7 +143,7 @@ app = litestar.Litestar(
         review_patch,
     ],
     template_config=TemplateConfig(
-        engine=JinjaTemplateEngine(engine_instance=tmpl.engine),
+        engine=JinjaTemplateEngine.from_environment(tmpl.engine),
     ),
     stores={"sessions": RedisStore(Redis.from_url(REDIS_DSN), handle_client_shutdown=False)},
     on_startup=[pg_pool_startup],
