@@ -11,8 +11,7 @@ from config import DEV, PROJECT_PATH, UTC
 engine = jinja2.Environment(
     autoescape=select_autoescape(default=True),
     loader=jinja2.FileSystemLoader(PROJECT_PATH.joinpath("server", "templates")),
-    cache_size=int(DEV) * 400,
-    auto_reload=not DEV,
+    auto_reload=DEV,
 )
 
 

@@ -37,9 +37,9 @@
         </a>
     </div>
 
-    <h2>修改原因</h2>
 
     <div class="row">
+        <h2>修改原因</h2>
         <blockquote class="blockquote" style="background-color: #f7f7f9">
             <p class="mb-0"> {{ patch.description }}</p>
         </blockquote>
@@ -66,7 +66,6 @@
     {% endif %}
 
     <div class="row">
-
         {% if patch.state == 0 %}
             {% if auth.allow_edit %}
                 <div class="col">
@@ -96,6 +95,18 @@
                     </form>
                 </div>
             {% endif %}
+        {% elif patch.state == 1 %}
+            <div class="col">
+                <h1> 已被 <span class="badge bg-success"> 接受 </span> by {{ patch.wiki_user_id }}</h1>
+            </div>
+        {% elif patch.state == 2 %}
+            <div class="col">
+                <h1> 已被 <span class="badge bg-danger"> 拒绝 </span> by {{ patch.wiki_user_id }}</h1>
+            </div>
+        {% elif patch.state == 3 %}
+            <div class="col">
+                <h1> 已过期 </h1>
+            </div>
         {% endif %}
 
     </div>
