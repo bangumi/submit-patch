@@ -3,7 +3,12 @@ from typing import Annotated
 
 import litestar
 from litestar.enums import RequestEncodingType
-from litestar.exceptions import HTTPException, PermissionDeniedException, ValidationException
+from litestar.exceptions import (
+    HTTPException,
+    NotFoundException,
+    PermissionDeniedException,
+    ValidationException,
+)
 from litestar.params import Body
 from litestar.response import Redirect, Template
 
@@ -15,7 +20,11 @@ from server.model import Wiki
 async def suggest_ui(subject_id: int = 0) -> Template:
     if subject_id == 0:
         return Template("select-subject.html.jinja2")
-    async with http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{subject_id}") as res:
+    async with http_client.get(
+        f"https://next.bgm.tv/p1/wiki/subjects/{subject_id}", allow_redirects=False
+    ) as res:
+        if res.status >= 300:
+            raise NotFoundException()
         data = await res.json()
     return Template("suggest.html.jinja2", context={"data": data, "subject_id": subject_id})
 
