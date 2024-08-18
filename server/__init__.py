@@ -1,4 +1,5 @@
 import difflib
+import uuid
 from datetime import datetime
 
 import litestar
@@ -50,8 +51,8 @@ async def index(request: Request) -> Template:
     return Template("index.html.jinja2", context={"rows": rows, "auth": request.auth})
 
 
-@litestar.get("/patch/{patch_id:str}")
-async def get_patch(patch_id: str, request: Request) -> Template:
+@litestar.get("/patch/{patch_id:uuid}")
+async def get_patch(patch_id: uuid.UUID, request: Request) -> Template:
     p = await pg.fetchrow("""select * from patch where id = $1 and deleted_at is NULL""", patch_id)
     if not p:
         raise NotFoundException()

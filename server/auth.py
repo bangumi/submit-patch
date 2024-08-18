@@ -21,7 +21,7 @@ from server.model import User
 CALLBACK_URL = f"{SERVER_BASE_URL}/oauth_callback"
 
 
-async def retrieve_user_from_session(session: dict[str, Any], conn: ASGIConnection) -> User | None:
+async def retrieve_user_from_session(session: dict[str, Any], _: ASGIConnection) -> User | None:
     return User(user_id=session["user_id"], group_id=session["group_id"])
 
 
@@ -92,7 +92,7 @@ async def callback(code: str, request: litestar.Request) -> Redirect:
     return Redirect("/")
 
 
-def require_user_editor(connection: ASGIConnection, route_handler):
+def require_user_editor(connection: ASGIConnection, _):
     if not connection.auth:
         raise NotAuthorizedException
     if not connection.auth.allow_edit:
