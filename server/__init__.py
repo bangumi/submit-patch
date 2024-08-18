@@ -2,13 +2,16 @@ import difflib
 from datetime import datetime
 
 import litestar
+from litestar import Response
 from litestar.config.csrf import CSRFConfig
 from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.exceptions import (
+    HTTPException,
     InternalServerException,
     NotFoundException,
 )
 from litestar.response import Template
+from litestar.status_codes import HTTP_500_INTERNAL_SERVER_ERROR
 from litestar.stores.redis import RedisStore
 from litestar.template import TemplateConfig
 from loguru import logger
@@ -107,6 +110,21 @@ def before_req(req: litestar.Request):
     req.state["now"] = datetime.now(tz=UTC)
 
 
+def plain_text_exception_handler(req: Request, exc: Exception) -> Response:
+    """Default handler for exceptions subclassed from HTTPException."""
+    status_code = getattr(exc, "status_code", HTTP_500_INTERNAL_SERVER_ERROR)
+    detail = getattr(exc, "detail", "")
+
+    return Template(
+        "error.html.jinja2",
+        status_code=status_code,
+        context={
+            "error": exc,
+            "detail": detail,
+        },
+    )
+
+
 app = litestar.Litestar(
     [
         index,
@@ -126,5 +144,8 @@ app = litestar.Litestar(
     csrf_config=CSRFConfig(secret=CSRF_SECRET_TOKEN, cookie_name="s-csrf-token"),
     before_request=before_req,
     middleware=[session_auth_config.middleware],
+    exception_handlers={
+        HTTPException: plain_text_exception_handler,
+    },
     debug=True,
 )
