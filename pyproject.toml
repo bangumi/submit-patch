@@ -21,7 +21,7 @@ litestar = { version = "^2.10.0", extras = ['jinja', 'standard'] }
 orjson = "^3.6.4"
 pydantic = "^2.0.0"
 python-dotenv = "^1.0.1"
-redis = { extras = ["hiredis"], version = "^4.6.0" }
+redis = { extras = ["hiredis"], version = "^5.0.0" }
 regex = "^2024.7.24"
 tqdm = "^4.62.3"
 tomli = "^2.0.0"
