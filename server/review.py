@@ -1,17 +1,27 @@
+import enum
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any
 
+import asyncpg
 import litestar
+import orjson
+from litestar import Response
 from litestar.enums import RequestEncodingType
-from litestar.exceptions import NotAuthorizedException, NotFoundException
+from litestar.exceptions import InternalServerException, NotAuthorizedException, NotFoundException
 from litestar.params import Body
-from litestar.response import Redirect, Template
+from litestar.response import Redirect
+from loguru import logger
 
 from config import UTC
 from server.auth import require_user_editor
 from server.base import AuthorizedRequest, BadRequestException, http_client, pg
-from server.model import Patch, React, State
+from server.model import Patch, State, User
+
+
+class React(str, enum.Enum):
+    Accept = "accept"
+    Reject = "reject"
 
 
 @dataclass
@@ -28,7 +38,7 @@ async def review_patch(
     patch_id: str,
     request: AuthorizedRequest,
     data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
-) -> Any:
+) -> Response:
     async with pg.acquire() as conn:
         async with conn.transaction():
             p = await pg.fetchrow(
@@ -37,101 +47,95 @@ async def review_patch(
             if not p:
                 raise NotFoundException()
 
-            if p["state"] != State.Pending:
+            patch = Patch(**p)
+
+            if patch.state != State.Pending:
                 raise BadRequestException("patch already reviewed")
 
             if data.react == React.Reject:
-                await conn.execute(
-                    """
-                    update patch set
-                        state = $1,
-                        wiki_user_id = $2,
-                        updated_at = $3
-                    where id = $4 and deleted_at is NULL
-                    """,
-                    State.Rejected,
-                    request.auth.user_id,
-                    datetime.now(tz=UTC),
-                    patch_id,
-                )
-                return Redirect("/")
+                return await __reject_patch(patch, conn, request.auth)
+
+            if data.react == React.Accept:
+                return await __accept_patch(patch, conn, request.auth)
 
     raise NotAuthorizedException("暂不支持")
 
 
-@litestar.post("/api/review-patch/{patch_id:str}", guards=[require_user_editor])
-async def review_patch2(
-    patch_id: str,
-    request: AuthorizedRequest,
-    data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
-) -> Any:
-    async with pg.acquire() as conn:
-        async with conn.transaction():
-            p = await pg.fetchrow(
-                """select * from patch where id = $1 and deleted_at is NULL FOR UPDATE""", patch_id
-            )
-            if not p:
-                raise BadRequestException("patch already reviewed")
+async def __reject_patch(patch: Patch, conn: asyncpg.Connection, auth: User) -> Redirect:
+    await conn.execute(
+        """
+        update patch set
+            state = $1,
+            wiki_user_id = $2,
+            updated_at = $3
+        where id = $4 and deleted_at is NULL
+        """,
+        State.Rejected,
+        auth.user_id,
+        datetime.now(tz=UTC),
+        patch.id,
+    )
+    return Redirect("/")
 
-            if data.react == React.Reject:
+
+async def __accept_patch(patch: Patch, conn: asyncpg.Connection, auth: User) -> Response:
+    if not auth.is_access_token_fresh():
+        return Redirect("/login")
+
+    async with http_client.patch(
+        f"https://next.bgm.tv/p1/wiki/subjects/{patch.subject_id}",
+        headers={"Authorization": f"Bearer {auth.access_token}"},
+        json={
+            "commitMessage": f"patch from {patch.from_user_id}: {patch.description}",
+            "expectedRevision": __strip_none(
+                {
+                    "infobox": patch.original_infobox,
+                    "name": patch.original_name,
+                    "summary": patch.original_summary,
+                }
+            ),
+            "subject": __strip_none(
+                {
+                    "infobox": patch.infobox,
+                    "name": patch.name,
+                    "summary": patch.summary,
+                    "nsfw": patch.nsfw,
+                }
+            ),
+        },
+    ) as res:
+        if res.status >= 300:
+            data = orjson.loads(await res.read())
+            if data.get("code") == "SUBJECT_CHANGED":
                 await conn.execute(
                     """
-                    update patch set
-                        state = $1,
-                        wiki_user_id = $2,
-                        updated_at = $3
-                    where id = $4 and deleted_at is NULL
-                    """,
-                    State.Rejected,
-                    request.auth.user_id,
+                            update patch set
+                                state = $1,
+                                wiki_user_id = $2,
+                                updated_at = $3
+                            where id = $4 and deleted_at is NULL
+                            """,
+                    State.Outdated,
+                    auth.user_id,
                     datetime.now(tz=UTC),
-                    patch_id,
+                    patch.id,
                 )
-                return Redirect("/")
+                return Redirect(f"/patch/{patch.id}")
 
-            patch = Patch(**p)
+            logger.error("failed to apply patch {!r}", data)
+            raise InternalServerException()
 
-            async with http_client.patch(
-                f"https://next.bgm.tv/p1/wiki/subjects/{patch.subject_id}",
-                json={
-                    "commitMessage": patch.description,
-                    "expectedRevision": __strip_none(
-                        {
-                            "infobox": patch.original_infobox,
-                            "name": patch.original_name,
-                            "summary": patch.original_summary,
-                        }
-                    ),
-                    "subject": __strip_none(
-                        {
-                            "infobox": patch.infobox,
-                            "name": patch.name,
-                            "summary": patch.summary,
-                            "nsfw": patch.nsfw,
-                        }
-                    ),
-                },
-            ) as res:
-                print(await res.json())
-
-            await conn.execute(
-                """
+    await conn.execute(
+        """
                 update patch set
                     state = $1,
                     wiki_user_id = $2,
                     updated_at = $3
                 where id = $4 and deleted_at is NULL
                 """,
-                State.Accept,
-                request.auth.user_id,
-                datetime.now(tz=UTC),
-                patch_id,
-            )
-
-            await pg.execute(
-                "update patch set deleted_at = $1 where id = $2 ",
-                datetime.now(tz=UTC),
-                patch_id,
-            )
-
-            return Template("patch.html.jinja2", context={"patch": p, "auth": request.auth})
+        State.Accept,
+        auth.user_id,
+        datetime.now(tz=UTC),
+        patch.id,
+    )
+    return Redirect(f"/patch/{patch.id}")

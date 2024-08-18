@@ -9,8 +9,6 @@ from dotenv import load_dotenv
 
 DEV = sys.platform == "win32"
 
-print("developing", DEV)
-
 UTC = timezone.utc
 
 PROJECT_PATH = Path(__file__, "..").resolve()

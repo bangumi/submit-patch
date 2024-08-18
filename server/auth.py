@@ -1,7 +1,9 @@
+import time
 from typing import Any
 from urllib.parse import urlencode
 
 import litestar
+import orjson
 from litestar.connection import ASGIConnection
 from litestar.exceptions import InternalServerException, NotAuthorizedException
 from litestar.middleware import AuthenticationResult
@@ -21,8 +23,37 @@ from server.model import User
 CALLBACK_URL = f"{SERVER_BASE_URL}/oauth_callback"
 
 
-async def retrieve_user_from_session(session: dict[str, Any], _: ASGIConnection) -> User | None:
-    return User(user_id=session["user_id"], group_id=session["group_id"])
+async def retrieve_user_from_session(session: dict[str, Any], req: ASGIConnection) -> User | None:
+    try:
+        return __user_from_session(session)
+    except KeyError:
+        req.clear_session()
+
+
+def __user_from_session(session):
+    return User(
+        user_id=session["user_id"],
+        group_id=session["group_id"],
+        access_token=session.get("access_token", ""),
+        refresh_token=session.get("refresh_token", ""),
+        access_token_created_at=session.get("access_token_created_at", 0),
+        access_token_expires_in=session.get("access_token_expires_in", 0),
+    )
+
+
+async def refresh(refresh_token) -> dict[str, Any]:
+    async with http_client.post(
+        "https://bgm.tv/oauth/access_token",
+        data={
+            "refresh_token": refresh_token,
+            "client_id": BGM_TV_APP_ID,
+            "grant_type": "refresh_token",
+            "client_secret": BGM_TV_APP_SECRET,
+        },
+    ) as res:
+        if res.status >= 300:
+            raise InternalServerException("api request error")
+        return orjson.loads(await res.read())
 
 
 class MyAuthenticationMiddleware(SessionAuthMiddleware):
@@ -78,8 +109,7 @@ async def callback(code: str, request: litestar.Request) -> Redirect:
     access_token = data["access_token"]
 
     async with http_client.get(
-        "https://api.bgm.tv/v0/me",
-        headers={"Authorization": f"Bearer {access_token}"},
+        "https://api.bgm.tv/v0/me", headers={"Authorization": f"Bearer {access_token}"}
     ) as res:
         if res.status >= 300:
             raise InternalServerException("api request error")
@@ -87,7 +117,16 @@ async def callback(code: str, request: litestar.Request) -> Redirect:
 
     group_id = user["user_group"]
 
-    request.set_session({"user_id": user_id, "group_id": group_id})
+    request.set_session(
+        {
+            "user_id": user_id,
+            "group_id": group_id,
+            "access_token": access_token,
+            "refresh_token": data["refresh_token"],
+            "access_token_created_at": time.time(),
+            "access_token_expires_in": int(data["expires_in"]),
+        }
+    )
 
     return Redirect("/")
 

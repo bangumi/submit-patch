@@ -120,10 +120,7 @@ def plain_text_exception_handler(_: Request, exc: Exception) -> Response:
     return Template(
         "error.html.jinja2",
         status_code=status_code,
-        context={
-            "error": exc,
-            "detail": detail,
-        },
+        context={"error": exc, "detail": detail},
     )
 
 

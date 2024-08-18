@@ -1,4 +1,5 @@
 import enum
+import time
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -8,12 +9,28 @@ class User:
     user_id: int
     group_id: int
 
+    access_token: str
+    refresh_token: str
+
+    access_token_created_at: int  # unix time stamp
+    access_token_expires_in: int  # seconds
+
+    def is_access_token_fresh(self) -> bool:
+        if not self.access_token:
+            return False
+
+        if self.access_token_created_at + self.access_token_expires_in <= time.time() + 120:
+            return False
+
+        return True
+
     @property
     def allow_edit(self):
         return self.group_id in {2, 11}
-        # return self.group_id in {
-        #     11,
-        # }
+
+    @property
+    def allow_admin(self):
+        return self.group_id in {2}
 
 
 class State(enum.IntEnum):
@@ -21,11 +38,6 @@ class State(enum.IntEnum):
     Accept = 1
     Rejected = 2
     Outdated = 3
-
-
-class React(str, enum.Enum):
-    Accept = "accept"
-    Reject = "reject"
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
