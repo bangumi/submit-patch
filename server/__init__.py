@@ -19,6 +19,7 @@ from redis.asyncio.client import Redis
 
 from config import (
     CSRF_SECRET_TOKEN,
+    DEV,
     REDIS_DSN,
     UTC,
 )
@@ -147,5 +148,5 @@ app = litestar.Litestar(
     exception_handlers={
         HTTPException: plain_text_exception_handler,
     },
-    debug=True,
+    debug=DEV,
 )
