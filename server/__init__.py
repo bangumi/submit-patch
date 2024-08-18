@@ -111,7 +111,7 @@ def before_req(req: litestar.Request):
     req.state["now"] = datetime.now(tz=UTC)
 
 
-def plain_text_exception_handler(req: Request, exc: Exception) -> Response:
+def plain_text_exception_handler(_: Request, exc: Exception) -> Response:
     """Default handler for exceptions subclassed from HTTPException."""
     status_code = getattr(exc, "status_code", HTTP_500_INTERNAL_SERVER_ERROR)
     detail = getattr(exc, "detail", "")
