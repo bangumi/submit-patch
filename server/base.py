@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from http.cookies import BaseCookie
 from typing import Any
 
@@ -31,10 +32,10 @@ class DisableCookiesJar(AbstractCookieJar):
     def filter_cookies(self, request_url: URL) -> BaseCookie[str]:
         return BaseCookie()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return 0
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         yield from ()
 
 
@@ -42,7 +43,7 @@ http_client = aiohttp.ClientSession(cookie_jar=DisableCookiesJar())
 pg = asyncpg.create_pool(dsn=PG_DSN)
 
 
-async def pg_pool_startup(*args, **kwargs):
+async def pg_pool_startup(*args: Any, **kwargs: Any) -> None:
     logger.info("init")
     await pg
 

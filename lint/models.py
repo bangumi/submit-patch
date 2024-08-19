@@ -29,10 +29,10 @@ class Patch:
         self.category = category
         self.simple = simple
 
-    def patch(self):
+    def patch(self) -> str:
         return "\n".join(difflib.unified_diff(self.origin.splitlines(), self.after.splitlines()))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<Patch {self.category} {self.message}>"
 
 

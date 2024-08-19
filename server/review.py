@@ -5,6 +5,7 @@ from typing import Annotated, Any
 
 import litestar
 import orjson
+from asyncpg import Record
 from asyncpg.pool import PoolConnectionProxy
 from litestar import Response
 from litestar.enums import RequestEncodingType
@@ -38,7 +39,7 @@ async def review_patch(
     patch_id: str,
     request: AuthorizedRequest,
     data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
-) -> Response:
+) -> Response[Any]:
     async with pg.acquire() as conn:
         async with conn.transaction():
             p = await pg.fetchrow(
@@ -61,7 +62,7 @@ async def review_patch(
     raise NotAuthorizedException("暂不支持")
 
 
-async def __reject_patch(patch: Patch, conn: PoolConnectionProxy, auth: User) -> Redirect:
+async def __reject_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: User) -> Redirect:
     await conn.execute(
         """
         update patch set
@@ -78,7 +79,7 @@ async def __reject_patch(patch: Patch, conn: PoolConnectionProxy, auth: User) ->
     return Redirect("/")
 
 
-async def __accept_patch(patch: Patch, conn: PoolConnectionProxy, auth: User) -> Response:
+async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: User) -> Redirect:
     if not auth.is_access_token_fresh():
         return Redirect("/login")
 

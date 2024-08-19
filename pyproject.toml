@@ -108,5 +108,7 @@ lines-after-imports = 2
 known-first-party = ["lint", "bgm"]
 
 [tool.mypy]
+strict = true
 warn_no_return = false
 check_untyped_defs = true
+warn_return_any = false

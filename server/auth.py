@@ -16,21 +16,23 @@ from litestar.security.session_auth import SessionAuth, SessionAuthMiddleware
 from litestar.types import Empty
 
 from config import BGM_TV_APP_ID, BGM_TV_APP_SECRET, SERVER_BASE_URL
-from server.base import http_client
+from server.base import Request, http_client
 from server.model import User
 
 
 CALLBACK_URL = f"{SERVER_BASE_URL}/oauth_callback"
 
 
-async def retrieve_user_from_session(session: dict[str, Any], req: ASGIConnection) -> User | None:
+async def retrieve_user_from_session(
+    session: dict[str, Any], req: ASGIConnection[Any, Any, Any, Any]
+) -> User | None:
     try:
         return __user_from_session(session)
     except KeyError:
         req.clear_session()
 
 
-def __user_from_session(session):
+def __user_from_session(session: dict[str, Any]) -> User:
     return User(
         user_id=session["user_id"],
         group_id=session["group_id"],
@@ -41,7 +43,7 @@ def __user_from_session(session):
     )
 
 
-async def refresh(refresh_token) -> dict[str, Any]:
+async def refresh(refresh_token: str) -> dict[str, Any]:
     async with http_client.post(
         "https://bgm.tv/oauth/access_token",
         data={
@@ -57,7 +59,9 @@ async def refresh(refresh_token) -> dict[str, Any]:
 
 
 class MyAuthenticationMiddleware(SessionAuthMiddleware):
-    async def authenticate_request(self, connection: ASGIConnection) -> AuthenticationResult:
+    async def authenticate_request(
+        self, connection: ASGIConnection[Any, Any, Any, Any]
+    ) -> AuthenticationResult:
         if not connection.session or connection.scope["session"] is Empty:
             # the assignment of 'Empty' forces the session middleware to clear session data.
             connection.scope["session"] = Empty
@@ -90,7 +94,7 @@ def login() -> Redirect:
 
 
 @litestar.get("/oauth_callback")
-async def callback(code: str, request: litestar.Request) -> Redirect:
+async def callback(code: str, request: Request) -> Redirect:
     async with http_client.post(
         "https://bgm.tv/oauth/access_token",
         data={
@@ -131,7 +135,7 @@ async def callback(code: str, request: litestar.Request) -> Redirect:
     return Redirect("/")
 
 
-def require_user_editor(connection: ASGIConnection, _):
+def require_user_editor(connection: ASGIConnection[Any, Any, Any, Any], _: Any) -> None:
     if not connection.auth:
         raise NotAuthorizedException
     if not connection.auth.allow_edit:

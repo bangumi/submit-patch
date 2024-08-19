@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Any
 
 import jinja2
 from jinja2 import pass_context, select_autoescape
@@ -16,11 +17,11 @@ engine = jinja2.Environment(
 
 
 @pass_context
-def rel_time(ctx: Context, value: datetime):
+def rel_time(ctx: Context, value: datetime) -> str:
     if not isinstance(value, datetime):
         raise TypeError("rel_time can be only called with datetime")
 
-    req: Request | None = ctx.get("request")
+    req: Request[Any, Any, Any] | None = ctx.get("request")
 
     if req is None:
         return format_duration(datetime.now(tz=UTC) - value)

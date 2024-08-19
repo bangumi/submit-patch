@@ -10,6 +10,7 @@ import litestar
 from litestar import Response
 from litestar.config.csrf import CSRFConfig
 from litestar.contrib.jinja import JinjaTemplateEngine
+from litestar.datastructures import State
 from litestar.exceptions import (
     HTTPException,
     InternalServerException,
@@ -55,7 +56,7 @@ for top, _, files in os.walk(static_path):
 
 
 @litestar.get("/static/{fp:path}", sync_to_thread=False)
-def static_file_handler(fp: str) -> Response:
+def static_file_handler(fp: str) -> Response[bytes]:
     try:
         f = static_files[fp]
         return Response(
@@ -141,11 +142,11 @@ async def get_patch(patch_id: uuid.UUID, request: Request) -> Template:
     )
 
 
-def before_req(req: litestar.Request):
+def before_req(req: litestar.Request[None, None, State]) -> None:
     req.state["now"] = datetime.now(tz=UTC)
 
 
-def plain_text_exception_handler(_: Request, exc: Exception) -> Response:
+def plain_text_exception_handler(_: Request, exc: Exception) -> Template:
     """Default handler for exceptions subclassed from HTTPException."""
     status_code = getattr(exc, "status_code", HTTP_500_INTERNAL_SERVER_ERROR)
     detail = getattr(exc, "detail", "")

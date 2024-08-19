@@ -25,11 +25,11 @@ class User:
         return True
 
     @property
-    def allow_edit(self):
+    def allow_edit(self) -> bool:
         return self.group_id in {2, 11}
 
     @property
-    def allow_admin(self):
+    def allow_admin(self) -> bool:
         return self.group_id in {2}
 
 

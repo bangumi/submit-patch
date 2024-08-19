@@ -39,7 +39,7 @@ class Wiki:
 
     __slots__ = "fields", "type"
 
-    def __init__(self, type=None, fields: list[Field] | None = None):
+    def __init__(self, type: str | None = None, fields: list[Field] | None = None):
         self.type = type
 
         if fields is None:
@@ -81,12 +81,12 @@ class WikiSyntaxError(ValueError):
 
 
 class GlobalPrefixError(WikiSyntaxError):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(message="missing prefix '{{Infobox' at the start")
 
 
 class GlobalSuffixError(WikiSyntaxError):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(message="missing '}}' at the end")
 
 
@@ -106,7 +106,7 @@ class ExpectingSignEqualError(WikiSyntaxError):
     pass
 
 
-def try_parse(s):
+def try_parse(s: str) -> Wiki:
     """If failed to parse, return zero value"""
     try:
         return parse(s)
@@ -192,7 +192,7 @@ def parse(s: str) -> Wiki:
     return w
 
 
-def read_type(s):
+def read_type(s: str) -> str:
     try:
         i = s.index("\n")
     except ValueError:
@@ -201,7 +201,7 @@ def read_type(s):
     return _trim_space(s[len(prefix) : i])
 
 
-def read_array_item(line):
+def read_array_item(line: str) -> tuple[str, str]:
     """Read whole line as an array item, spaces are trimmed.
 
     read_array_item("[简体中文名|鲁鲁修]") => "简体中文名", "鲁鲁修"
@@ -223,7 +223,7 @@ def read_array_item(line):
         return "", _trim_space(content)
 
 
-def read_start_line(line: str):
+def read_start_line(line: str) -> tuple[str, str]:
     """Read line without leading '|' as key value pair, spaces are trimmed.
 
     read_start_line("播放日期 = 2017年4月16日") => 播放日期, 2017年4月16日
@@ -243,15 +243,15 @@ def read_start_line(line: str):
 _space_str = " \t"
 
 
-def _trim_space(s: str):
+def _trim_space(s: str) -> str:
     return s.strip()
 
 
-def _trim_left_space(s: str):
+def _trim_left_space(s: str) -> str:
     return s.strip()
 
 
-def _trim_right_space(s: str):
+def _trim_right_space(s: str) -> str:
     return s.strip()
 
 
@@ -294,7 +294,7 @@ def __render(w: Wiki) -> Generator[str, None, None]:
     yield "}}"
 
 
-def __render_items(s: list[Item]):
+def __render_items(s: list[Item]) -> Generator[str, None, None]:
     for item in s:
         if item.key:
             yield f"[{item.key}| {item.value}]"
