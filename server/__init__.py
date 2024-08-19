@@ -80,12 +80,12 @@ async def index(request: Request) -> Template:
         return Template("index.html.jinja2", context={"rows": rows, "auth": request.auth})
 
     rows1 = await pg.fetch(
-        "select * from patch where deleted_at is NULL and state = $1 order by created_at desc",
+        "select * from patch where deleted_at is NULL and state = $1 order by created_at",
         PatchState.Pending,
     )
 
     rows2 = await pg.fetch(
-        "select * from patch where deleted_at is NULL and state != $1 order by created_at desc",
+        "select * from patch where deleted_at is NULL and state != $1 order by updated_at desc",
         PatchState.Pending,
     )
 

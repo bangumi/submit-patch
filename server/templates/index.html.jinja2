@@ -25,13 +25,21 @@
                             {% elif patch.state == 3 %}
                                 <span class="badge bg-secondary">Outdated</span>
                             {% endif %}
-
-                            {{ patch.description }}
                         </h5>
-
-                        <small>{{ patch.created_at | rel_time }}</small>
+                        {% if patch.state %}
+                            <small title="{{ patch.created_at }}">reviewed
+                                at {{ patch.updated_at | rel_time }}</small>
+                        {% else %}
+                            <small title="{{ patch.created_at }}">created
+                                at {{ patch.created_at | rel_time }}</small>
+                        {% endif %}
                     </div>
-                    <p class="mb-1"></p>
+                    {% if not patch.state %}
+                        <p class="mb-1"
+                           style="overflow: hidden; text-overflow: ellipsis;">
+                            {{ patch.description }}
+                        </p>
+                    {% endif %}
                     <small>subject: {{ patch.subject_id }}</small>
                     <small>from: {{ patch.from_user_id }}</small>
                 </a>
