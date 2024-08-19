@@ -44,7 +44,7 @@ def __user_from_session(session: dict[str, Any]) -> User:
 
 
 async def refresh(refresh_token: str) -> dict[str, Any]:
-    async with http_client.post(
+    res = await http_client.post(
         "https://bgm.tv/oauth/access_token",
         data={
             "refresh_token": refresh_token,
@@ -52,10 +52,10 @@ async def refresh(refresh_token: str) -> dict[str, Any]:
             "grant_type": "refresh_token",
             "client_secret": BGM_TV_APP_SECRET,
         },
-    ) as res:
-        if res.status >= 300:
-            raise InternalServerException("api request error")
-        return orjson.loads(await res.read())
+    )
+    if res.status_code >= 300:
+        raise InternalServerException("api request error")
+    return orjson.loads(res.content)
 
 
 class MyAuthenticationMiddleware(SessionAuthMiddleware):
@@ -95,7 +95,7 @@ def login() -> Redirect:
 
 @litestar.get("/oauth_callback")
 async def callback(code: str, request: Request) -> Redirect:
-    async with http_client.post(
+    res = await http_client.post(
         "https://bgm.tv/oauth/access_token",
         data={
             "code": code,
@@ -104,20 +104,20 @@ async def callback(code: str, request: Request) -> Redirect:
             "redirect_uri": CALLBACK_URL,
             "client_secret": BGM_TV_APP_SECRET,
         },
-    ) as res:
-        if res.status >= 300:
-            raise InternalServerException("api request error")
-        data = await res.json()
+    )
+    if res.status_code >= 300:
+        raise InternalServerException("api request error")
+    data = res.json()
 
     user_id = data["user_id"]
     access_token = data["access_token"]
 
-    async with http_client.get(
+    res = await http_client.get(
         "https://api.bgm.tv/v0/me", headers={"Authorization": f"Bearer {access_token}"}
-    ) as res:
-        if res.status >= 300:
-            raise InternalServerException("api request error")
-        user = await res.json()
+    )
+    if res.status_code >= 300:
+        raise InternalServerException("api request error")
+    user = res.json()
 
     group_id = user["user_group"]
 

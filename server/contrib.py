@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Annotated, Any
 
 import litestar
-import orjson
 from litestar import Response
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import (
@@ -30,12 +29,10 @@ async def suggest_ui(request: Request, subject_id: int = 0) -> Response[Any]:
         request.set_session({"backTo": request.url.path + f"?subject_id={subject_id}"})
         return Redirect("/login")
 
-    async with http_client.get(
-        f"https://next.bgm.tv/p1/wiki/subjects/{subject_id}", allow_redirects=False
-    ) as res:
-        if res.status >= 300:
-            raise NotFoundException()
-        data = await res.json()
+    res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{subject_id}")
+    if res.status_code >= 300:
+        raise NotFoundException()
+    data = res.json()
     return Template(
         "suggest.html.jinja2",
         context={"data": data, "subject_id": subject_id, "CAPTCHA_SITE_KEY": TURNSTILE_SITE_KEY},
@@ -68,22 +65,22 @@ async def suggest_api(
     if not data.desc:
         raise ValidationException("missing suggestion description")
 
-    async with http_client.post(
+    res = await http_client.post(
         "https://challenges.cloudflare.com/turnstile/v0/siteverify",
         data={
             "secret": TURNSTILE_SECRET_KEY,
             "response": data.cf_turnstile_response,
         },
-    ) as res:
-        if res.status > 300:
-            raise BadRequestException("验证码无效")
-        captcha_data = orjson.loads(await res.read())
-        if captcha_data.get("success") is not True:
-            raise BadRequestException("验证码无效")
+    )
+    if res.status_code > 300:
+        raise BadRequestException("验证码无效")
+    captcha_data = res.json()
+    if captcha_data.get("success") is not True:
+        raise BadRequestException("验证码无效")
 
-    async with http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{subject_id}") as res:
-        res.raise_for_status()
-        original_wiki = await res.json()
+    res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{subject_id}")
+    res.raise_for_status()
+    original_wiki = res.json()
 
     original = Wiki(
         name=original_wiki["name"],

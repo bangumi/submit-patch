@@ -6,7 +6,6 @@ from datetime import datetime
 from typing import Annotated, Any
 
 import litestar
-import orjson
 from asyncpg import Record
 from asyncpg.pool import PoolConnectionProxy
 from litestar import Response
@@ -90,7 +89,7 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
     if not auth.is_access_token_fresh():
         return Redirect("/login")
 
-    async with http_client.patch(
+    res = await http_client.patch(
         f"https://next.bgm.tv/p1/wiki/subjects/{patch.subject_id}",
         headers={"Authorization": f"Bearer {auth.access_token}"},
         json={
@@ -111,27 +110,27 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
                 }
             ),
         },
-    ) as res:
-        if res.status >= 300:
-            data = orjson.loads(await res.read())
-            if data.get("code") == "SUBJECT_CHANGED":
-                await conn.execute(
-                    """
+    )
+    if res.status_code >= 300:
+        data = res.json()
+        if data.get("code") == "SUBJECT_CHANGED":
+            await conn.execute(
+                """
                             update patch set
                                 state = $1,
                                 wiki_user_id = $2,
                                 updated_at = $3
                             where id = $4 and deleted_at is NULL
                             """,
-                    PatchState.Outdated,
-                    auth.user_id,
-                    datetime.now(tz=UTC),
-                    patch.id,
-                )
-                return Redirect(f"/patch/{patch.id}")
+                PatchState.Outdated,
+                auth.user_id,
+                datetime.now(tz=UTC),
+                patch.id,
+            )
+            return Redirect(f"/patch/{patch.id}")
 
-            logger.error("failed to apply patch {!r}", data)
-            raise InternalServerException()
+        logger.error("failed to apply patch {!r}", data)
+        raise InternalServerException()
 
     await conn.execute(
         """
