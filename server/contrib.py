@@ -43,6 +43,8 @@ class CreateSuggestion:
     summary: str
     desc: str
     cf_turnstile_response: str
+    # HTML form will only include checkbox when it's checked,
+    # so any input is true, default value is false.
     nsfw: str | None = None
 
 
