@@ -169,6 +169,9 @@ def plain_text_exception_handler(_: Request, exc: Exception) -> Template:
     status_code = getattr(exc, "status_code", HTTP_500_INTERNAL_SERVER_ERROR)
     detail = getattr(exc, "detail", "")
 
+    if not isinstance(exc, HTTPException):
+        logger.error("internal server error: {}", exc)
+
     return Template(
         "error.html.jinja2",
         status_code=status_code,
