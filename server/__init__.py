@@ -1,4 +1,5 @@
 import difflib
+import itertools
 import mimetypes
 import os
 import uuid
@@ -34,7 +35,7 @@ from server import tmpl
 from server.auth import callback, login, session_auth_config
 from server.base import Request, pg, pg_pool_startup
 from server.contrib import delete_patch, suggest_api, suggest_ui
-from server.model import Patch
+from server.model import Patch, PatchState
 from server.review import review_patch
 
 
@@ -78,11 +79,20 @@ async def index(request: Request) -> Template:
         )
         return Template("index.html.jinja2", context={"rows": rows, "auth": request.auth})
 
-    rows = await pg.fetch(
-        "select * from patch where deleted_at is NULL order by created_at desc",
+    rows1 = await pg.fetch(
+        "select * from patch where deleted_at is NULL and state = $1 order by created_at desc",
+        PatchState.Pending,
     )
 
-    return Template("index.html.jinja2", context={"rows": rows, "auth": request.auth})
+    rows2 = await pg.fetch(
+        "select * from patch where deleted_at is NULL and state != $1 order by created_at desc",
+        PatchState.Pending,
+    )
+
+    return Template(
+        "index.html.jinja2",
+        context={"rows": itertools.chain(rows1, rows2), "auth": request.auth},
+    )
 
 
 @litestar.get("/patch/{patch_id:uuid}")

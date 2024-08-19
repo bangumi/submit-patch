@@ -19,7 +19,7 @@ from loguru import logger
 from config import UTC
 from server.auth import require_user_editor
 from server.base import AuthorizedRequest, BadRequestException, http_client, pg
-from server.model import Patch, State, User
+from server.model import Patch, PatchState, User
 
 
 class React(str, enum.Enum):
@@ -52,7 +52,7 @@ async def review_patch(
 
             patch = Patch(**p)
 
-            if patch.state != State.Pending:
+            if patch.state != PatchState.Pending:
                 raise BadRequestException("patch already reviewed")
 
             if data.react == React.Reject:
@@ -73,7 +73,7 @@ async def __reject_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
             updated_at = $3
         where id = $4 and deleted_at is NULL
         """,
-        State.Rejected,
+        PatchState.Rejected,
         auth.user_id,
         datetime.now(tz=UTC),
         patch.id,
@@ -118,7 +118,7 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
                                 updated_at = $3
                             where id = $4 and deleted_at is NULL
                             """,
-                    State.Outdated,
+                    PatchState.Outdated,
                     auth.user_id,
                     datetime.now(tz=UTC),
                     patch.id,
@@ -136,7 +136,7 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
                     updated_at = $3
                 where id = $4 and deleted_at is NULL
                 """,
-        State.Accept,
+        PatchState.Accept,
         auth.user_id,
         datetime.now(tz=UTC),
         patch.id,

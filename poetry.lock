@@ -622,7 +622,7 @@ files = [
 [[package]]
 name = "h2"
 version = "4.1.0"
-description = "HTTP/2 State-Machine based protocol implementation"
+description = "HTTP/2 PatchState-Machine based protocol implementation"
 optional = false
 python-versions = ">=3.6.1"
 files = [

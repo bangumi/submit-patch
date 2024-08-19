@@ -33,7 +33,7 @@ class User:
         return self.group_id in {2}
 
 
-class State(enum.IntEnum):
+class PatchState(enum.IntEnum):
     Pending = 0
     Accept = 1
     Rejected = 2
