@@ -1,5 +1,4 @@
 import difflib
-import itertools
 import mimetypes
 import os
 import uuid
@@ -7,6 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import NamedTuple
 
+import asyncpg
 import litestar
 from litestar import Response
 from litestar.config.csrf import CSRFConfig
@@ -79,20 +79,28 @@ async def index(request: Request) -> Template:
         )
         return Template("index.html.jinja2", context={"rows": rows, "auth": request.auth})
 
-    rows1 = await pg.fetch(
-        "select * from patch where deleted_at is NULL and state = $1 order by created_at",
+    rows = await pg.fetch(
+        """
+        select * from patch where deleted_at is NULL and state = $1
+        union
+        (select * from patch  where deleted_at is NULL and state != $1  limit 10)
+        """,
         PatchState.Pending,
     )
 
-    rows2 = await pg.fetch(
-        "select * from patch where deleted_at is NULL and state != $1 order by updated_at desc limit 10",
-        PatchState.Pending,
-    )
+    rows.sort(key=__index_row_sorter, reverse=True)
 
     return Template(
         "index.html.jinja2",
-        context={"rows": itertools.chain(rows1, rows2), "auth": request.auth},
+        context={"rows": rows, "auth": request.auth},
     )
+
+
+def __index_row_sorter(r: asyncpg.Record):
+    if r["state"] == PatchState.Pending:
+        return 1, r["created_at"]
+
+    return 0, r["updated_at"]
 
 
 @litestar.get("/patch/{patch_id:uuid}")
