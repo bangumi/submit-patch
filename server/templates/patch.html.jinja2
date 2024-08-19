@@ -55,7 +55,7 @@
         </div>
     {% endif %}
 
-    {% if patch.nsfw != None %}
+    {% if patch.nsfw is not none %}
         <div class="row">
             {% if patch.nsfw %}
                 <p>NSFW: ❌ -> ✅</p>
