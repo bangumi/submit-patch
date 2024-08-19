@@ -69,8 +69,8 @@ async def suggest_api(
     ) as res:
         if res.status > 300:
             raise BadRequestException("验证码无效")
-        data = orjson.loads(await res.read())
-        if data.get("success") is not True:
+        captcha_data = orjson.loads(await res.read())
+        if captcha_data.get("success") is not True:
             raise BadRequestException("验证码无效")
 
     async with http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{subject_id}") as res:
