@@ -76,7 +76,7 @@
                           enctype="application/x-www-form-urlencoded">
                         {{ csrf_input | safe }}
                         <input name="react" value="accept" hidden="hidden"/>
-                        <button type="submit" class="btn btn-success">Accept</button>
+                        <button type="submit" class="btn btn-success"> Accept </button>
                     </form>
                 </div>
 
@@ -85,16 +85,16 @@
                           enctype="application/x-www-form-urlencoded">
                         {{ csrf_input | safe }}
                         <input name="react" value="reject" hidden="hidden"/>
+                        <button type="submit" class="btn btn-danger"> Reject </button>
                         <label>拒绝原因
                             <input type="text" name="reject_reason"/>
                         </label>
-                        <button type="submit" class="btn btn-secondary">Reject</button>
                     </form>
                 </div>
             {% endif %}
 
             {% if patch.from_user_id == auth.user_id %}
-                <div class="col">
+                <div class="row mb-1">
                     <form action="/api/delete-patch/{{ patch.id }}" method="post">
                         {{ csrf_input | safe }}
                         <button type="submit" class="btn btn-danger">Delete</button>
