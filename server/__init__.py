@@ -85,7 +85,7 @@ async def index(request: Request) -> Template:
     )
 
     rows2 = await pg.fetch(
-        "select * from patch where deleted_at is NULL and state != $1 order by updated_at desc",
+        "select * from patch where deleted_at is NULL and state != $1 order by updated_at desc limit 10",
         PatchState.Pending,
     )
 
