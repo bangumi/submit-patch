@@ -83,7 +83,7 @@ async def index(request: Request) -> Template:
         """
         select * from patch where deleted_at is NULL and state = $1
         union
-        (select * from patch  where deleted_at is NULL and state != $1  limit 10)
+        (select * from patch  where deleted_at is NULL and state != $1 order by updated_at desc limit 10)
         """,
         PatchState.Pending,
     )
