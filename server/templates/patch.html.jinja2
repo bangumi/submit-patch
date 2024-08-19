@@ -1,18 +1,5 @@
-<!doctype html>
-<html lang="zh">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-          crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-            crossorigin="anonymous"></script>
+{% extends "layout/base.html.jinja2" %}
+{% block head %}
     <link
             rel="stylesheet"
             type="text/css"
@@ -26,11 +13,10 @@
             font-family: monospace;
         }
     </style>
-</head>
+{% endblock %}
 
-<body>
-<div class="container">
-    <div class="row"><a href="/"><h1>返回首页</h1></a></div>
+{% block content %}
+    <div class="row"><a href="/"><h2>返回首页</h2></a></div>
 
     <hr>
 
@@ -120,72 +106,70 @@
 
     </div>
 
-</div>
-{% if name_patch %}
-    <script>
-        (() => {
-            const diffString = {{ name_patch | tojson }};
-            const targetElement = document.getElementById('nameDiffElement');
-            const configuration = {
-                drawFileList: false,
-                fileListToggle: false,
-                fileListStartVisible: false,
-                fileContentToggle: false,
-                maxLineSizeInBlockForComparison: 80,
-                matching: 'words',
-                outputFormat: 'line-by-line',
-                synchronisedScroll: true,
-                renderNothingWhenEmpty: false,
-            };
-            const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
-            diff2htmlUi.draw();
-        })()
-    </script>
-{% endif %}
+    </div>
+    {% if name_patch %}
+        <script>
+            (() => {
+                const diffString = {{ name_patch | tojson }};
+                const targetElement = document.getElementById('nameDiffElement');
+                const configuration = {
+                    drawFileList: false,
+                    fileListToggle: false,
+                    fileListStartVisible: false,
+                    fileContentToggle: false,
+                    maxLineSizeInBlockForComparison: 80,
+                    matching: 'words',
+                    outputFormat: 'line-by-line',
+                    synchronisedScroll: true,
+                    renderNothingWhenEmpty: false,
+                };
+                const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+                diff2htmlUi.draw();
+            })()
+        </script>
+    {% endif %}
 
-{% if infobox_patch %}
-    <script>
-        (() => {
-            const diffString = {{ infobox_patch | tojson }};
-            const targetElement = document.getElementById('infoboxDiffElement');
-            const configuration = {
-                drawFileList: false,
-                fileListToggle: false,
-                fileListStartVisible: false,
-                fileContentToggle: false,
-                matching: 'lines',
-                maxLineSizeInBlockForComparison: 80,
-                outputFormat: 'side-by-side',
-                synchronisedScroll: true,
-                renderNothingWhenEmpty: false,
-            };
-            const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
-            diff2htmlUi.draw();
-        })()
-    </script>
-{% endif %}
+    {% if infobox_patch %}
+        <script>
+            (() => {
+                const diffString = {{ infobox_patch | tojson }};
+                const targetElement = document.getElementById('infoboxDiffElement');
+                const configuration = {
+                    drawFileList: false,
+                    fileListToggle: false,
+                    fileListStartVisible: false,
+                    fileContentToggle: false,
+                    matching: 'lines',
+                    maxLineSizeInBlockForComparison: 80,
+                    outputFormat: 'side-by-side',
+                    synchronisedScroll: true,
+                    renderNothingWhenEmpty: false,
+                };
+                const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+                diff2htmlUi.draw();
+            })()
+        </script>
+    {% endif %}
 
-{% if summary_patch %}
-    <script>
-        (() => {
-            const diffString = {{ summary_patch | tojson }};
-            const targetElement = document.getElementById('summaryDiffElement');
-            const configuration = {
-                drawFileList: false,
-                fileListToggle: false,
-                fileListStartVisible: false,
-                maxLineSizeInBlockForComparison: 80,
-                fileContentToggle: false,
-                matching: 'lines',
-                outputFormat: 'side-by-side',
-                synchronisedScroll: true,
-                renderNothingWhenEmpty: false,
-            };
-            const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
-            diff2htmlUi.draw();
-        })()
-    </script>
-{% endif %}
-</body>
-
-</html>
+    {% if summary_patch %}
+        <script>
+            (() => {
+                const diffString = {{ summary_patch | tojson }};
+                const targetElement = document.getElementById('summaryDiffElement');
+                const configuration = {
+                    drawFileList: false,
+                    fileListToggle: false,
+                    fileListStartVisible: false,
+                    maxLineSizeInBlockForComparison: 80,
+                    fileContentToggle: false,
+                    matching: 'lines',
+                    outputFormat: 'side-by-side',
+                    synchronisedScroll: true,
+                    renderNothingWhenEmpty: false,
+                };
+                const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+                diff2htmlUi.draw();
+            })()
+        </script>
+    {% endif %}
+{% endblock %}

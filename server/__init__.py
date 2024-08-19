@@ -1,6 +1,10 @@
 import difflib
+import mimetypes
+import os
 import uuid
 from datetime import datetime
+from pathlib import Path
+from typing import NamedTuple
 
 import litestar
 from litestar import Response
@@ -21,6 +25,7 @@ from redis.asyncio.client import Redis
 from config import (
     CSRF_SECRET_TOKEN,
     DEV,
+    PROJECT_PATH,
     REDIS_DSN,
     UTC,
 )
@@ -32,10 +37,38 @@ from server.model import Patch
 from server.review import review_patch
 
 
+class File(NamedTuple):
+    content: bytes
+    content_type: str
+
+
+static_path = PROJECT_PATH.joinpath("server/static/")
+static_files: dict[str, File] = {}
+
+for top, _, files in os.walk(static_path):
+    for file in files:
+        file_path = Path(top, file)
+        rel_path = file_path.relative_to(static_path).as_posix()
+        static_files["/" + rel_path] = File(
+            content=file_path.read_bytes(), content_type=mimetypes.guess_type(file)[0]
+        )
+
+
+@litestar.get("/static/{fp:path}", sync_to_thread=False)
+def static_file_handler(fp: str) -> Response:
+    try:
+        f = static_files[fp]
+        return Response(
+            content=f.content, media_type=f.content_type, headers={"cache-control": "max-age=1200"}
+        )
+    except KeyError:
+        raise NotFoundException()  # noqa: B904
+
+
 @litestar.get("/")
 async def index(request: Request) -> Template:
     if not request.auth:
-        return Template("login.html")
+        return Template("login.html.jinja2")
 
     if not request.auth.allow_edit:
         rows = await pg.fetch(
@@ -134,6 +167,7 @@ app = litestar.Litestar(
         get_patch,
         delete_patch,
         review_patch,
+        static_file_handler,
     ],
     template_config=TemplateConfig(
         engine=JinjaTemplateEngine.from_environment(tmpl.engine),
