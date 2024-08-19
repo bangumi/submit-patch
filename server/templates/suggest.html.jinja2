@@ -1,5 +1,10 @@
 {% extends "layout/base.html.jinja2" %}
 
+{% block head %}
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async
+            defer></script>
+{% endblock %}
+
 {% block content %}
     <form action="/suggest?subject_id={{ subject_id }}" method="post"
           enctype="application/x-www-form-urlencoded">
@@ -34,6 +39,10 @@
             <label for="desc">原因</label>
             <input class="form-control" id="desc" name="desc"/>
         </div>
+
+        <div class="cf-turnstile m-1" data-theme="light" data-response-field-name="cf_turnstile_response" data-sitekey="{{ CAPTCHA_SITE_KEY }}"></div>
+
+        <p>请等待验证码通过再进行提交</p>
 
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>

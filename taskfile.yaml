@@ -8,6 +8,7 @@ tasks:
 
   server:
     sources:
+      - .env
       - '**/*.py'
     generates:
       - a-path-wont-exists

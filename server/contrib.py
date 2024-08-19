@@ -14,8 +14,8 @@ from litestar.exceptions import (
 from litestar.params import Body
 from litestar.response import Redirect, Template
 
-from config import UTC
-from server.base import Request, http_client, pg
+from config import TURNSTILE_SECRET_KEY, TURNSTILE_SITE_KEY, UTC
+from server.base import BadRequestException, Request, http_client, pg
 from server.model import Patch, Wiki
 
 
@@ -29,7 +29,10 @@ async def suggest_ui(subject_id: int = 0) -> Template:
         if res.status >= 300:
             raise NotFoundException()
         data = await res.json()
-    return Template("suggest.html.jinja2", context={"data": data, "subject_id": subject_id})
+    return Template(
+        "suggest.html.jinja2",
+        context={"data": data, "subject_id": subject_id, "CAPTCHA_SITE_KEY": TURNSTILE_SITE_KEY},
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,6 +41,7 @@ class CreateSuggestion:
     infobox: str
     summary: str
     desc: str
+    cf_turnstile_response: str
     nsfw: bool = False
 
 
@@ -54,6 +58,16 @@ async def suggest_api(
 
     if not data.desc:
         raise ValidationException("missing suggestion description")
+
+    async with http_client.post(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        data={
+            "secret": TURNSTILE_SECRET_KEY,
+            "response": data.cf_turnstile_response,
+        },
+    ) as res:
+        if res.status > 300:
+            raise BadRequestException("验证码无效")
 
     async with http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{subject_id}") as res:
         res.raise_for_status()
