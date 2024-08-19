@@ -122,10 +122,10 @@ async def callback(code: str, request: Request) -> Redirect:
     group_id = user["user_group"]
 
     # litestar type this as dict[str, Any], but it maybe Empty
-    if not request.session:
-        back_to = "/"
-    else:
+    if isinstance(request.session, dict):
         back_to = request.session.get("backTo", "/")
+    else:
+        back_to = "/"
 
     request.set_session(
         {
