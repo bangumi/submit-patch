@@ -14,32 +14,42 @@
                    target="_blank" rel="noopener"
                    class="list-group-item list-group-item-action flex-column align-items-start"
                 >
+
                     <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">
-                            {% if patch.state == 1 %}
-                                {# accept #}
+                        {% if patch.state == 0 %}
+                            <p class="m-1"
+                               style="overflow: hidden; text-overflow: ellipsis;">
+                                {{ patch.description }}
+                            </p>
+                        {% elif patch.state == 1 %}
+                            <!-- accept -->
+                            <h5 class="mb-1">
                                 <span class="badge bg-success">Accept</span>
-                            {% elif patch.state == 2 %}
-                                {# rejected #}
+                            </h5>
+                        {% elif patch.state == 2 %}
+                            <!-- rejected -->
+                            <h5 class="mb-1">
                                 <span class="badge bg-danger">Rejected</span>
-                            {% elif patch.state == 3 %}
+                            </h5>
+                        {% elif patch.state == 3 %}
+                            <h5 class="mb-1">
                                 <span class="badge bg-secondary">Outdated</span>
-                            {% endif %}
-                        </h5>
+                            </h5>
+                        {% endif %}
+
                         {% if patch.state %}
-                            <small title="{{ patch.created_at }}">reviewed
-                                at {{ patch.updated_at | rel_time }}</small>
+                            <small style="text-wrap: nowrap;"
+                                   title="{{ patch.updated_at }}">
+                                reviewed at {{ patch.updated_at | rel_time }}
+                            </small>
                         {% else %}
-                            <small title="{{ patch.created_at }}">created
-                                at {{ patch.created_at | rel_time }}</small>
+                            <small style="text-wrap: nowrap;"
+                                   title="{{ patch.created_at }}">
+                                created at {{ patch.created_at | rel_time }}
+                            </small>
                         {% endif %}
                     </div>
-                    {% if not patch.state %}
-                        <p class="mb-1"
-                           style="overflow: hidden; text-overflow: ellipsis;">
-                            {{ patch.description }}
-                        </p>
-                    {% endif %}
+
                     <small>subject: {{ patch.subject_id }}</small>
                     <small>from: {{ patch.from_user_id }}</small>
                 </a>
