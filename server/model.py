@@ -28,10 +28,6 @@ class User:
     def allow_edit(self) -> bool:
         return self.group_id in {2, 11}
 
-    @property
-    def allow_admin(self) -> bool:
-        return self.group_id in {2}
-
 
 class PatchState(enum.IntEnum):
     Pending = 0

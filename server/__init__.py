@@ -96,7 +96,7 @@ async def index(request: Request) -> Template:
     )
 
 
-def __index_row_sorter(r: asyncpg.Record):
+def __index_row_sorter(r: asyncpg.Record) -> tuple[int, datetime]:
     if r["state"] == PatchState.Pending:
         return 1, r["created_at"]
 

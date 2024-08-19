@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Any
 
 import litestar
 import orjson
+from litestar import Response
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import (
     HTTPException,
@@ -21,9 +22,14 @@ from server.model import Patch, Wiki
 
 
 @litestar.get("/suggest")
-async def suggest_ui(subject_id: int = 0) -> Template:
+async def suggest_ui(request: Request, subject_id: int = 0) -> Response[Any]:
     if subject_id == 0:
         return Template("select-subject.html.jinja2")
+
+    if not request.auth:
+        request.set_session({"backTo": request.url.path + f"?subject_id={subject_id}"})
+        return Redirect("/login")
+
     async with http_client.get(
         f"https://next.bgm.tv/p1/wiki/subjects/{subject_id}", allow_redirects=False
     ) as res:

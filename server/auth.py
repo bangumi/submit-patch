@@ -29,7 +29,7 @@ async def retrieve_user_from_session(
     try:
         return __user_from_session(session)
     except KeyError:
-        req.clear_session()
+        return None
 
 
 def __user_from_session(session: dict[str, Any]) -> User:
@@ -121,6 +121,12 @@ async def callback(code: str, request: Request) -> Redirect:
 
     group_id = user["user_group"]
 
+    # litestar type this as dict[str, Any], but it maybe Empty
+    if request.session is not Empty:  # type: ignore
+        back_to = request.session.get("backTo", "/")
+    else:
+        back_to = "/"
+
     request.set_session(
         {
             "user_id": user_id,
@@ -132,7 +138,7 @@ async def callback(code: str, request: Request) -> Redirect:
         }
     )
 
-    return Redirect("/")
+    return Redirect(back_to)
 
 
 def require_user_editor(connection: ASGIConnection[Any, Any, Any, Any], _: Any) -> None:
