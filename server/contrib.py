@@ -43,7 +43,7 @@ class CreateSuggestion:
     summary: str
     desc: str
     cf_turnstile_response: str
-    nsfw: bool = False
+    nsfw: str | None = None
 
 
 @litestar.post("/suggest")
@@ -106,8 +106,8 @@ async def suggest_api(
         summary = data.summary
         original_summary = original.summary
 
-    if original.nsfw != data.nsfw:
-        nsfw = data.nsfw
+    if original.nsfw != data.nsfw is not None:  # true case
+        nsfw = not original.nsfw
 
     if (name is None) and (summary is None) and (infobox is None) and (nsfw is None):
         raise HTTPException("no changes found", status_code=400)

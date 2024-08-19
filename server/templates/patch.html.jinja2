@@ -55,6 +55,12 @@
         </div>
     {% endif %}
 
+    {% if patch.nsfw != None %}
+        <div class="row">
+            <p>NSFW: {{ patch.nsfw }}</p>
+        </div>
+    {% endif %}
+
     <div class="row">
         {% if patch.state == 0 %}
             {% if auth.allow_edit %}
@@ -106,7 +112,6 @@
 
     </div>
 
-    </div>
     {% if name_patch %}
         <script>
             (() => {
