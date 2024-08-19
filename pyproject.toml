@@ -106,3 +106,7 @@ ban-relative-imports = "all"
 #length-sort = true
 lines-after-imports = 2
 known-first-party = ["lint", "bgm"]
+
+[tool.mypy]
+warn_no_return = false
+check_untyped_defs = true

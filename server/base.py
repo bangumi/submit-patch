@@ -25,7 +25,7 @@ class DisableCookiesJar(AbstractCookieJar):
     def clear_domain(self, domain: str) -> None:
         return
 
-    def update_cookies(self, cookies: LooseCookies, response_url: URL = None) -> None:
+    def update_cookies(self, cookies: LooseCookies, response_url: URL | None = None) -> None:
         return
 
     def filter_cookies(self, request_url: URL) -> BaseCookie[str]:

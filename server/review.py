@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any
 
-import asyncpg
 import litestar
 import orjson
+from asyncpg.pool import PoolConnectionProxy
 from litestar import Response
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import InternalServerException, NotAuthorizedException, NotFoundException
@@ -61,7 +61,7 @@ async def review_patch(
     raise NotAuthorizedException("暂不支持")
 
 
-async def __reject_patch(patch: Patch, conn: asyncpg.Connection, auth: User) -> Redirect:
+async def __reject_patch(patch: Patch, conn: PoolConnectionProxy, auth: User) -> Redirect:
     await conn.execute(
         """
         update patch set
@@ -78,7 +78,7 @@ async def __reject_patch(patch: Patch, conn: asyncpg.Connection, auth: User) -> 
     return Redirect("/")
 
 
-async def __accept_patch(patch: Patch, conn: asyncpg.Connection, auth: User) -> Response:
+async def __accept_patch(patch: Patch, conn: PoolConnectionProxy, auth: User) -> Response:
     if not auth.is_access_token_fresh():
         return Redirect("/login")
 

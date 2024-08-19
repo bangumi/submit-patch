@@ -39,7 +39,7 @@ from server.review import review_patch
 
 class File(NamedTuple):
     content: bytes
-    content_type: str
+    content_type: str | None
 
 
 static_path = PROJECT_PATH.joinpath("server/static/")
