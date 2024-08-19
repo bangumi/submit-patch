@@ -4,7 +4,7 @@ import os
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 import asyncpg
 import litestar
@@ -164,18 +164,20 @@ def before_req(req: litestar.Request[None, None, State]) -> None:
     req.state["now"] = datetime.now(tz=UTC)
 
 
-def plain_text_exception_handler(_: Request, exc: Exception) -> Template:
+def plain_text_exception_handler(_: Request, exc: HTTPException) -> Template:
     """Default handler for exceptions subclassed from HTTPException."""
-    status_code = getattr(exc, "status_code", HTTP_500_INTERNAL_SERVER_ERROR)
-    detail = getattr(exc, "detail", "")
-
-    if not isinstance(exc, HTTPException):
-        logger.error("internal server error: {}", exc)
-
     return Template(
         "error.html.jinja2",
-        status_code=status_code,
-        context={"error": exc, "detail": detail},
+        status_code=exc.status_code,
+        context={"error": exc, "detail": exc.detail},
+    )
+
+
+def internal_error_handler(_: Request, exc: Exception) -> Response[Any]:
+    logger.error("internal server error: {}", exc)
+    return Response(
+        content={"error": exc, "detail": "internal server error"},
+        status_code=HTTP_500_INTERNAL_SERVER_ERROR,
     )
 
 
@@ -201,6 +203,7 @@ app = litestar.Litestar(
     middleware=[session_auth_config.middleware],
     exception_handlers={
         HTTPException: plain_text_exception_handler,
+        Exception: internal_error_handler,
     },
     debug=DEV,
 )
