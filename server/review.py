@@ -75,13 +75,13 @@ async def __reject_patch(
             wiki_user_id = $2,
             updated_at = $3,
             reject_reason = $4
-        where id = $4 and deleted_at is NULL
+        where id = $5 and deleted_at is NULL
         """,
         PatchState.Rejected,
         auth.user_id,
         datetime.now(tz=UTC),
-        patch.id,
         reason,
+        patch.id,
     )
     return Redirect("/")
 
