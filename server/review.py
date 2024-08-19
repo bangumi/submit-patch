@@ -30,6 +30,7 @@ class React(str, enum.Enum):
 @dataclass
 class ReviewPatch:
     react: React
+    reject_reason: str = ""
 
 
 def __strip_none(d: dict[str, Any]) -> dict[str, Any]:
@@ -56,7 +57,7 @@ async def review_patch(
                 raise BadRequestException("patch already reviewed")
 
             if data.react == React.Reject:
-                return await __reject_patch(patch, conn, request.auth)
+                return await __reject_patch(patch, conn, request.auth, data.reject_reason)
 
             if data.react == React.Accept:
                 return await __accept_patch(patch, conn, request.auth)
@@ -64,19 +65,23 @@ async def review_patch(
     raise NotAuthorizedException("暂不支持")
 
 
-async def __reject_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: User) -> Redirect:
+async def __reject_patch(
+    patch: Patch, conn: PoolConnectionProxy[Record], auth: User, reason: str
+) -> Redirect:
     await conn.execute(
         """
         update patch set
             state = $1,
             wiki_user_id = $2,
-            updated_at = $3
+            updated_at = $3,
+            reject_reason = $4
         where id = $4 and deleted_at is NULL
         """,
         PatchState.Rejected,
         auth.user_id,
         datetime.now(tz=UTC),
         patch.id,
+        reason,
     )
     return Redirect("/")
 

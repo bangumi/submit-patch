@@ -1,3 +1,8 @@
+create table if not exists patch_scheme_rev
+(
+    version text primary key
+);
+
 create table if not exists patch
 (
     id               uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
@@ -26,3 +31,6 @@ create table if not exists patch
 create index idx_subject_id on patch (subject_id);
 
 create index idx_deleted_at on patch (deleted_at);
+
+alter table patch
+    add column reject_reason varchar(255) not null default '';
