@@ -15,6 +15,11 @@ tasks:
     cmds:
       - uvicorn server:app --env-file .env
 
+  run:
+    dotenv: [.env]
+    cmds:
+      - python {{.CLI_ARGS}}
+
   lock:no-cache:
     cmds:
       - poetry lock --no-update --no-cache

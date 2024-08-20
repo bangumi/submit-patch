@@ -15,7 +15,7 @@ from litestar.security.session_auth import SessionAuth, SessionAuthMiddleware
 from litestar.types import Empty
 
 from config import BGM_TV_APP_ID, BGM_TV_APP_SECRET, SERVER_BASE_URL
-from server.base import Request, User, http_client
+from server.base import Request, User, http_client, pg
 
 
 CALLBACK_URL = f"{SERVER_BASE_URL}/oauth_callback"
@@ -106,8 +106,8 @@ async def callback(code: str, request: Request) -> Redirect:
     if res.status_code >= 300:
         raise InternalServerException("api request error")
     data = res.json()
-
     user_id = data["user_id"]
+
     access_token = data["access_token"]
 
     res = await http_client.get(
@@ -118,6 +118,18 @@ async def callback(code: str, request: Request) -> Redirect:
     user = res.json()
 
     group_id = user["user_group"]
+
+    await pg.execute(
+        """
+        insert into patch_users (user_id, username, nickname) VALUES ($1,$2,$3)
+        on conflict (user_id) do update set
+            username = excluded.username,
+            nickname = excluded.nickname
+    """,
+        user_id,
+        user["username"],
+        user["nickname"],
+    )
 
     # litestar type this as dict[str, Any], but it maybe Empty
     if isinstance(request.session, dict):

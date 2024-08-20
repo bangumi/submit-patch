@@ -41,7 +41,16 @@ alter table patch
 alter table patch
     ALTER column original_name set default '';
 
-update patch set original_name = '' where original_name is NULL;
+update patch
+set original_name = ''
+where original_name is NULL;
 
 alter table patch
     ALTER column original_name set not null;
+
+create table if not exists patch_users
+(
+    user_id  int PRIMARY KEY not null,
+    username varchar(255)    not null,
+    nickname varchar(255)    not null
+);
