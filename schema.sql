@@ -34,3 +34,12 @@ create index idx_deleted_at on patch (deleted_at);
 
 alter table patch
     add column reject_reason varchar(255) not null default '';
+
+alter table patch
+    add column subject_type int8 not null default 0;
+
+alter table patch
+    ALTER column original_name set default '';
+
+alter table patch
+    ALTER column original_name set not null;

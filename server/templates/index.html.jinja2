@@ -1,6 +1,13 @@
 {% extends "layout/base.html.jinja2" %}
 
 {% block content %}
+    <style>
+        .oneline-hide-overflow {
+            text-wrap: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
     {% if not auth.allow_edit %}
         <div class="row m-1">
             <a href="/suggest">添加Patch</a>
@@ -15,26 +22,35 @@
                    class="list-group-item list-group-item-action flex-column align-items-start"
                 >
                     <div class="d-flex w-100 justify-content-between">
-                        {% if patch.state == 0 %}
-                            <p class="m-1"
-                               style="overflow: hidden; text-overflow: ellipsis;">
-                                {{ patch.description }}
+                        <div>
+                            {% if patch.state == 1 %}
+                                <!-- accept -->
+                                <h5 class="mb-1">
+                                    <span class="badge bg-success">Accept</span>
+                                </h5>
+                            {% elif patch.state == 2 %}
+                                <!-- rejected -->
+                                <h5 class="mb-1">
+                                    <span class="badge bg-danger">Rejected</span>
+                                </h5>
+                            {% elif patch.state == 3 %}
+                                <h5 class="mb-1">
+                                    <span class="badge bg-secondary">Outdated</span>
+                                </h5>
+                            {% endif %}
+                            <p class="oneline-hide-overflow m-0 p-0">
+                                修改原因：{{ patch.description }}
                             </p>
-                        {% elif patch.state == 1 %}
-                            <!-- accept -->
-                            <h5 class="mb-1">
-                                <span class="badge bg-success">Accept</span>
-                            </h5>
-                        {% elif patch.state == 2 %}
-                            <!-- rejected -->
-                            <h5 class="mb-1">
-                                <span class="badge bg-danger">Rejected</span>
-                            </h5>
-                        {% elif patch.state == 3 %}
-                            <h5 class="mb-1">
-                                <span class="badge bg-secondary">Outdated</span>
-                            </h5>
-                        {% endif %}
+                            <p class="oneline-hide-overflow m-0 p-0">
+                                {% if patch.subject_type %}
+                                    分类：
+                                    {{ patch.subject_type | subject_type_readable }}
+                                {% endif %}
+                                {% if patch.original_name %}
+                                    条目名: {{ patch.original_name }}
+                                {% endif %}
+                            </p>
+                        </div>
 
                         {% if patch.state %}
                             <small style="text-wrap: nowrap;"
@@ -49,8 +65,18 @@
                         {% endif %}
                     </div>
 
-                    <small>subject: {{ patch.subject_id }}</small>
-                    <small>from: {{ patch.from_user_id }}</small>
+
+                    <small>subject:
+                        <span class="badge bg-light text-dark"> {{ patch.subject_id }}</span>
+                    </small>
+                    <small>from:
+                        <span class="badge bg-light text-dark">{{ patch.from_user_id }}</span>
+                    </small>
+                    {% if patch.state != 0 %}
+                        <small>reviewed by:
+                            <span class="badge bg-light text-dark">{{ patch.wiki_user_id }}</span>
+                        </small>
+                    {% endif %}
                 </a>
             {% endfor %}
         </ul>

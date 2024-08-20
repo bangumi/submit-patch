@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -16,6 +17,19 @@ engine = jinja2.Environment(
 )
 
 
+def add_filter(s: str | Callable):
+    def real_wrapper(name: str, fn: Callable):
+        if name in engine.filters:
+            raise ValueError(f"filter '{name}' already exists")
+        engine.filters[name] = fn
+
+    if isinstance(s, str):
+        return lambda fn: real_wrapper(s, fn)
+
+    return real_wrapper(s.__name__, s)
+
+
+@add_filter
 @pass_context
 def rel_time(ctx: Context, value: datetime) -> str:
     if not isinstance(value, datetime):
@@ -58,4 +72,18 @@ def format_duration(seconds: timedelta) -> str:
     return s
 
 
-engine.filters["rel_time"] = rel_time
+@add_filter
+def subject_type_readable(s: int):
+    match s:
+        case 1:
+            return "书籍"
+        case 2:
+            return "动画"
+        case 3:
+            return "音乐"
+        case 4:
+            return "游戏"
+        case 6:
+            return "三次元"
+        case _:
+            return "Unknown"

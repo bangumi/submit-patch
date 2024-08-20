@@ -94,7 +94,6 @@ async def suggest_api(
     summary: str | None = None
     infobox: str | None = None
 
-    original_name: str | None = None
     original_summary: str | None = None
     original_infobox: str | None = None
 
@@ -102,7 +101,6 @@ async def suggest_api(
 
     if original.name != data.name:
         name = data.name
-        original_name = original.name
 
     if original.infobox != data.infobox:
         infobox = data.infobox
@@ -121,7 +119,7 @@ async def suggest_api(
     pk = await pg.fetchval(
         """
         insert into patch (id, subject_id, from_user_id, description, name, infobox, summary, nsfw,
-                           original_name, original_infobox, original_summary)
+                           original_name, original_infobox, original_summary, subject_type)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         returning patch.id
     """,
@@ -133,9 +131,10 @@ async def suggest_api(
         infobox,
         summary,
         nsfw,
-        original_name,
+        original.name,
         original_infobox,
         original_summary,
+        original_wiki["typeID"],
     )
 
     return Redirect(f"/patch/{pk}")

@@ -14,12 +14,13 @@ class PatchState(enum.IntEnum):
 class Patch:
     id: str
     subject_id: int
+    subject_type: int
     state: int
     from_user_id: int
     wiki_user_id: int
     description: str
     name: str | None
-    original_name: str | None
+    original_name: str
     infobox: str | None
     original_infobox: str | None
     summary: str | None

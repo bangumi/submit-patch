@@ -119,9 +119,6 @@ async def get_patch(patch_id: str, request: Request) -> Template:
 
     name_patch = ""
     if patch.name is not None:
-        if patch.original_name is None:
-            logger.error("broken patch {!r}", patch_id)
-            raise InternalServerException
         name_patch = "".join(
             difflib.unified_diff([patch.original_name + "\n"], [patch.name + "\n"], "name", "name")
         )
