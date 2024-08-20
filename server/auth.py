@@ -16,8 +16,7 @@ from litestar.security.session_auth import SessionAuth, SessionAuthMiddleware
 from litestar.types import Empty
 
 from config import BGM_TV_APP_ID, BGM_TV_APP_SECRET, SERVER_BASE_URL
-from server.base import Request, http_client
-from server.model import User
+from server.base import Request, User, http_client
 
 
 CALLBACK_URL = f"{SERVER_BASE_URL}/oauth_callback"
