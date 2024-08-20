@@ -25,6 +25,7 @@ regex = "^2024.7.24"
 tqdm = "^4.62.3"
 tomli = "^2.0.0"
 uvicorn = { version = "^0.30.6", extras = ['standard'] }
+uuid6 = "^2024.7.10"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.1"

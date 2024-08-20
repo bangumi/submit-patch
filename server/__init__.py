@@ -1,13 +1,13 @@
 import difflib
 import mimetypes
 import os
-import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any, NamedTuple
 
 import asyncpg
 import litestar
+import uuid6
 from litestar import Response
 from litestar.config.csrf import CSRFConfig
 from litestar.contrib.jinja import JinjaTemplateEngine
@@ -103,8 +103,14 @@ def __index_row_sorter(r: asyncpg.Record) -> tuple[int, datetime]:
     return 0, r["updated_at"]
 
 
-@litestar.get("/patch/{patch_id:uuid}")
-async def get_patch(patch_id: uuid.UUID, request: Request) -> Template:
+@litestar.get("/patch/{patch_id:str}")
+async def get_patch(patch_id: str, request: Request) -> Template:
+    try:
+        uuid6.UUID(hex=patch_id)
+    except ValueError as e:
+        # not valid uuid string, just raise not-found
+        raise NotFoundException() from e
+
     p = await pg.fetchrow("""select * from patch where id = $1 and deleted_at is NULL""", patch_id)
     if not p:
         raise NotFoundException()

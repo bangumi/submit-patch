@@ -14,6 +14,7 @@ from litestar.exceptions import (
 )
 from litestar.params import Body
 from litestar.response import Redirect, Template
+from uuid6 import uuid7
 
 from config import TURNSTILE_SECRET_KEY, TURNSTILE_SITE_KEY, UTC
 from server.base import BadRequestException, Request, http_client, pg
@@ -119,10 +120,12 @@ async def suggest_api(
 
     pk = await pg.fetchval(
         """
-        insert into patch (subject_id, from_user_id, description, name, infobox, summary, nsfw,original_name,original_infobox,original_summary)
-        VALUES ($1, $2, $3, $4, $5, $6, $7,$8,$9,$10)
+        insert into patch (id, subject_id, from_user_id, description, name, infobox, summary, nsfw,
+                           original_name, original_infobox, original_summary)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         returning patch.id
     """,
+        uuid7(),
         subject_id,
         request.auth.user_id,
         data.desc,
