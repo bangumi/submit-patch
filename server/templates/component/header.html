@@ -1,4 +1,17 @@
-<div class="row">
-    <a href="/" class="link-underline link-underline-opacity-0"><h2>返回首页</h2></a>
-    <hr>
+<div class="row d-flex flex-row">
+    <div class="col">
+        <a href="/" class="link-underline link-underline-opacity-0"><h3>
+            返回首页</h3>
+        </a>
+    </div>
+
+    <div class="col">
+        {% if title is defined %}
+            <h3>{{ title }}</h3>
+        {% endif %}
+    </div>
+
+    <div class="col"></div>
 </div>
+
+<hr>

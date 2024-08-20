@@ -103,7 +103,13 @@ async def show_user_contrib(user_id: int, request: Request) -> Template:
         user_id,
     )
     return Template(
-        "list.html.jinja2", context={"rows": rows, "auth": request.auth, "user_id": user_id}
+        "list.html.jinja2",
+        context={
+            "rows": rows,
+            "auth": request.auth,
+            "user_id": user_id,
+            "title": f"{user_id} 的历史贡献",
+        },
     )
 
 
@@ -114,7 +120,13 @@ async def show_user_review(user_id: int, request: Request) -> Template:
         user_id,
     )
     return Template(
-        "list.html.jinja2", context={"rows": rows, "auth": request.auth, "user_id": user_id}
+        "list.html.jinja2",
+        context={
+            "rows": rows,
+            "auth": request.auth,
+            "user_id": user_id,
+            "title": f"{user_id} 的历史审核",
+        },
     )
 
 
