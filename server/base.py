@@ -1,4 +1,3 @@
-import logging
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -12,9 +11,6 @@ from loguru import logger
 from typing_extensions import Never
 
 from config import PG_DSN
-
-
-logging.basicConfig(level=logging.WARNING)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
