@@ -11,8 +11,8 @@
     {% if user_id is defined %}
         {% include 'component/header.html' %}
         <div class="row m-1">
-            <a href="https://bgm.tv/user/{{ user_id }}">
-                <h3>用户 {{ user_id }} 的个人主页</h3>
+            <a href="https://bgm.tv/user/{{ user_id }}" style="text-underline: none">
+                <h3>用户 {{ users.get(user_id).nickname }} 的个人主页</h3>
             </a>
         </div>
     {% else %}
@@ -89,11 +89,11 @@
                     </div>
 
                     <small>from:
-                        <span class="badge bg-light text-dark">{{ patch.from_user_id }}</span>
+                        <span class="badge bg-light text-dark">{{ users.get(patch.from_user_id).nickname | default(patch.from_user_id) }}</span>
                     </small>
                     {% if patch.state != 0 %}
                         <small>reviewed by:
-                            <span class="badge bg-light text-dark">{{ patch.wiki_user_id }}</span>
+                            <span class="badge bg-light text-dark">{{ users.get(patch.wiki_user_id).nickname | default(patch.wiki_user_id) }}</span>
                         </small>
                     {% endif %}
                 </a>

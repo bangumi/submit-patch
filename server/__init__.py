@@ -69,6 +69,19 @@ def static_file_handler(fp: str) -> Response[bytes]:
         raise NotFoundException()  # noqa: B904
 
 
+async def __fetch_users(rows: list[asyncpg.Record]) -> dict[int, asyncpg.Record]:
+    user_id = {x["from_user_id"] for x in rows} | {x["wiki_user_id"] for x in rows}
+    user_id.discard(None)
+    user_id.discard(0)
+
+    users = {
+        x["user_id"]: x
+        for x in await pg.fetch("select * from patch_users where user_id = any($1)", user_id)
+    }
+
+    return users
+
+
 @litestar.get("/")
 async def index(request: Request) -> Template:
     if not request.auth:
@@ -79,22 +92,21 @@ async def index(request: Request) -> Template:
             "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
             request.auth.user_id,
         )
-        return Template("list.html.jinja2", context={"rows": rows, "auth": request.auth})
+    else:
+        rows = await pg.fetch(
+            """
+            select * from patch where deleted_at is NULL and state = $1
+            union
+            (select * from patch  where deleted_at is NULL and state != $1 order by updated_at desc limit 10)
+            """,
+            PatchState.Pending,
+        )
 
-    rows = await pg.fetch(
-        """
-        select * from patch where deleted_at is NULL and state = $1
-        union
-        (select * from patch  where deleted_at is NULL and state != $1 order by updated_at desc limit 10)
-        """,
-        PatchState.Pending,
-    )
-
-    rows.sort(key=__index_row_sorter, reverse=True)
+        rows.sort(key=__index_row_sorter, reverse=True)
 
     return Template(
         "list.html.jinja2",
-        context={"rows": rows, "auth": request.auth},
+        context={"rows": rows, "auth": request.auth, "users": await __fetch_users(rows)},
     )
 
 
@@ -104,13 +116,17 @@ async def show_user_contrib(user_id: int, request: Request) -> Template:
         "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
         user_id,
     )
+
+    users = await __fetch_users(rows)
+
     return Template(
         "list.html.jinja2",
         context={
             "rows": rows,
+            "users": users,
             "auth": request.auth,
             "user_id": user_id,
-            "title": f"{user_id} 的历史贡献",
+            "title": f"{users[user_id]['nickname']} 的历史贡献",
         },
     )
 
@@ -121,13 +137,17 @@ async def show_user_review(user_id: int, request: Request) -> Template:
         "select * from patch where wiki_user_id = $1 and deleted_at is NULL order by created_at desc",
         user_id,
     )
+
+    users = await __fetch_users(rows)
+
     return Template(
         "list.html.jinja2",
         context={
             "rows": rows,
+            "users": users,
             "auth": request.auth,
             "user_id": user_id,
-            "title": f"{user_id} 的历史审核",
+            "title": f"{users[user_id]['nickname']} 的历史审核",
         },
     )
 
