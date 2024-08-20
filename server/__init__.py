@@ -97,9 +97,20 @@ async def index(request: Request) -> Template:
 
 
 @litestar.get("/contrib/{user_id:int}", guards=[require_user_login])
-async def show_user(user_id: int, request: Request) -> Template:
+async def show_user_contrib(user_id: int, request: Request) -> Template:
     rows = await pg.fetch(
         "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
+        user_id,
+    )
+    return Template(
+        "list.html.jinja2", context={"rows": rows, "auth": request.auth, "user_id": user_id}
+    )
+
+
+@litestar.get("/review/{user_id:int}", guards=[require_user_login])
+async def show_user_review(user_id: int, request: Request) -> Template:
+    rows = await pg.fetch(
+        "select * from patch where wiki_user_id = $1 and deleted_at is NULL order by created_at desc",
         user_id,
     )
     return Template(
@@ -198,7 +209,8 @@ def internal_error_handler(_: Request, exc: Exception) -> Response[Any]:
 app = litestar.Litestar(
     [
         index,
-        show_user,
+        show_user_review,
+        show_user_contrib,
         login,
         callback,
         suggest_ui,

@@ -110,7 +110,7 @@
         {% elif patch.state == 1 %}
             <hr>
             <div class="col">
-                <h2> 已被 <a href="https://bgm.tv/user/{{ patch.wiki_user_id }}"
+                <h2> 已被 <a href="/review/{{ patch.wiki_user_id }}"
                              target="_blank">{{ patch.wiki_user_id }}</a>
                     <span class="badge bg-success"> 接受 </span>
                 </h2>
@@ -118,7 +118,7 @@
         {% elif patch.state == 2 %}
             <hr>
             <div class="col">
-                <h3> 已被 <a href="https://bgm.tv/user/{{ patch.wiki_user_id }}"
+                <h3> 已被 <a href="/review/{{ patch.wiki_user_id }}"
                              target="_blank">{{ patch.wiki_user_id }}</a>
                     <span class="badge bg-danger"> 拒绝 </span>
                 </h3>
