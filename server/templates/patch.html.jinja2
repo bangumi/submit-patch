@@ -21,10 +21,18 @@
     <hr>
 
     <div class="row">
-        <a href="https://bgm.tv/subject/{{ patch.subject_id }}" target="_blank"
-           rel="noopener">
-            <h3>条目链接</h3>
-        </a>
+        <div class="col">
+            <a href="https://bgm.tv/subject/{{ patch.subject_id }}" target="_blank"
+               rel="noopener">
+                <h3>条目链接</h3>
+            </a>
+        </div>
+        <div class="col">
+            <a href="https://bgm.tv/user/{{ patch.from_user_id }}" target="_blank"
+               rel="noopener">
+                <h3>提交者: {{ patch.from_user_id }}</h3>
+            </a>
+        </div>
     </div>
 
 
@@ -76,7 +84,7 @@
                           enctype="application/x-www-form-urlencoded">
                         {{ csrf_input | safe }}
                         <input name="react" value="accept" hidden="hidden"/>
-                        <button type="submit" class="btn btn-success"> Accept </button>
+                        <button type="submit" class="btn btn-success">Accept</button>
                     </form>
                 </div>
 
@@ -85,7 +93,7 @@
                           enctype="application/x-www-form-urlencoded">
                         {{ csrf_input | safe }}
                         <input name="react" value="reject" hidden="hidden"/>
-                        <button type="submit" class="btn btn-danger"> Reject </button>
+                        <button type="submit" class="btn btn-danger">Reject</button>
                         <label>拒绝原因
                             <input type="text" name="reject_reason"/>
                         </label>
@@ -104,15 +112,18 @@
         {% elif patch.state == 1 %}
             <hr>
             <div class="col">
-                <h2> 已被 {{ patch.wiki_user_id }} <span
-                        class="badge bg-success"> 接受 </span></h2>
+                <h2> 已被 <a href="https://bgm.tv/user/{{ patch.wiki_user_id }}"
+                             target="_blank">{{ patch.wiki_user_id }}</a>
+                    <span class="badge bg-success"> 接受 </span>
+                </h2>
             </div>
         {% elif patch.state == 2 %}
             <hr>
             <div class="col">
-
-                <h3> 已被 {{ patch.wiki_user_id }} <span
-                        class="badge bg-danger"> 拒绝 </span></h3>
+                <h3> 已被 <a href="https://bgm.tv/user/{{ patch.wiki_user_id }}"
+                             target="_blank">{{ patch.wiki_user_id }}</a>
+                    <span class="badge bg-danger"> 拒绝 </span>
+                </h3>
 
                 {% if patch.reject_reason %}
                     <h4>原因：{{ patch.reject_reason }}</h4>
