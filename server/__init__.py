@@ -77,7 +77,7 @@ async def index(request: Request) -> Template:
             "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
             request.auth.user_id,
         )
-        return Template("index.html.jinja2", context={"rows": rows, "auth": request.auth})
+        return Template("list.html.jinja2", context={"rows": rows, "auth": request.auth})
 
     rows = await pg.fetch(
         """
@@ -91,7 +91,7 @@ async def index(request: Request) -> Template:
     rows.sort(key=__index_row_sorter, reverse=True)
 
     return Template(
-        "index.html.jinja2",
+        "list.html.jinja2",
         context={"rows": rows, "auth": request.auth},
     )
 
@@ -102,7 +102,9 @@ async def show_user(user_id: int, request: Request) -> Template:
         "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
         user_id,
     )
-    return Template("index.html.jinja2", context={"rows": rows, "auth": request.auth})
+    return Template(
+        "list.html.jinja2", context={"rows": rows, "auth": request.auth, "user_id": user_id}
+    )
 
 
 def __index_row_sorter(r: asyncpg.Record) -> tuple[int, datetime]:

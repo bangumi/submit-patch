@@ -8,10 +8,16 @@
             text-overflow: ellipsis;
         }
     </style>
-    {% if not auth.allow_edit %}
+    {% if user_id is defined %}
         <div class="row m-1">
-            <a href="/suggest">添加Patch</a>
+            <a href="https://bgm.tv/user/{{ user_id }}"> <h2>用户 {{ user_id }} 的个人主页</h2> </a>
         </div>
+    {% else %}
+        {% if not auth.allow_edit %}
+            <div class="row m-1">
+                <a href="/suggest">添加Patch</a>
+            </div>
+        {% endif %}
     {% endif %}
 
     <div class="row mt-4">
