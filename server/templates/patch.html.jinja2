@@ -26,13 +26,14 @@
             </a>
         </div>
         <div class="col">
-            <a href="/contrib/{{ patch.from_user_id }}" target="_blank"
-               rel="noopener">
-                <h3>提交者: {{ patch.from_user_id }}</h3>
+            <h3>
+                提交者: <a href="/contrib/{{ patch.from_user_id }}" target="_blank"
+                           rel="noopener">
+                {{ submitter.nickname }}
             </a>
+            </h3>
         </div>
     </div>
-
 
     <div class="row">
         <h3>修改原因</h3>
@@ -111,7 +112,7 @@
             <hr>
             <div class="col">
                 <h2> 已被 <a href="/review/{{ patch.wiki_user_id }}"
-                             target="_blank">{{ patch.wiki_user_id }}</a>
+                             target="_blank">{{ reviewer.nickname }}</a>
                     <span class="badge bg-success"> 接受 </span>
                 </h2>
             </div>
@@ -119,7 +120,7 @@
             <hr>
             <div class="col">
                 <h3> 已被 <a href="/review/{{ patch.wiki_user_id }}"
-                             target="_blank">{{ patch.wiki_user_id }}</a>
+                             target="_blank">{{ reviewer.nickname }}</a>
                     <span class="badge bg-danger"> 拒绝 </span>
                 </h3>
 
@@ -133,7 +134,6 @@
                 <h2> 已过期 </h2>
             </div>
         {% endif %}
-
     </div>
 
     {% if name_patch %}

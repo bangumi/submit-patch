@@ -147,7 +147,9 @@ async def get_patch(patch_id: str, request: Request) -> Template:
         # not valid uuid string, just raise not-found
         raise NotFoundException() from e
 
-    p = await pg.fetchrow("""select * from patch where id = $1 and deleted_at is NULL""", patch_id)
+    p = await pg.fetchrow(
+        """select * from patch where id = $1 and deleted_at is NULL limit 1""", patch_id
+    )
     if not p:
         raise NotFoundException()
 
@@ -187,6 +189,14 @@ async def get_patch(patch_id: str, request: Request) -> Template:
             )
         )
 
+    reviewer = None
+    if patch.state != PatchState.Pending:
+        reviewer = await pg.fetchrow(
+            "select * from patch_users where user_id=$1", patch.wiki_user_id
+        )
+
+    submitter = await pg.fetchrow("select * from patch_users where user_id=$1", patch.from_user_id)
+
     return Template(
         "patch.html.jinja2",
         context={
@@ -195,6 +205,8 @@ async def get_patch(patch_id: str, request: Request) -> Template:
             "name_patch": name_patch,
             "infobox_patch": infobox_patch,
             "summary_patch": summary_patch,
+            "reviewer": reviewer,
+            "submitter": submitter,
         },
     )
 
