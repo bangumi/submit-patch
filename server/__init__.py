@@ -1,4 +1,6 @@
+import asyncio
 import difflib
+import html
 import mimetypes
 import os
 from datetime import datetime
@@ -33,7 +35,7 @@ from config import (
 )
 from server import tmpl
 from server.auth import callback, login, require_user_login, session_auth_config
-from server.base import Request, pg, pg_pool_startup
+from server.base import Request, http_client, pg, pg_pool_startup
 from server.contrib import delete_patch, suggest_api, suggest_ui
 from server.model import Patch, PatchState
 from server.review import review_patch
@@ -218,6 +220,41 @@ def internal_error_handler(_: Request, exc: Exception) -> Response[Any]:
     )
 
 
+async def startup_fetch_missing_users(*args: Any, **kwargs: Any) -> None:
+    logger.info("fetch missing users")
+    results = await pg.fetch("select from_user_id, wiki_user_id from patch")
+    s = set()
+    for u1, u2 in results:
+        s.add(u1)
+        s.add(u2)
+
+    s.discard(0)
+
+    user_fetched = [
+        x[0] for x in await pg.fetch("select user_id from patch_users where user_id = any($1)", s)
+    ]
+
+    async def background() -> None:
+        for user in s:
+            if user in user_fetched:
+                continue
+            r = await http_client.get(f"https://api.bgm.tv/user/{user}")
+            data = r.json()
+            await pg.execute(
+                """
+                insert into patch_users (user_id, username, nickname) VALUES ($1, $2, $3)
+                on conflict (user_id) do update set
+                    username = excluded.username,
+                    nickname = excluded.nickname
+            """,
+                data["id"],
+                data["username"],
+                html.unescape(data["nickname"]),
+            )
+
+    asyncio.create_task(background())  # noqa: RUF006
+
+
 app = litestar.Litestar(
     [
         index,
@@ -236,7 +273,7 @@ app = litestar.Litestar(
         engine=JinjaTemplateEngine.from_environment(tmpl.engine),
     ),
     stores={"sessions": RedisStore(Redis.from_url(REDIS_DSN), handle_client_shutdown=False)},
-    on_startup=[pg_pool_startup],
+    on_startup=[pg_pool_startup, startup_fetch_missing_users],
     csrf_config=CSRFConfig(secret=CSRF_SECRET_TOKEN, cookie_name="s-csrf-token"),
     before_request=before_req,
     middleware=[session_auth_config.middleware],
