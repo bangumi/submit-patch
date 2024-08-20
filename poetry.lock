@@ -1514,6 +1514,17 @@ files = [
 ]
 
 [[package]]
+name = "types-pyyaml"
+version = "6.0.12.20240808"
+description = "Typing stubs for PyYAML"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-PyYAML-6.0.12.20240808.tar.gz", hash = "sha256:b8f76ddbd7f65440a8bda5526a9607e4c7a322dc2f8e1a8c405644f9a6f4b9af"},
+    {file = "types_PyYAML-6.0.12.20240808-py3-none-any.whl", hash = "sha256:deda34c5c655265fc517b546c902aa6eed2ef8d3e921e4765fe606fe2afe8d35"},
+]
+
+[[package]]
 name = "types-redis"
 version = "4.6.0.20240806"
 description = "Typing stubs for redis"
@@ -1870,4 +1881,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "d978403daf7a9fdf25ced76f3b10fe5cbcd5f73e11251bdea6285860e0c36c8e"
+content-hash = "c7bacd79b0fa66e8c8b3b03479403119ef5067ac29b95c2fa7058a0ecacc48a1"

@@ -139,6 +139,11 @@ async def callback(code: str, request: Request) -> Redirect:
     return Redirect(back_to)
 
 
+def require_user_login(connection: ASGIConnection[Any, Any, Any, Any], _: Any) -> None:
+    if not connection.auth:
+        raise NotAuthorizedException
+
+
 def require_user_editor(connection: ASGIConnection[Any, Any, Any, Any], _: Any) -> None:
     if not connection.auth:
         raise NotAuthorizedException

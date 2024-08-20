@@ -32,7 +32,7 @@ from config import (
     UTC,
 )
 from server import tmpl
-from server.auth import callback, login, session_auth_config
+from server.auth import callback, login, require_user_login, session_auth_config
 from server.base import Request, pg, pg_pool_startup
 from server.contrib import delete_patch, suggest_api, suggest_ui
 from server.model import Patch, PatchState
@@ -94,6 +94,15 @@ async def index(request: Request) -> Template:
         "index.html.jinja2",
         context={"rows": rows, "auth": request.auth},
     )
+
+
+@litestar.get("/user/{user_id:int}", guards=[require_user_login])
+async def show_user(user_id: int, request: Request) -> Template:
+    rows = await pg.fetch(
+        "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
+        user_id,
+    )
+    return Template("index.html.jinja2", context={"rows": rows, "auth": request.auth})
 
 
 def __index_row_sorter(r: asyncpg.Record) -> tuple[int, datetime]:
@@ -187,6 +196,7 @@ def internal_error_handler(_: Request, exc: Exception) -> Response[Any]:
 app = litestar.Litestar(
     [
         index,
+        show_user,
         login,
         callback,
         suggest_ui,
