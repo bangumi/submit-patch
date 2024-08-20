@@ -1,3 +1,4 @@
+import typing
 from collections.abc import Callable
 from datetime import datetime, timedelta
 from typing import Any
@@ -16,12 +17,24 @@ engine = jinja2.Environment(
     auto_reload=DEV,
 )
 
+P = typing.ParamSpec("P")
+T = typing.TypeVar("T")
 
-def add_filter(s: str | Callable):
-    def real_wrapper(name: str, fn: Callable):
+
+@typing.overload
+def add_filter(s: str) -> Callable[[Callable[P, T]], Callable[P, T]]: ...
+
+
+@typing.overload
+def add_filter(s: Callable[P, T]) -> Callable[P, T]: ...
+
+
+def add_filter(s: str | Callable[P, T]) -> Any:
+    def real_wrapper(name: str, fn: Callable[P, T]) -> Callable[P, T]:
         if name in engine.filters:
             raise ValueError(f"filter '{name}' already exists")
         engine.filters[name] = fn
+        return fn
 
     if isinstance(s, str):
         return lambda fn: real_wrapper(s, fn)
@@ -73,7 +86,7 @@ def format_duration(seconds: timedelta) -> str:
 
 
 @add_filter
-def subject_type_readable(s: int):
+def subject_type_readable(s: int) -> str:
     match s:
         case 1:
             return "书籍"
