@@ -41,5 +41,7 @@ alter table patch
 alter table patch
     ALTER column original_name set default '';
 
+update patch set original_name = '' where original_name is NULL;
+
 alter table patch
     ALTER column original_name set not null;

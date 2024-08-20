@@ -23,7 +23,11 @@
                 >
                     <div class="d-flex w-100 justify-content-between">
                         <div>
-                            {% if patch.state == 1 %}
+                            {% if patch.state == 0 %}
+                                <h5 class="mb-1">
+                                    <span class="badge bg-primary">待审核</span>
+                                </h5>
+                            {% elif patch.state == 1 %}
                                 <!-- accept -->
                                 <h5 class="mb-1">
                                     <span class="badge bg-success">Accept</span>
@@ -38,18 +42,6 @@
                                     <span class="badge bg-secondary">Outdated</span>
                                 </h5>
                             {% endif %}
-                            <p class="oneline-hide-overflow m-0 p-0">
-                                修改原因：{{ patch.description }}
-                            </p>
-                            <p class="oneline-hide-overflow m-0 p-0">
-                                {% if patch.subject_type %}
-                                    分类：
-                                    {{ patch.subject_type | subject_type_readable }}
-                                {% endif %}
-                                {% if patch.original_name %}
-                                    条目名: {{ patch.original_name }}
-                                {% endif %}
-                            </p>
                         </div>
 
                         {% if patch.state %}
@@ -65,6 +57,21 @@
                         {% endif %}
                     </div>
 
+
+                    <div>
+                        <p class="oneline-hide-overflow m-0 p-0">
+                            修改原因：{{ patch.description }}
+                        </p>
+                        <p class="oneline-hide-overflow m-0 p-0">
+                            {% if patch.subject_type %}
+                                分类：
+                                {{ patch.subject_type | subject_type_readable }}
+                            {% endif %}
+                            {% if patch.original_name %}
+                                条目名: {{ patch.original_name }}
+                            {% endif %}
+                        </p>
+                    </div>
 
                     <small>subject:
                         <span class="badge bg-light text-dark"> {{ patch.subject_id }}</span>
