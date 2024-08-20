@@ -93,7 +93,7 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
         f"https://next.bgm.tv/p1/wiki/subjects/{patch.subject_id}",
         headers={"Authorization": f"Bearer {auth.access_token}"},
         json={
-            "commitMessage": f"patch from {patch.from_user_id}: {patch.description}",
+            "commitMessage": f"{patch.description} [patch https://patch.bgm38.com/patch/{patch.id}]",
             "expectedRevision": __strip_none(
                 {
                     "infobox": patch.original_infobox,
