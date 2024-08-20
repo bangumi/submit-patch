@@ -89,26 +89,30 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
     if not auth.is_access_token_fresh():
         return Redirect("/login")
 
+    subject = __strip_none(
+        {
+            "infobox": patch.infobox,
+            "name": patch.name,
+            "summary": patch.summary,
+            "nsfw": patch.nsfw,
+        }
+    )
+
     res = await http_client.patch(
         f"https://next.bgm.tv/p1/wiki/subjects/{patch.subject_id}",
         headers={"Authorization": f"Bearer {auth.access_token}"},
         json={
             "commitMessage": f"{patch.description} [patch https://patch.bgm38.com/patch/{patch.id}]",
-            "expectedRevision": __strip_none(
-                {
+            "expectedRevision": {
+                key: value
+                for key, value in {
                     "infobox": patch.original_infobox,
                     "name": patch.original_name,
                     "summary": patch.original_summary,
-                }
-            ),
-            "subject": __strip_none(
-                {
-                    "infobox": patch.infobox,
-                    "name": patch.name,
-                    "summary": patch.summary,
-                    "nsfw": patch.nsfw,
-                }
-            ),
+                }.items()
+                if key in subject
+            },
+            "subject": subject,
         },
     )
     if res.status_code >= 300:
