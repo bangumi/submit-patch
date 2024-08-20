@@ -4,7 +4,6 @@ from datetime import timezone
 from pathlib import Path
 
 import tomli
-from dotenv import load_dotenv
 
 
 DEV = sys.platform == "win32"
@@ -13,7 +12,6 @@ UTC = timezone.utc
 
 PROJECT_PATH = Path(__file__, "..").resolve()
 
-load_dotenv(PROJECT_PATH.joinpath(".env"))
 
 SECRET_TOKEN = bytes.fromhex(os.environ["SECRET_TOKEN"])
 CSRF_SECRET_TOKEN = os.environ["CSRF_SECRET_TOKEN"]

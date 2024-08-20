@@ -13,7 +13,7 @@ tasks:
     generates:
       - a-path-wont-exists
     cmds:
-      - uvicorn server:app
+      - uvicorn server:app --env-file .env
 
   lock:no-cache:
     cmds:

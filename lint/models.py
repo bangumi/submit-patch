@@ -1,7 +1,6 @@
 import difflib
 import enum
-
-import pydantic
+from dataclasses import dataclass
 
 from lint.wiki import Wiki
 
@@ -36,7 +35,8 @@ class Patch:
         return f"<Patch {self.category} {self.message}>"
 
 
-class SubjectWiki(pydantic.BaseModel):
+@dataclass(frozen=True, slots=True, kw_only=True)
+class SubjectWiki:
     id: int
     original: str
     type: SubjectType

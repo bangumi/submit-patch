@@ -3,7 +3,6 @@ from typing import Any
 from urllib.parse import urlencode
 
 import litestar
-import orjson
 from litestar.connection import ASGIConnection
 from litestar.exceptions import InternalServerException, NotAuthorizedException
 from litestar.middleware import AuthenticationResult
@@ -54,7 +53,7 @@ async def refresh(refresh_token: str) -> dict[str, Any]:
     )
     if res.status_code >= 300:
         raise InternalServerException("api request error")
-    return orjson.loads(res.content)
+    return res.json()
 
 
 class MyAuthenticationMiddleware(SessionAuthMiddleware):
