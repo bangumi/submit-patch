@@ -16,9 +16,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="row"><a href="/"><h2>返回首页</h2></a></div>
-
-    <hr>
+    {% include 'component/header.html' %}
 
     <div class="row">
         <div class="col">
@@ -28,7 +26,7 @@
             </a>
         </div>
         <div class="col">
-            <a href="/user/{{ patch.from_user_id }}" target="_blank"
+            <a href="/contrib/{{ patch.from_user_id }}" target="_blank"
                rel="noopener">
                 <h3>提交者: {{ patch.from_user_id }}</h3>
             </a>

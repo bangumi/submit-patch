@@ -1,7 +1,8 @@
 {% extends "layout/base.html.jinja2" %}
 
 {% block content %}
-    {{ error }}
-    <hr>
-    <a href="/">返回首页</a>
+    {% include 'component/header.html' %}
+    <div class="row">
+        {{ error }}
+    </div>
 {% endblock %}

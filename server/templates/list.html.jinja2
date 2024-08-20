@@ -9,13 +9,16 @@
         }
     </style>
     {% if user_id is defined %}
+        {% include 'component/header.html' %}
         <div class="row m-1">
-            <a href="https://bgm.tv/user/{{ user_id }}"> <h2>用户 {{ user_id }} 的个人主页</h2> </a>
+            <a href="https://bgm.tv/user/{{ user_id }}">
+                <h3>用户 {{ user_id }} 的个人主页</h3>
+            </a>
         </div>
     {% else %}
         {% if not auth.allow_edit %}
-            <div class="row m-1">
-                <a href="/suggest">添加Patch</a>
+            <div class="row m-0">
+                <a href="/suggest"><h3>添加Patch</h3></a>
             </div>
         {% endif %}
     {% endif %}

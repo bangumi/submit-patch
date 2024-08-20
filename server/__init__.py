@@ -96,7 +96,7 @@ async def index(request: Request) -> Template:
     )
 
 
-@litestar.get("/user/{user_id:int}", guards=[require_user_login])
+@litestar.get("/contrib/{user_id:int}", guards=[require_user_login])
 async def show_user(user_id: int, request: Request) -> Template:
     rows = await pg.fetch(
         "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
