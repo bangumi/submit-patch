@@ -80,10 +80,13 @@
                         <p class="oneline-hide-overflow m-0 p-0">
                             {% if patch.subject_type %}
                                 分类：
-                                {{ patch.subject_type | subject_type_readable }}
+                                <span class="badge bg-light text-dark">
+                                  {{ patch.subject_type | subject_type_readable }}
+                              </span>
                             {% endif %}
                             {% if patch.original_name %}
-                                条目名: {{ patch.original_name }}
+                                条目名:
+                                <span class="badge bg-light text-dark">{{ patch.original_name }}</span>
                             {% endif %}
                         </p>
                     </div>
