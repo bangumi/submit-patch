@@ -3,8 +3,6 @@ import sys
 from datetime import timezone
 from pathlib import Path
 
-import tomli
-
 
 DEV = sys.platform == "win32"
 
@@ -23,10 +21,6 @@ BGM_TV_APP_SECRET = os.environ["BGM_TV_APP_SECRET"]
 
 PG_DSN = os.environ["PG_DSN"]
 REDIS_DSN = os.environ["REDIS_DSN"]
-
-__py_project = tomli.loads(PROJECT_PATH.joinpath("pyproject.toml").read_text(encoding="utf-8"))
-
-VERSION = "v" + __py_project["tool"]["poetry"]["version"]
 
 TURNSTILE_SITE_KEY = os.environ["TURNSTILE_SITE_KEY"]
 TURNSTILE_SECRET_KEY = os.environ["TURNSTILE_SECRET_KEY"]

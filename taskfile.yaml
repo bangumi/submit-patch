@@ -10,10 +10,12 @@ tasks:
     sources:
       - .env
       - '**/*.py'
+      - exclude: .venv/**/*
+      - '**/*.yaml'
     generates:
       - a-path-wont-exists
     cmds:
-      - uvicorn server:app --env-file .env
+      - uvicorn server:app --env-file .env --no-access-log
 
   run:
     dotenv: [.env]
