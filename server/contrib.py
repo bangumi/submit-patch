@@ -116,14 +116,16 @@ async def suggest_api(
     if (name is None) and (summary is None) and (infobox is None) and (nsfw is None):
         raise HTTPException("no changes found", status_code=400)
 
-    pk = await pg.fetchval(
+    pk = uuid7()
+
+    await pg.execute(
         """
         insert into patch (id, subject_id, from_user_id, description, name, infobox, summary, nsfw,
                            original_name, original_infobox, original_summary, subject_type)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         returning patch.id
     """,
-        uuid7(),
+        pk,
         subject_id,
         request.auth.user_id,
         data.desc,
