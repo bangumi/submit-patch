@@ -3,6 +3,7 @@ import gzip
 import io
 import json
 import shutil
+from collections.abc import Callable
 from pathlib import Path
 from tarfile import TarFile
 
@@ -16,7 +17,11 @@ static_path = project_root.joinpath("server/static")
 client = httpx.Client(proxies="http://192.168.1.3:7890")
 
 
-def download_npm_package(name: str, path_filter: tuple[str, ...], version_filter=None):
+def download_npm_package(
+    name: str,
+    path_filter: tuple[str, ...],
+    version_filter: Callable[[str], bool] | None = None,
+) -> None:
     target = static_path.joinpath(name)
     package_json = target.joinpath("package.json")
 
@@ -57,10 +62,13 @@ def download_npm_package(name: str, path_filter: tuple[str, ...], version_filter
                 continue
             target_file = target.joinpath(latest_version, fn)
             target_file.parent.mkdir(parents=True, exist_ok=True)
-            target_file.write_bytes(tar.extractfile(file).read())
+            f = tar.extractfile(file)
+            if not f:
+                raise Exception(f"extractfile return unexpected none for file {file}")
+            target_file.write_bytes(f.read())
 
 
-def build_version_filter(major: int, stable=True):
+def build_version_filter(major: int, stable: bool = True) -> Callable[[str], bool]:
     def f(s: str) -> bool:
         v = semver.VersionInfo.parse(s)
         if v.prerelease:
