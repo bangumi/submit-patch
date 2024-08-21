@@ -1,4 +1,3 @@
-import asyncio
 import difflib
 import html
 import mimetypes
@@ -277,25 +276,24 @@ async def startup_fetch_missing_users(*args: Any, **kwargs: Any) -> None:
         x[0] for x in await pg.fetch("select user_id from patch_users where user_id = any($1)", s)
     ]
 
-    async def background() -> None:
-        for user in s:
-            if user in user_fetched:
-                continue
-            r = await http_client.get(f"https://api.bgm.tv/user/{user}")
-            data = r.json()
-            await pg.execute(
-                """
-                insert into patch_users (user_id, username, nickname) VALUES ($1, $2, $3)
-                on conflict (user_id) do update set
-                    username = excluded.username,
-                    nickname = excluded.nickname
-            """,
-                data["id"],
-                data["username"],
-                html.unescape(data["nickname"]),
-            )
+    s = {x for x in s if x not in user_fetched}
+    if not s:
+        return
 
-    asyncio.create_task(background())  # noqa: RUF006
+    for user in s:
+        r = await http_client.get(f"https://api.bgm.tv/user/{user}")
+        data = r.json()
+        await pg.execute(
+            """
+            insert into patch_users (user_id, username, nickname) VALUES ($1, $2, $3)
+            on conflict (user_id) do update set
+                username = excluded.username,
+                nickname = excluded.nickname
+        """,
+            data["id"],
+            data["username"],
+            html.unescape(data["nickname"]),
+        )
 
 
 app = litestar.Litestar(
