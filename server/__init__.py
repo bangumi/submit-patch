@@ -72,7 +72,7 @@ if not DEV:
 
 else:
 
-    @litestar.get("/static/{fp:path}")
+    @litestar.get("/static/{fp:path}", sync_to_thread=True)
     def static_file_handler(fp: str) -> Response[bytes]:
         print(fp)
 
