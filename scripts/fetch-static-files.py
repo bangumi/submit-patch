@@ -68,7 +68,7 @@ def download_npm_package(
             target_file.write_bytes(f.read())
 
 
-def build_version_filter(major: int, stable: bool = True) -> Callable[[str], bool]:
+def build_version_filter(major: int) -> Callable[[str], bool]:
     def f(s: str) -> bool:
         v = semver.VersionInfo.parse(s)
         if v.prerelease:
