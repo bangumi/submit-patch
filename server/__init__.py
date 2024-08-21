@@ -215,8 +215,8 @@ async def get_patch(patch_id: str, request: Request) -> Template:
             raise InternalServerException
         summary_patch = "".join(
             difflib.unified_diff(
-                patch.original_summary.splitlines(True),
-                patch.summary.splitlines(True),
+                (patch.original_summary + "\n").splitlines(True),
+                (patch.summary + "\n").splitlines(True),
                 "summary",
                 "summary",
             )
