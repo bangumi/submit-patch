@@ -74,8 +74,6 @@ else:
 
     @litestar.get("/static/{fp:path}", sync_to_thread=True)
     def static_file_handler(fp: str) -> Response[bytes]:
-        print(fp)
-
         # fp is '/...', so we need to remove prefix make it relative
         return Response(
             static_path.joinpath(fp[1:]).read_bytes(), media_type=mimetypes.guess_type(fp)[0]
