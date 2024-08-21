@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Annotated, Any
 
 import litestar
+import pydash
 from asyncpg import Record
 from asyncpg.pool import PoolConnectionProxy
 from litestar import Response
@@ -103,15 +104,14 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
         headers={"Authorization": f"Bearer {auth.access_token}"},
         json={
             "commitMessage": f"{patch.description} [patch https://patch.bgm38.com/patch/{patch.id}]",
-            "expectedRevision": {
-                key: value
-                for key, value in {
+            "expectedRevision": pydash.pick(
+                {
                     "infobox": patch.original_infobox,
                     "name": patch.original_name,
                     "summary": patch.original_summary,
-                }.items()
-                if key in subject
-            },
+                },
+                subject.keys(),
+            ),
             "subject": subject,
         },
     )

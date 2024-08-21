@@ -47,26 +47,39 @@ class File(NamedTuple):
 
 
 static_path = PROJECT_PATH.joinpath("server/static/")
-static_files: dict[str, File] = {}
+if not DEV:
+    static_files: dict[str, File] = {}
 
-for top, _, files in os.walk(static_path):
-    for file in files:
-        file_path = Path(top, file)
-        rel_path = file_path.relative_to(static_path).as_posix()
-        static_files["/" + rel_path] = File(
-            content=file_path.read_bytes(), content_type=mimetypes.guess_type(file)[0]
-        )
+    for top, _, files in os.walk(static_path):
+        for file in files:
+            file_path = Path(top, file)
+            rel_path = file_path.relative_to(static_path).as_posix()
+            static_files["/" + rel_path] = File(
+                content=file_path.read_bytes(), content_type=mimetypes.guess_type(file)[0]
+            )
 
+    @litestar.get("/static/{fp:path}", sync_to_thread=False)
+    def static_file_handler(fp: str) -> Response[bytes]:
+        try:
+            f = static_files[fp]
+            return Response(
+                content=f.content,
+                media_type=f.content_type,
+                headers={"cache-control": "max-age=1200"},
+            )
+        except KeyError:
+            raise NotFoundException()  # noqa: B904
 
-@litestar.get("/static/{fp:path}", sync_to_thread=False)
-def static_file_handler(fp: str) -> Response[bytes]:
-    try:
-        f = static_files[fp]
+else:
+
+    @litestar.get("/static/{fp:path}")
+    def static_file_handler(fp: str) -> Response[bytes]:
+        print(fp)
+
+        # fp is '/...', so we need to remove prefix make it relative
         return Response(
-            content=f.content, media_type=f.content_type, headers={"cache-control": "max-age=1200"}
+            static_path.joinpath(fp[1:]).read_bytes(), media_type=mimetypes.guess_type(fp)[0]
         )
-    except KeyError:
-        raise NotFoundException()  # noqa: B904
 
 
 async def __fetch_users(rows: list[asyncpg.Record]) -> dict[int, asyncpg.Record]:
