@@ -110,7 +110,7 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
                     "name": patch.original_name,
                     "summary": patch.original_summary,
                 },
-                subject.keys(),
+                [subject.keys()],
             ),
             "subject": subject,
         },
