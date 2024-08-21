@@ -65,11 +65,13 @@
                         {% else %}
                             {% if patch.state %}
                                 <small style="text-wrap: nowrap;"
+                                       class="font-monospace"
                                        title="{{ patch.updated_at }}">
                                     reviewed at {{ patch.updated_at | rel_time }}
                                 </small>
                             {% else %}
                                 <small style="text-wrap: nowrap;"
+                                       class="font-monospace"
                                        title="{{ patch.created_at }}">
                                     created at {{ patch.created_at | rel_time }}
                                 </small>

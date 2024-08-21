@@ -56,7 +56,7 @@ def rel_time(ctx: Context, value: datetime) -> str:
     return format_duration(req.state["now"] - value)
 
 
-_Duration_Unit = [
+__duration_Unit = [
     (60, "s"),
     (60, "m"),
     (24, "h"),
@@ -73,14 +73,17 @@ def format_duration(seconds: timedelta) -> str:
     if dd <= 60:
         return "just now"
 
-    for unit, unit_s in _Duration_Unit:
+    if dd >= 3600:
+        dd = dd - dd % 60
+
+    for unit, unit_s in __duration_Unit:
         dd, mod = divmod(dd, unit)
         if mod:
             s = f"{mod:.0f}{unit_s}" + s
         if dd == 0:
             break
     else:
-        s = f"{int(dd)}{_Duration_Unit[-1][1]}" + s
+        s = f"{int(dd)}{__duration_Unit[-1][1]}" + s
 
     return s
 
