@@ -62,7 +62,6 @@ class MyAuthenticationMiddleware(SessionAuthMiddleware):
     ) -> AuthenticationResult:
         if not connection.session or connection.scope["session"] is Empty:
             # the assignment of 'Empty' forces the session middleware to clear session data.
-            connection.scope["session"] = Empty
             return AuthenticationResult(user=None, auth=None)
 
         user = await retrieve_user_from_session(connection.session, connection)
@@ -131,11 +130,7 @@ async def callback(code: str, request: Request) -> Redirect:
         user["nickname"],
     )
 
-    # litestar type this as dict[str, Any], but it maybe Empty
-    if isinstance(request.session, dict):
-        back_to = request.session.get("backTo", "/")
-    else:
-        back_to = "/"
+    back_to = request.session.get("backTo", "/")
 
     request.set_session(
         {
