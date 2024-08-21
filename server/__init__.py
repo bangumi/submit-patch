@@ -202,6 +202,7 @@ async def get_patch(patch_id: str, request: Request) -> Template:
                 patch.infobox.splitlines(True),
                 "infobox",
                 "infobox",
+                n=5,
             )
         )
 
