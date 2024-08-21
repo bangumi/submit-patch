@@ -1,3 +1,4 @@
+import html
 import time
 from typing import Any
 from urllib.parse import urlencode
@@ -127,7 +128,7 @@ async def callback(code: str, request: Request) -> Redirect:
     """,
         user_id,
         user["username"],
-        user["nickname"],
+        html.unescape(user["nickname"]),
     )
 
     back_to = request.session.get("backTo", "/")
