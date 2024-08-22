@@ -16,7 +16,7 @@ from litestar.response import Redirect, Template
 from uuid6 import uuid7
 
 from config import TURNSTILE_SECRET_KEY, TURNSTILE_SITE_KEY, UTC
-from server.auth import require_user_editor, require_user_login
+from server.auth import require_user_login
 from server.base import AuthorizedRequest, BadRequestException, Request, http_client, pg
 from server.model import Patch, Wiki
 from server.router import Router
@@ -58,7 +58,7 @@ class CreateSuggestion:
 
 
 @router
-@litestar.post("/suggest", guards=[require_user_editor])
+@litestar.post("/suggest", guards=[require_user_login])
 async def suggest_api(
     subject_id: int,
     data: Annotated[CreateSuggestion, Body(media_type=RequestEncodingType.URL_ENCODED)],
@@ -160,7 +160,7 @@ async def delete_patch(patch_id: str, request: AuthorizedRequest) -> Redirect:
                 raise NotAuthorizedException
 
             await conn.execute(
-                "update patch set deleted_at = $1 where id = $2 ",
+                "update patch set deleted_at = $1 where id = $2",
                 datetime.now(tz=UTC),
                 patch_id,
             )
