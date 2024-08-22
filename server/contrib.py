@@ -124,7 +124,6 @@ async def suggest_api(
         insert into patch (id, subject_id, from_user_id, description, name, infobox, summary, nsfw,
                            original_name, original_infobox, original_summary, subject_type)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-        returning patch.id
     """,
         pk,
         subject_id,
