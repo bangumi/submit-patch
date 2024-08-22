@@ -1,10 +1,11 @@
 from collections.abc import Iterator
 
+import litestar
 from litestar.types import AnyCallable
 from typing_extensions import TypeVar
 
 
-T = TypeVar("T", bound=AnyCallable)
+T = TypeVar("T", bound=AnyCallable | litestar.Router)
 
 
 class Router:

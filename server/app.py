@@ -16,6 +16,7 @@ from litestar.exceptions import (
     NotFoundException,
 )
 from litestar.response import Template
+from litestar.static_files import create_static_files_router
 from litestar.status_codes import HTTP_500_INTERNAL_SERVER_ERROR
 from litestar.stores.redis import RedisStore
 from litestar.template import TemplateConfig
@@ -71,13 +72,14 @@ if not DEV:
 
 else:
 
-    @router
-    @litestar.get("/static/{fp:path}", sync_to_thread=True)
-    def static_file_handler(fp: str) -> Response[bytes]:
-        # fp is '/...', so we need to remove prefix make it relative
-        return Response(
-            static_path.joinpath(fp[1:]).read_bytes(), media_type=mimetypes.guess_type(fp)[0]
+    router(
+        create_static_files_router(
+            path="/static/",
+            directories=[static_path],
+            send_as_attachment=False,
+            html_mode=False,
         )
+    )
 
 
 async def __fetch_users(rows: list[asyncpg.Record]) -> dict[int, asyncpg.Record]:
