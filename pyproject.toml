@@ -108,3 +108,5 @@ strict = true
 warn_no_return = false
 check_untyped_defs = true
 warn_return_any = false
+mypy_path = 'MYPY_CONFIG_FILE_DIR/'
+explicit_package_bases = true
