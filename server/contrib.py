@@ -9,7 +9,6 @@ from litestar.exceptions import (
     HTTPException,
     NotAuthorizedException,
     NotFoundException,
-    PermissionDeniedException,
     ValidationException,
 )
 from litestar.params import Body
@@ -17,7 +16,8 @@ from litestar.response import Redirect, Template
 from uuid6 import uuid7
 
 from config import TURNSTILE_SECRET_KEY, TURNSTILE_SITE_KEY, UTC
-from server.base import BadRequestException, Request, http_client, pg
+from server.auth import require_user_editor, require_user_login
+from server.base import AuthorizedRequest, BadRequestException, Request, http_client, pg
 from server.model import Patch, Wiki
 from server.router import Router
 
@@ -58,17 +58,12 @@ class CreateSuggestion:
 
 
 @router
-@litestar.post("/suggest")
+@litestar.post("/suggest", guards=[require_user_editor])
 async def suggest_api(
     subject_id: int,
     data: Annotated[CreateSuggestion, Body(media_type=RequestEncodingType.URL_ENCODED)],
-    request: Request,
+    request: AuthorizedRequest,
 ) -> Redirect:
-    if not request.auth:
-        raise PermissionDeniedException
-    if request.auth.allow_edit:
-        raise PermissionDeniedException
-
     if not data.desc:
         raise ValidationException("missing suggestion description")
 
@@ -149,11 +144,8 @@ async def suggest_api(
 
 
 @router
-@litestar.post("/api/delete-patch/{patch_id:str}")
-async def delete_patch(patch_id: str, request: Request) -> Redirect:
-    if not request.auth:
-        raise NotAuthorizedException
-
+@litestar.post("/api/delete-patch/{patch_id:str}", guards=[require_user_login])
+async def delete_patch(patch_id: str, request: AuthorizedRequest) -> Redirect:
     async with pg.acquire() as conn:
         async with conn.transaction():
             p = await conn.fetchrow(
