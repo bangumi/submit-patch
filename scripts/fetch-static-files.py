@@ -19,7 +19,7 @@ client = httpx.Client(proxies="http://192.168.1.3:7890")
 
 def download_npm_package(
     name: str,
-    path_filter: tuple[str, ...],
+    path_filter: tuple[str, ...] | None = None,
     version_filter: Callable[[str], bool] | None = None,
 ) -> None:
     target = static_path.joinpath(name)
@@ -58,8 +58,9 @@ def download_npm_package(
             if not file.isfile():
                 continue
             fn = file.path.removeprefix("package/")
-            if not (fn.startswith(path_filter)):
-                continue
+            if path_filter:
+                if not (fn.startswith(path_filter)):
+                    continue
             target_file = target.joinpath(latest_version, fn)
             target_file.parent.mkdir(parents=True, exist_ok=True)
             f = tar.extractfile(file)
@@ -79,5 +80,5 @@ def build_version_filter(major: int) -> Callable[[str], bool]:
 
 
 download_npm_package("diff2html", ("bundles",), version_filter=build_version_filter(3))
-download_npm_package("bootstrap", ("dist",), version_filter=build_version_filter(5))
+download_npm_package("bootstrap", version_filter=build_version_filter(5))
 download_npm_package("jquery", ("dist",), version_filter=build_version_filter(3))
