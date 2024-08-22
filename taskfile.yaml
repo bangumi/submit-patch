@@ -15,7 +15,7 @@ tasks:
     generates:
       - a-path-wont-exists
     cmds:
-      - uvicorn server:app --env-file .env --no-access-log
+      - uvicorn server.app:app --env-file .env --no-access-log
 
   run:
     dotenv: [.env]

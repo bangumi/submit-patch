@@ -22,6 +22,6 @@ RUN pip install -U pip && \
 
 WORKDIR /app
 
-ENTRYPOINT [ "uvicorn", "server:app" ]
+ENTRYPOINT [ "uvicorn", "server.app:app" ]
 
 COPY . ./
