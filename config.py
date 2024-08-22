@@ -11,7 +11,6 @@ UTC = timezone.utc
 PROJECT_PATH = Path(__file__, "..").resolve()
 
 
-SECRET_TOKEN = bytes.fromhex(os.environ["SECRET_TOKEN"])
 CSRF_SECRET_TOKEN = os.environ["CSRF_SECRET_TOKEN"]
 
 SERVER_BASE_URL = os.environ["SERVER_BASE_URL"]
