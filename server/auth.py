@@ -26,7 +26,7 @@ router = Router()
 
 
 async def retrieve_user_from_session(
-    session: dict[str, Any], req: ASGIConnection[Any, Any, Any, Any]
+    session: dict[str, Any], _: ASGIConnection[Any, Any, Any, Any]
 ) -> User | None:
     try:
         return __user_from_session(session)
