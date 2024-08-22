@@ -19,8 +19,13 @@ from uuid6 import uuid7
 from config import TURNSTILE_SECRET_KEY, TURNSTILE_SITE_KEY, UTC
 from server.base import BadRequestException, Request, http_client, pg
 from server.model import Patch, Wiki
+from server.router import Router
 
 
+router = Router()
+
+
+@router
 @litestar.get("/suggest")
 async def suggest_ui(request: Request, subject_id: int = 0) -> Response[Any]:
     if subject_id == 0:
@@ -52,6 +57,7 @@ class CreateSuggestion:
     nsfw: str | None = None
 
 
+@router
 @litestar.post("/suggest")
 async def suggest_api(
     subject_id: int,
@@ -142,6 +148,7 @@ async def suggest_api(
     return Redirect(f"/patch/{pk}")
 
 
+@router
 @litestar.post("/api/delete-patch/{patch_id:str}")
 async def delete_patch(patch_id: str, request: Request) -> Redirect:
     if not request.auth:

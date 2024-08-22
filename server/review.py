@@ -20,6 +20,10 @@ from config import UTC
 from server.auth import require_user_editor
 from server.base import AuthorizedRequest, BadRequestException, User, http_client, pg
 from server.model import Patch, PatchState
+from server.router import Router
+
+
+router = Router()
 
 
 class React(str, enum.Enum):
@@ -37,6 +41,7 @@ def __strip_none(d: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in d.items() if value is not None}
 
 
+@router
 @litestar.post("/api/review-patch/{patch_id:str}", guards=[require_user_editor])
 async def review_patch(
     patch_id: str,

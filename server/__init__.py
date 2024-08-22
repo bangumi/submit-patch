@@ -32,12 +32,14 @@ from config import (
     REDIS_DSN,
     UTC,
 )
-from server import tmpl
-from server.auth import callback, login, require_user_login, session_auth_config
+from server import auth, contrib, review, tmpl
+from server.auth import require_user_login, session_auth_config
 from server.base import Request, http_client, pg, pg_pool_startup
-from server.contrib import delete_patch, suggest_api, suggest_ui
 from server.model import Patch, PatchState
-from server.review import review_patch
+from server.router import Router
+
+
+router = Router()
 
 
 class File(NamedTuple):
@@ -57,6 +59,7 @@ if not DEV:
                 content=file_path.read_bytes(), content_type=mimetypes.guess_type(file)[0]
             )
 
+    @router
     @litestar.get("/static/{fp:path}", sync_to_thread=False)
     def static_file_handler(fp: str) -> Response[bytes]:
         try:
@@ -71,6 +74,7 @@ if not DEV:
 
 else:
 
+    @router
     @litestar.get("/static/{fp:path}", sync_to_thread=True)
     def static_file_handler(fp: str) -> Response[bytes]:
         # fp is '/...', so we need to remove prefix make it relative
@@ -92,6 +96,7 @@ async def __fetch_users(rows: list[asyncpg.Record]) -> dict[int, asyncpg.Record]
     return users
 
 
+@router
 @litestar.get("/")
 async def index(request: Request) -> Template:
     if not request.auth:
@@ -120,6 +125,7 @@ async def index(request: Request) -> Template:
     )
 
 
+@router
 @litestar.get("/contrib/{user_id:int}", guards=[require_user_login])
 async def show_user_contrib(user_id: int, request: Request) -> Template:
     rows = await pg.fetch(
@@ -141,6 +147,7 @@ async def show_user_contrib(user_id: int, request: Request) -> Template:
     )
 
 
+@router
 @litestar.get("/review/{user_id:int}", guards=[require_user_login])
 async def show_user_review(user_id: int, request: Request) -> Template:
     rows = await pg.fetch(
@@ -169,6 +176,7 @@ def __index_row_sorter(r: asyncpg.Record) -> tuple[int, datetime]:
     return 0, r["updated_at"]
 
 
+@router
 @litestar.get("/patch/{patch_id:str}")
 async def get_patch(patch_id: str, request: Request) -> Template:
     try:
@@ -299,17 +307,10 @@ async def startup_fetch_missing_users(*args: Any, **kwargs: Any) -> None:
 
 app = litestar.Litestar(
     [
-        index,
-        show_user_review,
-        show_user_contrib,
-        login,
-        callback,
-        suggest_ui,
-        suggest_api,
-        get_patch,
-        delete_patch,
-        review_patch,
-        static_file_handler,
+        *auth.router,
+        *contrib.router,
+        *review.router,
+        *router,
     ],
     template_config=TemplateConfig(
         engine=JinjaTemplateEngine.from_environment(tmpl.engine),

@@ -17,9 +17,12 @@ from litestar.types import Empty
 
 from config import BGM_TV_APP_ID, BGM_TV_APP_SECRET, SERVER_BASE_URL
 from server.base import Request, User, http_client, pg
+from server.router import Router
 
 
 CALLBACK_URL = f"{SERVER_BASE_URL}/oauth_callback"
+
+router = Router()
 
 
 async def retrieve_user_from_session(
@@ -77,6 +80,7 @@ session_auth_config = SessionAuth[User, ServerSideSessionBackend](
 )
 
 
+@router
 @litestar.get("/login", sync_to_thread=False)
 def login() -> Redirect:
     return Redirect(
@@ -91,6 +95,7 @@ def login() -> Redirect:
     )
 
 
+@router
 @litestar.get("/oauth_callback")
 async def callback(code: str, request: Request) -> Redirect:
     res = await http_client.post(
