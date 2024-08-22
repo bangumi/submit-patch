@@ -45,7 +45,7 @@ async def suggest_ui(request: Request, subject_id: int = 0) -> Response[Any]:
     )
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class CreateSuggestion:
     name: str
     infobox: str
