@@ -1,3 +1,4 @@
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any
@@ -15,7 +16,7 @@ from litestar.params import Body
 from litestar.response import Redirect, Template
 from uuid6 import uuid7
 
-from config import TURNSTILE_SECRET_KEY, TURNSTILE_SITE_KEY, UTC
+from config import TURNSTILE_SECRET_KEY, UTC
 from server.auth import require_user_login
 from server.base import AuthorizedRequest, BadRequestException, Request, http_client, pg
 from server.model import Patch, Wiki
@@ -39,10 +40,7 @@ async def suggest_ui(request: Request, subject_id: int = 0) -> Response[Any]:
     if res.status_code >= 300:
         raise NotFoundException()
     data = res.json()
-    return Template(
-        "suggest.html.jinja2",
-        context={"data": data, "subject_id": subject_id, "CAPTCHA_SITE_KEY": TURNSTILE_SITE_KEY},
-    )
+    return Template("suggest.html.jinja2", context={"data": data, "subject_id": subject_id})
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -160,6 +158,133 @@ async def delete_patch(patch_id: str, request: AuthorizedRequest) -> Redirect:
 
             await conn.execute(
                 "update patch set deleted_at = $1 where id = $2",
+                datetime.now(tz=UTC),
+                patch_id,
+            )
+
+            return Redirect("/")
+
+
+@router
+@litestar.get("/suggest-episode")
+async def episode_suggest_ui(request: Request, episode_id: int = 0) -> Response[Any]:
+    if episode_id == 0:
+        return Template("episode/select.html.jinja2")
+
+    if not request.auth:
+        request.set_session({"backTo": request.url.path + f"?episode_id={episode_id}"})
+        return Redirect("/login")
+
+    res = await http_client.get(f"https://api.bgm.tv/v0/episodes/{episode_id}")
+    if res.status_code == 404:
+        raise NotFoundException()
+
+    res.raise_for_status()
+
+    data = res.json()
+
+    return Template("episode/suggest.html.jinja2", context={"data": data, "subject_id": episode_id})
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class CreateEpisodePatch:
+    airdate: str
+    name: str
+    name_cn: str
+    duration: str
+    desc: str
+
+    cf_turnstile_response: str
+    reason: str
+
+
+@router
+@litestar.post("/suggest-episode", guards=[require_user_login])
+async def creat_episode_patch(
+    request: Request,
+    episode_id: int,
+    data: Annotated[CreateEpisodePatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
+) -> Response[Any]:
+    if not data.reason:
+        raise ValidationException("missing suggestion description")
+
+    res = await http_client.post(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        data={
+            "secret": TURNSTILE_SECRET_KEY,
+            "response": data.cf_turnstile_response,
+        },
+    )
+    if res.status_code > 300:
+        raise BadRequestException("验证码无效")
+    captcha_data = res.json()
+    if captcha_data.get("success") is not True:
+        raise BadRequestException("验证码无效")
+
+    res = await http_client.get(f"https://api.bgm.tv/v0/episodes/{episode_id}")
+    if res.status_code == 404:
+        raise NotFoundException()
+
+    res.raise_for_status()
+
+    original_wiki = res.json()
+
+    keys = ["airdate", "name", "name_cn", "duration", "desc"]
+
+    changed = {}
+
+    for key in keys:
+        if original_wiki[key] != getattr(data, key):
+            changed[key] = getattr(data, key)
+
+    if not changed:
+        raise HTTPException("no changes found", status_code=400)
+
+    pk = uuid7()
+
+    await pg.execute(
+        """
+        insert into episode_patch (id, episode_id, from_user_id, reason, original_name, name,
+            original_name_cn, name_cn, original_duration, duration,
+            original_airdate, airdate, original_description, description)
+        VALUES ($1, $2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+    """,
+        pk,
+        episode_id,
+        request.auth.user_id,
+        data.reason,
+        original_wiki["name"],
+        changed.get("name"),
+        original_wiki["name_cn"],
+        changed.get("name_cn"),
+        original_wiki["duration"],
+        changed.get("duration"),
+        original_wiki["airdate"],
+        changed.get("airdate"),
+        original_wiki["desc"],
+        changed.get("desc"),
+    )
+
+    return Redirect(f"/episode/{pk}")
+
+
+@router
+@litestar.post("/api/delete-episode/{patch_id:uuid}", guards=[require_user_login])
+async def delete_episode_patch(patch_id: uuid.UUID, request: AuthorizedRequest) -> Redirect:
+    async with pg.acquire() as conn:
+        async with conn.transaction():
+            p = await conn.fetchrow(
+                """select from_user_id from episode_patch where id = $1 and deleted_at is NULL""",
+                patch_id,
+            )
+            if not p:
+                raise NotFoundException()
+
+            if p["from_user_id"] != request.auth.user_id:
+                raise NotAuthorizedException
+
+            await conn.execute(
+                "update episode_patch set deleted_at = $1 where id = $2",
                 datetime.now(tz=UTC),
                 patch_id,
             )

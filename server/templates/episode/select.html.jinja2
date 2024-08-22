@@ -1,0 +1,15 @@
+{% extends "layout/base.html.jinja2" %}
+
+{% block head %}
+    <title>选择章节</title>
+{% endblock %}
+
+{% block content %}
+    <form action="/suggest-episode" method="get">
+        <div class="form-group">
+            <label for="subjectID">Episode ID</label>
+            <input type="number" class="form-control" placeholder="要修改的章节ID，比如 1148122" name="episode_id" id="subjectID">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+{% endblock %}

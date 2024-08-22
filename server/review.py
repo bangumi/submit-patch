@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import enum
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any
@@ -155,3 +156,51 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
         patch.id,
     )
     return Redirect(f"/patch/{patch.id}")
+
+
+@router
+@litestar.post("/api/review-episode/{patch_id:uuid}")
+async def review_episode_patch(
+    patch_id: uuid.UUID,
+    request: AuthorizedRequest,
+    data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
+) -> Response[Any]:
+    async with pg.acquire() as conn:
+        async with conn.transaction():
+            p = await pg.fetchrow(
+                """select * from episode_patch where id = $1 and deleted_at is NULL FOR UPDATE""",
+                patch_id,
+            )
+            if not p:
+                raise NotFoundException()
+
+            if p["state"] != PatchState.Pending:
+                raise BadRequestException("patch already reviewed")
+
+            if data.react == React.Reject:
+                return await __reject_episode_patch(
+                    patch_id, conn, request.auth, data.reject_reason
+                )
+
+    raise NotAuthorizedException("暂不支持")
+
+
+async def __reject_episode_patch(
+    patch_id: uuid.UUID, conn: PoolConnectionProxy[Record], auth: User, reason: str
+) -> Redirect:
+    await conn.execute(
+        """
+        update episode_patch set
+            state = $1,
+            wiki_user_id = $2,
+            updated_at = $3,
+            reject_reason = $4
+        where id = $5 and deleted_at is NULL
+        """,
+        PatchState.Rejected,
+        auth.user_id,
+        datetime.now(tz=UTC),
+        reason,
+        patch_id,
+    )
+    return Redirect("/")

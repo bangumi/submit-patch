@@ -32,6 +32,30 @@ class Patch:
     reject_reason: str
 
 
+@dataclass(frozen=True, kw_only=True, slots=True)
+class EpisodePatch:
+    id: str
+    episode_id: int
+    state: int
+    from_user_id: int
+    wiki_user_id: int
+    reason: str
+    original_name: str
+    name: str
+    original_name_cn: str
+    name_cn: str
+    original_duration: str
+    duration: str | None
+    original_airdate: str
+    airdate: str | None
+    original_description: str
+    description: str | None
+    created_at: str
+    updated_at: str
+    deleted_at: datetime | None
+    reject_reason: str
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Wiki:
     name: str

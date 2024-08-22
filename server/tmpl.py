@@ -8,7 +8,7 @@ from jinja2 import pass_context, select_autoescape
 from jinja2.runtime import Context
 from litestar import Request
 
-from config import DEV, PROJECT_PATH, UTC
+from config import DEV, PROJECT_PATH, TURNSTILE_SITE_KEY, UTC
 
 
 engine = jinja2.Environment(
@@ -16,6 +16,8 @@ engine = jinja2.Environment(
     loader=jinja2.FileSystemLoader(PROJECT_PATH.joinpath("server", "templates")),
     auto_reload=DEV,
 )
+
+engine.globals["TURNSTILE_SITE_KEY"] = TURNSTILE_SITE_KEY
 
 P = typing.ParamSpec("P")
 T = typing.TypeVar("T")

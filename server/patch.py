@@ -1,7 +1,7 @@
 import difflib
+import uuid
 
 import litestar
-import uuid6
 from litestar.exceptions import InternalServerException, NotFoundException
 from litestar.response import Template
 from loguru import logger
@@ -15,14 +15,8 @@ router = Router()
 
 
 @router
-@litestar.get("/patch/{patch_id:str}")
-async def get_patch(patch_id: str, request: Request) -> Template:
-    try:
-        uuid6.UUID(hex=patch_id)
-    except ValueError as e:
-        # not valid uuid string, just raise not-found
-        raise NotFoundException() from e
-
+@litestar.get("/patch/{patch_id:uuid}")
+async def get_patch(patch_id: uuid.UUID, request: Request) -> Template:
     p = await pg.fetchrow(
         """select * from patch where id = $1 and deleted_at is NULL limit 1""", patch_id
     )
@@ -83,6 +77,59 @@ async def get_patch(patch_id: str, request: Request) -> Template:
             "name_patch": name_patch,
             "infobox_patch": infobox_patch,
             "summary_patch": summary_patch,
+            "reviewer": reviewer,
+            "submitter": submitter,
+        },
+    )
+
+
+@router
+@litestar.get("/episode/{patch_id:uuid}")
+async def get_episode_patch(patch_id: uuid.UUID, request: Request) -> Template:
+    p = await pg.fetchrow(
+        """select * from episode_patch where id = $1 and deleted_at is NULL limit 1""", patch_id
+    )
+    if not p:
+        raise NotFoundException()
+
+    diff = []
+
+    keys = ["name", "name_cn", "duration", "airdate", "description"]
+
+    for key in keys:
+        after = p[key]
+        if after is None:
+            continue
+
+        original = p["original_" + key]
+
+        if original != after:
+            diff.append(
+                "".join(
+                    # need a tailing new line to generate correct diff
+                    difflib.unified_diff(
+                        (original + "\n").splitlines(True),
+                        (after + "\n").splitlines(True),
+                        key,
+                        key,
+                    )
+                )
+            )
+
+    reviewer = None
+    if p["state"] != PatchState.Pending:
+        reviewer = await pg.fetchrow(
+            "select * from patch_users where user_id=$1", p["wiki_user_id"]
+        )
+
+    submitter = await pg.fetchrow("select * from patch_users where user_id=$1", p["from_user_id"])
+
+    return Template(
+        "episode/patch.html.jinja2",
+        context={
+            "patch": p,
+            "auth": request.auth,
+            "diff": "".join(diff),
             "reviewer": reviewer,
             "submitter": submitter,
         },

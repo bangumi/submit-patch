@@ -38,7 +38,9 @@ class User:
         return self.group_id in {2, 9, 11}
 
 
-http_client = httpx.AsyncClient(follow_redirects=False)
+http_client = httpx.AsyncClient(
+    follow_redirects=False, headers={"user-agent": "trim21/submit-patch"}
+)
 pg = asyncpg.create_pool(dsn=PG_DSN)
 
 
