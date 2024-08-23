@@ -209,7 +209,7 @@ async def show_user_review(
         )
     elif patch_type == PatchType.Episode:
         rows = await pg.fetch(
-            "select * from episode_patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
+            "select * from episode_patch where wiki_user_id = $1 and deleted_at is NULL order by created_at desc",
             user_id,
         )
     else:
