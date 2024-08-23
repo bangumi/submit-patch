@@ -33,6 +33,7 @@ from config import (
 )
 from server import auth, contrib, patch, review, tmpl
 from server.auth import require_user_login, session_auth_config
+from server.badge import badge_0, badge_gte_100, badge_le_10, badge_le_100
 from server.base import BadRequestException, Request, http_client, pg, pg_pool_startup, redis_client
 from server.migration import run_migration
 from server.model import PatchState
@@ -319,147 +320,13 @@ async def badge() -> Response[bytes]:
     )
 
     if rest == 0:
-        # https://img.shields.io/badge/%E5%BE%85%E5%AE%A1%E6%A0%B8-0-green
-        res = """
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="60" height="20" role="img" aria-label="待审核: 0">
-    <title>待审核: 0</title>
-    <linearGradient id="s" x2="0" y2="100%">
-        <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
-        <stop offset="1" stop-opacity=".1"/>
-    </linearGradient>
-    <clipPath id="r">
-        <rect width="60" height="20" rx="3" fill="#fff"/>
-    </clipPath>
-    <g clip-path="url(#r)">
-        <rect width="43" height="20" fill="#555"/>
-        <rect x="43" width="17" height="20" fill="#97ca00"/>
-        <rect width="60" height="20" fill="url(#s)"/>
-    </g>
-    <g fill="#fff" text-anchor="middle"
-       font-family="Verdana,Geneva,DejaVu Sans,sans-serif"
-       text-rendering="geometricPrecision" font-size="110">
-        <text aria-hidden="true" x="225" y="150" fill="#010101" fill-opacity=".3"
-              transform="scale(.1)" textLength="330">待审核
-        </text>
-        <text x="225" y="140" transform="scale(.1)" fill="#fff" textLength="330">
-            待审核
-        </text>
-        <text aria-hidden="true" x="505" y="150" fill="#010101" fill-opacity=".3"
-              transform="scale(.1)" textLength="70">0
-        </text>
-        <text x="505" y="140" transform="scale(.1)" fill="#fff" textLength="70">0</text>
-    </g>
-</svg>
-        """.encode()
+        res = badge_0
     elif rest < 10:
-        # https://img.shields.io/badge/%E5%BE%85%E5%AE%A1%E6%A0%B8-8-orange
-        res = f"""
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="60" height="20" role="img" aria-label="待审核: 8">
-    <title>待审核: 8</title>
-    <linearGradient id="s" x2="0" y2="100%">
-        <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
-        <stop offset="1" stop-opacity=".1"/>
-    </linearGradient>
-    <clipPath id="r">
-        <rect width="60" height="20" rx="3" fill="#fff"/>
-    </clipPath>
-    <g clip-path="url(#r)">
-        <rect width="43" height="20" fill="#555"/>
-        <rect x="43" width="17" height="20" fill="#007ec6"/>
-        <rect width="60" height="20" fill="url(#s)"/>
-    </g>
-    <g fill="#fff" text-anchor="middle"
-       font-family="Verdana,Geneva,DejaVu Sans,sans-serif"
-       text-rendering="geometricPrecision" font-size="110">
-        <text aria-hidden="true" x="225" y="150" fill="#010101" fill-opacity=".3"
-              transform="scale(.1)" textLength="330">待审核
-        </text>
-        <text x="225" y="140" transform="scale(.1)" fill="#fff" textLength="330">
-            待审核
-        </text>
-        <text aria-hidden="true" x="505" y="150" fill="#010101" fill-opacity=".3"
-              transform="scale(.1)" textLength="70">8
-        </text>
-        <text x="505" y="140" transform="scale(.1)" fill="#fff" textLength="70">
-            {rest}
-        </text>
-    </g>
-</svg>
-        """.encode()
+        res = badge_le_10
     elif rest < 100:
-        # https://img.shields.io/badge/%E5%BE%85%E5%AE%A1%E6%A0%B8-50-oragan
-        res = f"""
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="66" height="20" role="img" aria-label="待审核: 50">
-    <title>待审核: 50</title>
-    <linearGradient id="s" x2="0" y2="100%">
-        <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
-        <stop offset="1" stop-opacity=".1"/>
-    </linearGradient>
-    <clipPath id="r">
-        <rect width="66" height="20" rx="3" fill="#fff"/>
-    </clipPath>
-    <g clip-path="url(#r)">
-        <rect width="43" height="20" fill="#555"/>
-        <rect x="43" width="23" height="20" fill="#fe7d37"/>
-        <rect width="66" height="20" fill="url(#s)"/>
-    </g>
-    <g fill="#fff" text-anchor="middle"
-       font-family="Verdana,Geneva,DejaVu Sans,sans-serif"
-       text-rendering="geometricPrecision" font-size="110">
-        <text aria-hidden="true" x="225" y="150" fill="#010101" fill-opacity=".3"
-              transform="scale(.1)" textLength="330">待审核
-        </text>
-        <text x="225" y="140" transform="scale(.1)" fill="#fff" textLength="330">
-            待审核
-        </text>
-        <text aria-hidden="true" x="535" y="150" fill="#010101" fill-opacity=".3"
-              transform="scale(.1)" textLength="130">50
-        </text>
-        <text x="535" y="140" transform="scale(.1)" fill="#fff" textLength="130">
-            {rest}
-        </text>
-    </g>
-</svg>
-        """.encode()
+        res = badge_le_100
     else:
-        # https://img.shields.io/badge/待审核->100-red
-        res = """
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="82" height="20" role="img" aria-label="待审核: &gt;100">
-    <title>待审核: &gt;100</title>
-    <linearGradient id="s" x2="0" y2="100%">
-        <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
-        <stop offset="1" stop-opacity=".1"/>
-    </linearGradient>
-    <clipPath id="r">
-        <rect width="82" height="20" rx="3" fill="#fff"/>
-    </clipPath>
-    <g clip-path="url(#r)">
-        <rect width="43" height="20" fill="#555"/>
-        <rect x="43" width="39" height="20" fill="#e05d44"/>
-        <rect width="82" height="20" fill="url(#s)"/>
-    </g>
-    <g fill="#fff" text-anchor="middle"
-       font-family="Verdana,Geneva,DejaVu Sans,sans-serif"
-       text-rendering="geometricPrecision" font-size="110">
-        <text aria-hidden="true" x="225" y="150" fill="#010101" fill-opacity=".3"
-              transform="scale(.1)" textLength="330">待审核
-        </text>
-        <text x="225" y="140" transform="scale(.1)" fill="#fff" textLength="330">
-            待审核
-        </text>
-        <text aria-hidden="true" x="615" y="150" fill="#010101" fill-opacity=".3"
-              transform="scale(.1)" textLength="290">&gt;100
-        </text>
-        <text x="615" y="140" transform="scale(.1)" fill="#fff" textLength="290">
-            &gt;100
-        </text>
-    </g>
-</svg>
-        """.encode()
+        res = badge_gte_100
 
     await redis_client.set(key, res, ex=10)
 
