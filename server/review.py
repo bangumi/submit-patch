@@ -138,7 +138,7 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
                 datetime.now(tz=UTC),
                 patch.id,
             )
-            return Redirect(f"/patch/{patch.id}")
+            return Redirect("/")
 
         logger.error("failed to apply patch {!r}", data)
         raise InternalServerException()
@@ -156,7 +156,7 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
         datetime.now(tz=UTC),
         patch.id,
     )
-    return Redirect(f"/patch/{patch.id}")
+    return Redirect("/")
 
 
 @router
@@ -209,7 +209,7 @@ class EpisodeReviewController(Controller):
             reason,
             patch_id,
         )
-        return Redirect(f"/episode/{patch_id}")
+        return Redirect("/?type=episode")
 
     async def __accept_episode_patch(
         self, patch: EpisodePatch, conn: PoolConnectionProxy[Record], auth: User
@@ -251,7 +251,7 @@ class EpisodeReviewController(Controller):
                     datetime.now(tz=UTC),
                     patch.id,
                 )
-                return Redirect(f"/episode/{patch.id}")
+                return Redirect("/?type=episode")
 
             logger.error("failed to apply patch {!r}", data)
             raise InternalServerException()
@@ -269,4 +269,4 @@ class EpisodeReviewController(Controller):
             datetime.now(tz=UTC),
             patch.id,
         )
-        return Redirect(f"/episode/{patch.id}")
+        return Redirect("/?type=episode")
