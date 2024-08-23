@@ -26,6 +26,21 @@ from server.router import Router
 router = Router()
 
 
+async def _validate_captcha(cf_turnstile_response: str) -> None:
+    res = await http_client.post(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        data={
+            "secret": TURNSTILE_SECRET_KEY,
+            "response": cf_turnstile_response,
+        },
+    )
+    if res.status_code > 300:
+        raise BadRequestException("验证码无效")
+    captcha_data = res.json()
+    if captcha_data.get("success") is not True:
+        raise BadRequestException("验证码无效")
+
+
 @router
 @litestar.get("/suggest")
 async def suggest_ui(request: Request, subject_id: int = 0) -> Response[Any]:
@@ -65,18 +80,7 @@ async def suggest_api(
     if not data.reason:
         raise ValidationException("missing suggestion description")
 
-    res = await http_client.post(
-        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-        data={
-            "secret": TURNSTILE_SECRET_KEY,
-            "response": data.cf_turnstile_response,
-        },
-    )
-    if res.status_code > 300:
-        raise BadRequestException("验证码无效")
-    captcha_data = res.json()
-    if captcha_data.get("success") is not True:
-        raise BadRequestException("验证码无效")
+    await _validate_captcha(data.cf_turnstile_response)
 
     res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{subject_id}")
     res.raise_for_status()
@@ -194,18 +198,7 @@ async def creat_episode_patch(
     if not data.reason:
         raise ValidationException("missing suggestion description")
 
-    res = await http_client.post(
-        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-        data={
-            "secret": TURNSTILE_SECRET_KEY,
-            "response": data.cf_turnstile_response,
-        },
-    )
-    if res.status_code > 300:
-        raise BadRequestException("验证码无效")
-    captcha_data = res.json()
-    if captcha_data.get("success") is not True:
-        raise BadRequestException("验证码无效")
+    await _validate_captcha(data.cf_turnstile_response)
 
     res = await http_client.get(f"https://api.bgm.tv/v0/episodes/{episode_id}")
     if res.status_code == 404:
