@@ -29,12 +29,15 @@ class Patch(PatchBase):
     subject_id: int
     subject_type: int
 
-    name: str | None
     original_name: str
-    infobox: str | None
+    name: str | None
+
     original_infobox: str | None
-    summary: str | None
+    infobox: str | None
+
     original_summary: str | None
+    summary: str | None
+
     nsfw: bool | None
 
 
@@ -44,12 +47,16 @@ class EpisodePatch(PatchBase):
 
     original_name: str
     name: str | None
+
     original_name_cn: str
     name_cn: str | None
+
     original_duration: str
     duration: str | None
+
     original_airdate: str
     airdate: str | None
+
     original_description: str
     description: str | None
 

@@ -19,7 +19,7 @@ from uuid6 import uuid7
 from config import TURNSTILE_SECRET_KEY, UTC
 from server.auth import require_user_login
 from server.base import AuthorizedRequest, BadRequestException, Request, http_client, pg
-from server.model import Patch, Wiki
+from server.model import Patch
 from server.router import Router
 
 
@@ -82,37 +82,23 @@ async def suggest_api(
     res.raise_for_status()
     original_wiki = res.json()
 
-    original = Wiki(
-        name=original_wiki["name"],
-        infobox=original_wiki["infobox"],
-        summary=original_wiki["summary"],
-        nsfw=original_wiki["nsfw"],
-    )
+    original = {}
 
-    name: str | None = None
-    summary: str | None = None
-    infobox: str | None = None
-
-    original_summary: str | None = None
-    original_infobox: str | None = None
+    changed = {}
 
     nsfw: bool | None = None
 
-    if original.name != data.name:
-        name = data.name
+    for key in ["name", "infobox", "summary"]:
+        before = original_wiki[key]
+        after = getattr(data, key)
+        if before != after:
+            changed[key] = after
+            original[key] = before
 
-    if original.infobox != data.infobox:
-        infobox = data.infobox
-        original_infobox = original.infobox
+    if original_wiki["nsfw"] != (data.nsfw is not None):  # true case
+        nsfw = not original_wiki["nsfw"]
 
-    if original.summary != data.summary:
-        summary = data.summary
-        original_summary = original.summary
-
-    if original.nsfw != (data.nsfw is not None):  # true case
-        nsfw = not original.nsfw
-
-    if (name is None) and (summary is None) and (infobox is None) and (nsfw is None):
+    if (not changed) and (nsfw is None):
         raise HTTPException("no changes found", status_code=400)
 
     pk = uuid7()
@@ -127,13 +113,13 @@ async def suggest_api(
         subject_id,
         request.auth.user_id,
         data.reason,
-        name,
-        infobox,
-        summary,
+        changed.get("name"),
+        changed.get("infobox"),
+        changed.get("summary"),
         nsfw,
-        original.name,
-        original_infobox,
-        original_summary,
+        original.get("name"),
+        original.get("infobox"),
+        original.get("summary"),
         original_wiki["typeID"],
     )
 
