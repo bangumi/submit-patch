@@ -48,7 +48,7 @@ class CreateSuggestion:
     name: str
     infobox: str
     summary: str
-    desc: str
+    reason: str
     cf_turnstile_response: str
     # HTML form will only include checkbox when it's checked,
     # so any input is true, default value is false.
@@ -62,7 +62,7 @@ async def suggest_api(
     data: Annotated[CreateSuggestion, Body(media_type=RequestEncodingType.URL_ENCODED)],
     request: AuthorizedRequest,
 ) -> Redirect:
-    if not data.desc:
+    if not data.reason:
         raise ValidationException("missing suggestion description")
 
     res = await http_client.post(
@@ -119,14 +119,14 @@ async def suggest_api(
 
     await pg.execute(
         """
-        insert into patch (id, subject_id, from_user_id, description, name, infobox, summary, nsfw,
+        insert into patch (id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
                            original_name, original_infobox, original_summary, subject_type)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
     """,
         pk,
         subject_id,
         request.auth.user_id,
-        data.desc,
+        data.reason,
         name,
         infobox,
         summary,

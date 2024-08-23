@@ -19,7 +19,7 @@ class Patch:
     state: int
     from_user_id: int
     wiki_user_id: int
-    description: str
+    reason: str
     name: str | None
     original_name: str
     infobox: str | None

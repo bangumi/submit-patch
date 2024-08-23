@@ -110,7 +110,7 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
         f"https://next.bgm.tv/p1/wiki/subjects/{patch.subject_id}",
         headers={"Authorization": f"Bearer {auth.access_token}"},
         json={
-            "commitMessage": f"{patch.description} [patch https://patch.bgm38.com/patch/{patch.id}]",
+            "commitMessage": f"{patch.reason} [patch https://patch.bgm38.com/patch/{patch.id}]",
             "expectedRevision": pydash.pick(
                 {
                     "infobox": patch.original_infobox,
@@ -186,7 +186,7 @@ class EpisodeReviewController(Controller):
                     )
 
                 if data.react == React.Accept:
-                    patch = from_dict(EpisodePatch, p)
+                    patch = from_dict(EpisodePatch, p)  # type: ignore
                     return await self.__accept_episode_patch(patch, conn, request.auth)
 
         raise NotAuthorizedException("暂不支持")

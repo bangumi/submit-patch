@@ -54,3 +54,6 @@ create table if not exists patch_users
     username varchar(255)    not null,
     nickname varchar(255)    not null
 );
+
+
+alter table patch RENAME column description to reason;
