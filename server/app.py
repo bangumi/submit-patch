@@ -33,6 +33,7 @@ from config import (
 from server import auth, contrib, patch, review, tmpl
 from server.auth import require_user_login, session_auth_config
 from server.base import Request, http_client, pg, pg_pool_startup
+from server.migration import run_migration
 from server.model import PatchState
 from server.router import Router
 
@@ -196,7 +197,7 @@ def internal_error_handler(_: Request, exc: Exception) -> Response[Any]:
     )
 
 
-async def startup_fetch_missing_users(*args: Any, **kwargs: Any) -> None:
+async def startup_fetch_missing_users() -> None:
     logger.info("fetch missing users")
     results = await pg.fetch("select from_user_id, wiki_user_id from patch")
     s = set()
@@ -242,7 +243,7 @@ app = litestar.Litestar(
         engine=JinjaTemplateEngine.from_environment(tmpl.engine),
     ),
     stores={"sessions": RedisStore(Redis.from_url(REDIS_DSN), handle_client_shutdown=False)},
-    on_startup=[pg_pool_startup, startup_fetch_missing_users],
+    on_startup=[pg_pool_startup, run_migration, startup_fetch_missing_users],
     csrf_config=CSRFConfig(secret=CSRF_SECRET_TOKEN, cookie_name="s-csrf-token"),
     before_request=before_req,
     middleware=[session_auth_config.middleware],

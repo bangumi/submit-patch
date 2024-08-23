@@ -55,5 +55,11 @@ create table if not exists patch_users
     nickname varchar(255)    not null
 );
 
+alter table patch
+    RENAME column description to reason;
 
-alter table patch RENAME column description to reason;
+create table if not exists patch_db_migration
+(
+    key   text primary key,
+    value text
+)
