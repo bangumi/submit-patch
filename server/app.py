@@ -180,7 +180,8 @@ async def show_user_contrib(
     else:
         raise BadRequestException(f"invalid type {patch_type}")
 
-    if not rows:
+    nickname = await pg.fetchval("select nickname from patch_users where user_id = $1", user_id)
+    if not nickname:
         raise NotFoundException()
 
     users = await __fetch_users(rows)
@@ -193,7 +194,7 @@ async def show_user_contrib(
             "auth": request.auth,
             "user_id": user_id,
             "patch_type": patch_type,
-            "title": f"{users[user_id]['nickname']} 的历史贡献",
+            "title": f"{nickname} 的历史贡献",
         },
     )
 
@@ -218,7 +219,8 @@ async def show_user_review(
     else:
         raise BadRequestException(f"invalid type {patch_type}")
 
-    if not rows:
+    nickname = await pg.fetchval("select nickname from patch_users where user_id = $1", user_id)
+    if not nickname:
         raise NotFoundException()
 
     users = await __fetch_users(rows)
@@ -230,7 +232,7 @@ async def show_user_review(
             "users": users,
             "auth": request.auth,
             "user_id": user_id,
-            "title": f"{users[user_id]['nickname']} 的历史审核",
+            "title": f"{nickname} 的历史审核",
             "patch_type": patch_type,
         },
     )
