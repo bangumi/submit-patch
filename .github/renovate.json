@@ -5,11 +5,5 @@
   ],
   "npm": {
     "enabled": false
-  },
-  "pnpm": {
-    "enabled": false
-  },
-  "yarn": {
-    "enabled": false
   }
 }
