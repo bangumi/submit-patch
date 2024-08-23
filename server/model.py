@@ -1,4 +1,5 @@
 import enum
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -34,24 +35,24 @@ class Patch:
 
 @dataclass(frozen=True, kw_only=True, slots=True)
 class EpisodePatch:
-    id: str
+    id: uuid.UUID
     episode_id: int
     state: int
     from_user_id: int
     wiki_user_id: int
     reason: str
     original_name: str
-    name: str
+    name: str | None
     original_name_cn: str
-    name_cn: str
+    name_cn: str | None
     original_duration: str
     duration: str | None
     original_airdate: str
     airdate: str | None
     original_description: str
     description: str | None
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
     deleted_at: datetime | None
     reject_reason: str
 

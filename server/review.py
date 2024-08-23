@@ -10,7 +10,8 @@ import litestar
 import pydash
 from asyncpg import Record
 from asyncpg.pool import PoolConnectionProxy
-from litestar import Response
+from dacite import from_dict
+from litestar import Controller, Response
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import InternalServerException, NotAuthorizedException, NotFoundException
 from litestar.params import Body
@@ -20,7 +21,7 @@ from loguru import logger
 from config import UTC
 from server.auth import require_user_editor
 from server.base import AuthorizedRequest, BadRequestException, User, http_client, pg
-from server.model import Patch, PatchState
+from server.model import EpisodePatch, Patch, PatchState
 from server.router import Router
 
 
@@ -38,7 +39,7 @@ class ReviewPatch:
     reject_reason: str = ""
 
 
-def __strip_none(d: dict[str, Any]) -> dict[str, Any]:
+def _strip_none(d: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in d.items() if value is not None}
 
 
@@ -96,7 +97,7 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
     if not auth.is_access_token_fresh():
         return Redirect("/login")
 
-    subject = __strip_none(
+    subject = _strip_none(
         {
             "infobox": patch.infobox,
             "name": patch.name,
@@ -159,48 +160,123 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
 
 
 @router
-@litestar.post("/api/review-episode/{patch_id:uuid}")
-async def review_episode_patch(
-    patch_id: uuid.UUID,
-    request: AuthorizedRequest,
-    data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
-) -> Response[Any]:
-    async with pg.acquire() as conn:
-        async with conn.transaction():
-            p = await pg.fetchrow(
-                """select * from episode_patch where id = $1 and deleted_at is NULL FOR UPDATE""",
-                patch_id,
-            )
-            if not p:
-                raise NotFoundException()
-
-            if p["state"] != PatchState.Pending:
-                raise BadRequestException("patch already reviewed")
-
-            if data.react == React.Reject:
-                return await __reject_episode_patch(
-                    patch_id, conn, request.auth, data.reject_reason
+class EpisodeReviewController(Controller):
+    @litestar.post("/api/review-episode/{patch_id:uuid}")
+    async def review_episode_patch(
+        self,
+        patch_id: uuid.UUID,
+        request: AuthorizedRequest,
+        data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
+    ) -> Response[Any]:
+        async with pg.acquire() as conn:
+            async with conn.transaction():
+                p = await pg.fetchrow(
+                    """select * from episode_patch where id = $1 and deleted_at is NULL FOR UPDATE""",
+                    patch_id,
                 )
+                if not p:
+                    raise NotFoundException()
 
-    raise NotAuthorizedException("暂不支持")
+                if p["state"] != PatchState.Pending:
+                    raise BadRequestException("patch already reviewed")
 
+                if data.react == React.Reject:
+                    return await self.__reject_episode_patch(
+                        patch_id, conn, request.auth, data.reject_reason
+                    )
 
-async def __reject_episode_patch(
-    patch_id: uuid.UUID, conn: PoolConnectionProxy[Record], auth: User, reason: str
-) -> Redirect:
-    await conn.execute(
-        """
-        update episode_patch set
-            state = $1,
-            wiki_user_id = $2,
-            updated_at = $3,
-            reject_reason = $4
-        where id = $5 and deleted_at is NULL
-        """,
-        PatchState.Rejected,
-        auth.user_id,
-        datetime.now(tz=UTC),
-        reason,
-        patch_id,
-    )
-    return Redirect("/")
+                if data.react == React.Accept:
+                    patch = from_dict(EpisodePatch, p)
+                    return await self.__accept_episode_patch(patch, conn, request.auth)
+
+        raise NotAuthorizedException("暂不支持")
+
+    async def __reject_episode_patch(
+        self, patch_id: uuid.UUID, conn: PoolConnectionProxy[Record], auth: User, reason: str
+    ) -> Redirect:
+        await conn.execute(
+            """
+            update episode_patch set
+                state = $1,
+                wiki_user_id = $2,
+                updated_at = $3,
+                reject_reason = $4
+            where id = $5 and deleted_at is NULL
+            """,
+            PatchState.Rejected,
+            auth.user_id,
+            datetime.now(tz=UTC),
+            reason,
+            patch_id,
+        )
+        return Redirect("/")
+
+    async def __accept_episode_patch(
+        self, patch: EpisodePatch, conn: PoolConnectionProxy[Record], auth: User
+    ) -> Redirect:
+        if not auth.is_access_token_fresh():
+            return Redirect("/login")
+
+        episode = _strip_none(
+            {
+                "nameCN": patch.name_cn,
+                "name": patch.name,
+                "summary": patch.description,
+                "duration": patch.duration,
+                "airdate": patch.airdate,
+            }
+        )
+
+        res = await http_client.patch(
+            f"https://next.bgm.tv/p1/wiki/ep/{patch.episode_id}",
+            headers={"Authorization": f"Bearer {auth.access_token}"},
+            json={
+                "commitMessage": f"{patch.description} [patch https://patch.bgm38.tv/patch/{patch.id}]",
+                "expectedRevision": pydash.pick(
+                    {
+                        "nameCN": patch.original_name_cn,
+                        "name": patch.original_name,
+                        "summary": patch.original_description,
+                        "duration": patch.original_duration,
+                        "airdate": patch.original_airdate,
+                    },
+                    *episode.keys(),
+                ),
+                "episode": episode,
+            },
+        )
+        if res.status_code >= 300:
+            data = res.json()
+            if data.get("code") == "SUBJECT_CHANGED":
+                await conn.execute(
+                    """
+                    update episode_patch set
+                        state = $1,
+                        wiki_user_id = $2,
+                        updated_at = $3
+                    where id = $4 and deleted_at is NULL
+                    """,
+                    PatchState.Outdated,
+                    auth.user_id,
+                    datetime.now(tz=UTC),
+                    patch.id,
+                )
+                return Redirect(f"/episode/{patch.id}")
+
+            logger.error("failed to apply patch {!r}", data)
+            raise InternalServerException()
+
+        await conn.execute(
+            """
+            update episode_patch set
+                state = $1,
+                wiki_user_id = $2,
+                updated_at = $3
+            where id = $4 and deleted_at is NULL
+            """,
+            PatchState.Accept,
+            auth.user_id,
+            datetime.now(tz=UTC),
+            patch.id,
+        )
+        return Redirect(f"/episode/{patch.id}")

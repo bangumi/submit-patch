@@ -94,9 +94,15 @@ async def get_episode_patch(patch_id: uuid.UUID, request: Request) -> Template:
 
     diff = {}
 
-    keys = ["name", "name_cn", "duration", "airdate", "description"]
+    keys = {
+        "name": "标题",
+        "name_cn": "简体中文标题",
+        "duration": "时长",
+        "airdate": "放送日期",
+        "description": "简介",
+    }
 
-    for key in keys:
+    for key, cn in keys.items():
         after = p[key]
         if after is None:
             continue
@@ -104,7 +110,7 @@ async def get_episode_patch(patch_id: uuid.UUID, request: Request) -> Template:
         original = p["original_" + key]
 
         if original != after:
-            diff[key] = "".join(
+            diff[(key, cn)] = "".join(
                 # need a tailing new line to generate correct diff
                 difflib.unified_diff(
                     (original + "\n").splitlines(True),
@@ -128,13 +134,6 @@ async def get_episode_patch(patch_id: uuid.UUID, request: Request) -> Template:
             "patch": p,
             "auth": request.auth,
             "diff": diff,
-            "diff_key_cn": {
-                "name": "标题",
-                "name_cn": "简体中文标题",
-                "duration": "时长",
-                "airdate": "放送日期",
-                "description": "简介",
-            },
             "reviewer": reviewer,
             "submitter": submitter,
         },

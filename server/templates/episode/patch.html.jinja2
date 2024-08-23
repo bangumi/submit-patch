@@ -22,7 +22,7 @@
 
     <div class="row">
         <div class="col">
-            <a href="https://bgm.tv/subject/{{ patch.subject_id }}" target="_blank"
+            <a href="https://bgm.tv/episode/{{ patch.episode_id }}" target="_blank"
                rel="noopener">
                 <h3>条目链接</h3>
             </a>
@@ -49,9 +49,9 @@
 
     <h3>具体变动</h3>
 
-    {% for key, value in diff.items() %}
+    {% for (key, cn), value in diff.items() %}
         <div class="row">
-            <h4>{{ diff_key_cn[key] }}</h4>
+            <h4>{{ cn }}</h4>
             <div id="{{ key }}diff" class="diff"></div>
         </div>
 
@@ -67,7 +67,7 @@
                     fileContentToggle: false,
                     matching: 'lines',
                     outputFormat: 'line-by-line',
-                    synchronisedScroll: true,
+                    synchronisedScroll: false,
                     renderNothingWhenEmpty: false,
                 };
                 const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
@@ -80,7 +80,7 @@
         {% if patch.state == 0 %}
             {% if auth.allow_edit %}
                 <div class="col">
-                    <form action="/api/review-patch/{{ patch.id }}" method="post"
+                    <form action="/api/review-episode/{{ patch.id }}" method="post"
                           enctype="application/x-www-form-urlencoded">
                         {{ csrf_input | safe }}
                         <input name="react" value="accept" hidden="hidden"/>
