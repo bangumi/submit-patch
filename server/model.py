@@ -28,6 +28,7 @@ class PatchBase:
 class Patch(PatchBase):
     subject_id: int
     subject_type: int
+
     name: str | None
     original_name: str
     infobox: str | None
@@ -40,6 +41,7 @@ class Patch(PatchBase):
 @dataclass(frozen=True, kw_only=True, slots=True)
 class EpisodePatch(PatchBase):
     episode_id: int
+
     original_name: str
     name: str | None
     original_name_cn: str

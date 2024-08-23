@@ -13,7 +13,7 @@ class Migrate(NamedTuple):
 migrations: list[Migrate] = [Migrate(1, "select 1")]
 
 
-async def run_migration():
+async def run_migration() -> None:
     v = await pg.fetchval("select value from patch_db_migration where key=$1", "version")
     if v is None:
         await pg.execute(
