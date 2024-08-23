@@ -110,7 +110,7 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
         f"https://next.bgm.tv/p1/wiki/subjects/{patch.subject_id}",
         headers={"Authorization": f"Bearer {auth.access_token}"},
         json={
-            "commitMessage": f"{patch.reason} [patch https://patch.bgm38.com/patch/{patch.id}]",
+            "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/patch/{patch.id}]",
             "expectedRevision": pydash.pick(
                 {
                     "infobox": patch.original_infobox,
