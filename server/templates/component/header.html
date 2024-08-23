@@ -11,7 +11,14 @@
         {% endif %}
     </div>
 
-    <div class="col"></div>
+    <div class="col">
+        {% if request.url.path == "/" and auth.allow_edit %}
+            <a href="/review/{{ auth.user_id }}"
+                class="link-underline link-underline-opacity-0 float-end" target="_blank">
+                <h3>查看我的历史审核</h3>
+            </a>
+        {% endif %}
+    </div>
 </div>
 
 <hr>
