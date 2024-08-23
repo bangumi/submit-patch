@@ -209,7 +209,7 @@ class EpisodeReviewController(Controller):
             reason,
             patch_id,
         )
-        return Redirect("/")
+        return Redirect(f"/episode/{patch_id}")
 
     async def __accept_episode_patch(
         self, patch: EpisodePatch, conn: PoolConnectionProxy[Record], auth: User
