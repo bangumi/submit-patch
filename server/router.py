@@ -12,11 +12,11 @@ class Router:
     """A helper class to collect handlers"""
 
     def __init__(self) -> None:
-        self.__handler: list[AnyCallable] = []
+        self.__handler: list[AnyCallable | litestar.Router] = []
 
     def __call__(self, fn: T) -> T:
         self.__handler.append(fn)
         return fn
 
-    def __iter__(self) -> Iterator[AnyCallable]:
+    def __iter__(self) -> Iterator[AnyCallable | litestar.Router]:
         yield from self.__handler

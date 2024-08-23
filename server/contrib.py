@@ -201,7 +201,7 @@ class CreateEpisodePatch:
 @router
 @litestar.post("/suggest-episode", guards=[require_user_login])
 async def creat_episode_patch(
-    request: Request,
+    request: AuthorizedRequest,
     episode_id: int,
     data: Annotated[CreateEpisodePatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
 ) -> Response[Any]:
