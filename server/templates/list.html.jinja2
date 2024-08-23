@@ -48,8 +48,13 @@
         </div>
     {% else %}
         {% if not auth.allow_edit %}
+
             <div class="row m-0">
-                <a href="/suggest"><h3>添加Patch</h3></a>
+                {% if patch_type == 'subject' %}
+                    <a href="/suggest"><h3>添加Patch</h3></a>
+                {% elif patch_type == 'episode' %}
+                    <a href="/suggest-episode"><h3>添加Patch</h3></a>
+                {% endif %}
             </div>
         {% endif %}
     {% endif %}
