@@ -35,7 +35,7 @@ class User:
 
     @property
     def allow_edit(self) -> bool:
-        return self.group_id in {2, 9, 11}
+        return self.group_id in {1, 2, 9, 11}
 
 
 http_client = httpx.AsyncClient(
