@@ -117,7 +117,7 @@ async def suggest_api(
         changed.get("infobox"),
         changed.get("summary"),
         nsfw,
-        original.get("name"),
+        original_wiki["name"],
         original.get("infobox"),
         original.get("summary"),
         original_wiki["typeID"],
