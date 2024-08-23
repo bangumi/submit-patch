@@ -165,7 +165,7 @@ async def episode_suggest_ui(request: Request, episode_id: int = 0) -> Response[
         request.set_session({"backTo": request.url.path + f"?episode_id={episode_id}"})
         return Redirect("/login")
 
-    res = await http_client.get(f"https://api.bgm.tv/v0/episodes/{episode_id}")
+    res = await http_client.get(f"https://next.bgm.tv/p1/wiki/ep/{episode_id}")
     if res.status_code == 404:
         raise NotFoundException()
 
