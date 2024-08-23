@@ -8,7 +8,7 @@ from asyncpg import UndefinedTableError
 from server.base import pg
 
 
-sql_dir = Path(__file__, "../sql")
+sql_dir = Path(__file__, "../sql").resolve()
 
 KEY_MIGRATION_VERSION = "version"
 
