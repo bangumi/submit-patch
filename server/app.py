@@ -8,7 +8,7 @@ from typing import Annotated, Any, NamedTuple
 
 import asyncpg
 import litestar
-from litestar import MediaType, Response
+from litestar import Response
 from litestar.config.csrf import CSRFConfig
 from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.datastructures import State
@@ -302,7 +302,7 @@ async def badge() -> Response[bytes]:
     pending = await redis_client.get(key)
 
     if pending is not None:
-        return Response(pending, media_type=MediaType.XML)
+        return Response(pending, media_type="image/svg+xml")
 
     rest = await pg.fetchval(
         "select count(1) from patch where deleted_at IS NULL and state = $1", PatchState.Pending
@@ -322,7 +322,7 @@ async def badge() -> Response[bytes]:
 
     await redis_client.set(key, res.content, ex=60)
 
-    return Response(res.content, media_type=MediaType.XML)
+    return Response(res.content, media_type="image/svg+xml")
 
 
 app = litestar.Litestar(
