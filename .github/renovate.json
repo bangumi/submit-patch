@@ -2,5 +2,14 @@
   "extends": [
     "github>Trim21/renovate-config",
     "github>Trim21/renovate-config:monthly"
-  ]
+  ],
+  "npm": {
+    "enabled": false
+  },
+  "pnpm": {
+    "enabled": false
+  },
+  "yarn": {
+    "enabled": false
+  }
 }
