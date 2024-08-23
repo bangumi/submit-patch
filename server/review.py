@@ -231,7 +231,7 @@ class EpisodeReviewController(Controller):
             f"https://next.bgm.tv/p1/wiki/ep/{patch.episode_id}",
             headers={"Authorization": f"Bearer {auth.access_token}"},
             json={
-                "commitMessage": f"{patch.description} [patch https://patch.bgm38.tv/patch/{patch.id}]",
+                "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/patch/{patch.id}]",
                 "episode": episode,
             },
         )
