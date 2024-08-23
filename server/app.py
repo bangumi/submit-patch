@@ -180,6 +180,9 @@ async def show_user_contrib(
     else:
         raise BadRequestException(f"invalid type {patch_type}")
 
+    if not rows:
+        raise NotFoundException()
+
     users = await __fetch_users(rows)
 
     return Template(
@@ -214,6 +217,9 @@ async def show_user_review(
         )
     else:
         raise BadRequestException(f"invalid type {patch_type}")
+
+    if not rows:
+        raise NotFoundException()
 
     users = await __fetch_users(rows)
 
