@@ -1,8 +1,16 @@
 """A simple run_migration"""
 
+from pathlib import Path
 from typing import NamedTuple
 
+from asyncpg import UndefinedTableError
+
 from server.base import pg
+
+
+sql_dir = Path(__file__, "../sql")
+
+KEY_MIGRATION_VERSION = "version"
 
 
 class Migrate(NamedTuple):
@@ -11,55 +19,35 @@ class Migrate(NamedTuple):
 
 
 migrations: list[Migrate] = [
-    Migrate(1, "select 1"),
-    Migrate(
-        2,
-        """
-create table episode_patch
-(
-    id                   uuid primary key                                   not null,
-    episode_id           integer                                            not null,
-    state                integer                  default 0                 not null,
-    from_user_id         integer                                            not null,
-    wiki_user_id         integer                  default 0                 not null,
-    reason               text                                               not null,
-
-    original_name        text,
-    name                 text,
-
-    original_name_cn     text,
-    name_cn              text,
-
-    original_duration    varchar(255),
-    duration             varchar(255),
-
-    original_airdate     varchar(64),
-    airdate              varchar(64),
-
-    original_description text,
-    description          text,
-
-    created_at           timestamp with time zone default CURRENT_TIMESTAMP not null,
-    updated_at           timestamp with time zone default CURRENT_TIMESTAMP not null,
-    deleted_at           timestamp with time zone,
-
-    reject_reason        varchar(255)             default ''                not null
-);
-
-
-create index on episode_patch (state);
-""",
-    ),
+    Migrate(1, sql_dir.joinpath("001-init.sql").read_text(encoding="utf8")),
+    Migrate(2, "select 1;"),  # noop
 ]
 
 
 async def run_migration() -> None:
-    v = await pg.fetchval("select value from patch_db_migration where key=$1", "version")
+    v = None
+    try:
+        v = await pg.fetchval(
+            "select value from patch_db_migration where key=$1", KEY_MIGRATION_VERSION
+        )
+    except UndefinedTableError:
+        # do init
+        await pg.execute(
+            """
+            create table if not exists patch_db_migration(
+                key text primary key not null,
+                value text not null
+            )
+            """
+        )
+
     if v is None:
         await pg.execute(
-            "insert into patch_db_migration (key, value) VALUES ($1,$2)", "version", "0"
+            "insert into patch_db_migration (key, value) VALUES ($1, $2)",
+            KEY_MIGRATION_VERSION,
+            "0",
         )
-        return
+        v = "0"
 
     current_version = int(v)
     for migrate in migrations:
@@ -67,5 +55,7 @@ async def run_migration() -> None:
             continue
         await pg.execute(migrate.sql)
         await pg.execute(
-            "update patch_db_migration set value = $1 where key = 'version'", str(migrate.version)
+            "update patch_db_migration set value = $1 where key = $2",
+            str(migrate.version),
+            KEY_MIGRATION_VERSION,
         )
