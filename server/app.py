@@ -251,7 +251,8 @@ def plain_text_exception_handler(_: Request, exc: HTTPException) -> Template:
 
 
 def internal_error_handler(_: Request, exc: Exception) -> Response[Any]:
-    logger.error("internal server error: {}", exc)
+    logger.exception("internal server error: {} {}", type(exc), exc)
+
     return Response(
         content={"status_code": 500, "detail": "Internal Server Error"},
         status_code=HTTP_500_INTERNAL_SERVER_ERROR,
