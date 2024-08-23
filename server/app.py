@@ -8,7 +8,7 @@ from typing import Annotated, Any, NamedTuple
 
 import asyncpg
 import litestar
-from litestar import Response
+from litestar import MediaType, Response
 from litestar.config.csrf import CSRFConfig
 from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.datastructures import State
@@ -23,18 +23,16 @@ from litestar.status_codes import HTTP_500_INTERNAL_SERVER_ERROR
 from litestar.stores.redis import RedisStore
 from litestar.template import TemplateConfig
 from loguru import logger
-from redis.asyncio.client import Redis
 
 from config import (
     CSRF_SECRET_TOKEN,
     DEV,
     PROJECT_PATH,
-    REDIS_DSN,
     UTC,
 )
 from server import auth, contrib, patch, review, tmpl
 from server.auth import require_user_login, session_auth_config
-from server.base import BadRequestException, Request, http_client, pg, pg_pool_startup
+from server.base import BadRequestException, Request, http_client, pg, pg_pool_startup, redis_client
 from server.migration import run_migration
 from server.model import PatchState
 from server.router import Router
@@ -297,6 +295,36 @@ async def startup_fetch_missing_users() -> None:
         )
 
 
+@router
+@litestar.get("/badge.svg")
+async def badge() -> Response[bytes]:
+    key = "patch:rest:pending"
+    pending = await redis_client.get(key)
+
+    if pending is not None:
+        return Response(pending, media_type=MediaType.XML)
+
+    rest = await pg.fetchval(
+        "select count(1) from patch where deleted_at IS NULL and state = $1", PatchState.Pending
+    ) + await pg.fetchval(
+        "select count(1) from episode_patch where deleted_at IS NULL and state = $1",
+        PatchState.Pending,
+    )
+
+    if rest == 0:
+        res = await http_client.get(
+            f"https://img.shields.io/badge/%E5%BE%85%E5%AE%A1%E6%A0%B8-{rest}-green"
+        )
+    else:
+        res = await http_client.get(
+            f"https://img.shields.io/badge/%E5%BE%85%E5%AE%A1%E6%A0%B8-{rest}-blue"
+        )
+
+    await redis_client.set(key, res.content, ex=60)
+
+    return Response(res.content, media_type=MediaType.XML)
+
+
 app = litestar.Litestar(
     [
         *auth.router,
@@ -308,7 +336,7 @@ app = litestar.Litestar(
     template_config=TemplateConfig(
         engine=JinjaTemplateEngine.from_environment(tmpl.engine),
     ),
-    stores={"sessions": RedisStore(Redis.from_url(REDIS_DSN), handle_client_shutdown=False)},
+    stores={"sessions": RedisStore(redis_client, handle_client_shutdown=False)},
     on_startup=[pg_pool_startup, run_migration, startup_fetch_missing_users],
     csrf_config=CSRFConfig(secret=CSRF_SECRET_TOKEN, cookie_name="s-csrf-token"),
     before_request=before_req,

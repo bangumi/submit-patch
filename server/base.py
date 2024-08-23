@@ -8,9 +8,10 @@ import litestar
 from litestar.exceptions import ClientException
 from litestar.status_codes import HTTP_400_BAD_REQUEST
 from loguru import logger
+from redis.asyncio import Redis
 from typing_extensions import Never
 
-from config import PG_DSN
+from config import PG_DSN, REDIS_DSN
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -37,6 +38,8 @@ class User:
     def allow_edit(self) -> bool:
         return self.group_id in {1, 2, 9, 11}
 
+
+redis_client = Redis.from_url(REDIS_DSN)
 
 http_client = httpx.AsyncClient(
     follow_redirects=False, headers={"user-agent": "trim21/submit-patch"}
