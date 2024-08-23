@@ -42,16 +42,39 @@
         <blockquote class="blockquote" style="background-color: #f7f7f9">
             <p class="mb-0"
                style="overflow: visible; overflow-wrap: anywhere;">
-                {{ patch.description }}
+                {{ patch.reason }}
             </p>
         </blockquote>
     </div>
 
     <h3>具体变动</h3>
 
-    <div class="row">
-        <div id="diff" class="diff"></div>
-    </div>
+    {% for key, value in diff.items() %}
+        <div class="row">
+            <h4>{{ diff_key_cn[key] }}</h4>
+            <div id="{{ key }}diff" class="diff"></div>
+        </div>
+
+        <script>
+            (() => {
+                const diffString = {{ value | tojson }};
+                const targetElement = document.getElementById('{{ key }}diff');
+                const configuration = {
+                    drawFileList: false,
+                    fileListToggle: false,
+                    fileListStartVisible: false,
+                    maxLineSizeInBlockForComparison: 80,
+                    fileContentToggle: false,
+                    matching: 'lines',
+                    outputFormat: 'line-by-line',
+                    synchronisedScroll: true,
+                    renderNothingWhenEmpty: false,
+                };
+                const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+                diff2htmlUi.draw();
+            })()
+        </script>
+    {% endfor %}
 
     <div class="row">
         {% if patch.state == 0 %}
@@ -136,24 +159,4 @@
             </div>
         {% endif %}
     </div>
-
-    <script>
-        (() => {
-            const diffString = {{ diff | tojson }};
-            const targetElement = document.getElementById('diff');
-            const configuration = {
-                drawFileList: true,
-                fileListToggle: true,
-                fileListStartVisible: false,
-                maxLineSizeInBlockForComparison: 80,
-                fileContentToggle: false,
-                matching: 'lines',
-                outputFormat: 'line-by-line',
-                synchronisedScroll: true,
-                renderNothingWhenEmpty: false,
-            };
-            const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
-            diff2htmlUi.draw();
-        })()
-    </script>
 {% endblock %}
