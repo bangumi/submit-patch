@@ -200,13 +200,20 @@ async def creat_episode_patch(
 
     await _validate_captcha(data.cf_turnstile_response)
 
-    res = await http_client.get(f"https://api.bgm.tv/v0/episodes/{episode_id}")
+    res = await http_client.get(f"https://next.bgm.tv/p1/wiki/ep/{episode_id}")
     if res.status_code == 404:
         raise NotFoundException()
 
     res.raise_for_status()
 
-    original_wiki = res.json()
+    org = res.json()
+    original_wiki = {
+        "airdate": org["date"],
+        "name": org["name"],
+        "name_cn": org["nameCN"],
+        "duration": org["duration"],
+        "desc": org["summary"],
+    }
 
     keys = ["airdate", "name", "name_cn", "duration", "desc"]
 
