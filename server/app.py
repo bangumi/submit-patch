@@ -33,7 +33,20 @@ from config import (
 )
 from server import auth, contrib, patch, review, tmpl
 from server.auth import require_user_login, session_auth_config
-from server.badge import badge_0, badge_gte_100, badge_le_10, badge_le_100
+from server.badge import (
+    badge_0,
+    badge_gt10,
+    badge_gt20,
+    badge_gt30,
+    badge_gt40,
+    badge_gt50,
+    badge_gt60,
+    badge_gt70,
+    badge_gt80,
+    badge_gt90,
+    badge_gt100,
+    badge_lt10,
+)
 from server.base import BadRequestException, Request, http_client, pg, pg_pool_startup, redis_client
 from server.migration import run_migration
 from server.model import PatchState
@@ -330,12 +343,28 @@ async def badge() -> Response[bytes]:
 
     if rest == 0:
         res = badge_0
-    elif rest < 10:
-        res = badge_le_10
-    elif rest < 100:
-        res = badge_le_100
+    elif rest <= 10:
+        res = badge_lt10
+    elif rest > 100:
+        res = badge_gt100
+    elif rest > 90:
+        res = badge_gt90
+    elif rest > 80:
+        res = badge_gt80
+    elif rest > 70:
+        res = badge_gt70
+    elif rest > 60:
+        res = badge_gt60
+    elif rest > 50:
+        res = badge_gt50
+    elif rest > 40:
+        res = badge_gt40
+    elif rest > 30:
+        res = badge_gt30
+    elif rest > 20:
+        res = badge_gt20
     else:
-        res = badge_gte_100
+        res = badge_gt10
 
     await redis_client.set(key, res, ex=10)
 
