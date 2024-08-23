@@ -223,7 +223,7 @@ class EpisodeReviewController(Controller):
                 "name": patch.name,
                 "summary": patch.description,
                 "duration": patch.duration,
-                "airdate": patch.airdate,
+                "date": patch.airdate,
             }
         )
 
@@ -232,16 +232,6 @@ class EpisodeReviewController(Controller):
             headers={"Authorization": f"Bearer {auth.access_token}"},
             json={
                 "commitMessage": f"{patch.description} [patch https://patch.bgm38.tv/patch/{patch.id}]",
-                "expectedRevision": pydash.pick(
-                    {
-                        "nameCN": patch.original_name_cn,
-                        "name": patch.original_name,
-                        "summary": patch.original_description,
-                        "duration": patch.original_duration,
-                        "airdate": patch.original_airdate,
-                    },
-                    *episode.keys(),
-                ),
                 "episode": episode,
             },
         )
