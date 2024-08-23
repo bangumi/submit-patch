@@ -320,7 +320,10 @@ async def startup_fetch_missing_users() -> None:
 
 
 @router
-@litestar.get("/badge.svg")
+@litestar.get(
+    "/badge.svg",
+    response_headers={"cache-control": "public, max-age=5"},
+)
 async def badge() -> Response[bytes]:
     key = "patch:rest:pending"
     pending = await redis_client.get(key)
