@@ -20,6 +20,31 @@
             </a>
         </div>
     {% else %}
+        <div class="row pt-4 pb-4">
+            <nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
+                <nav aria-label="...">
+                    <ul class="pagination">
+                        <li class="page-item">
+                            <a
+                                    {% if patch_type == 'subject' %}
+                                        class="page-link active"
+                                    {% else %}
+                                        class="page-link"
+                                    {% endif %}
+                                        href="/?type=subject">条目</a>
+                        </li>
+                        <li class="page-item">
+                            <a
+                                    {% if patch_type == 'episode' %}
+                                        class="page-link active"
+                                    {% else %}
+                                        class="page-link"
+                                    {% endif %} href="/?type=episode">章节</a>
+                        </li>
+                    </ul>
+                </nav>
+            </nav>
+        </div>
         {% if not auth.allow_edit %}
             <div class="row m-0">
                 <a href="/suggest"><h3>添加Patch</h3></a>
@@ -30,9 +55,15 @@
     <div class="row m-0">
         <ul class="list-group p-0 m-0">
             {% for patch in rows %}
-                <a href="/patch/{{ patch.id }}" id="{{ patch.id }}"
-                   target="_blank" rel="noopener"
-                   class="list-group-item list-group-item-action flex-column align-items-start"
+                <a
+                        {% if patch_type == 'subject' %}
+                            href="/patch/{{ patch.id }}"
+                        {% elif patch_type == 'episode' %}
+                            href="/episode/{{ patch.id }}"
+                        {% endif %}
+                            id="{{ patch.id }}"
+                            target="_blank" rel="noopener"
+                            class="list-group-item list-group-item-action flex-column align-items-start"
                 >
                     <div class="d-flex w-100 justify-content-between">
                         <div>
@@ -91,7 +122,12 @@
                               </span>
                             {% endif %}
                             {% if patch.original_name %}
-                                条目名:
+                                {% if patch_type == 'subject' %}
+                                    条目名:
+                                {% elif patch_type == 'episode' %}
+                                    章节名:
+                                {% endif %}
+
                                 <span class="badge bg-light text-dark border border-info">{{ patch.original_name }}</span>
                             {% endif %}
                         </p>

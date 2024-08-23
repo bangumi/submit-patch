@@ -1,9 +1,10 @@
+import enum
 import html
 import mimetypes
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Annotated, Any, NamedTuple
 
 import asyncpg
 import litestar
@@ -15,6 +16,7 @@ from litestar.exceptions import (
     HTTPException,
     NotFoundException,
 )
+from litestar.params import Parameter
 from litestar.response import Template
 from litestar.static_files import create_static_files_router
 from litestar.status_codes import HTTP_500_INTERNAL_SERVER_ERROR
@@ -32,7 +34,7 @@ from config import (
 )
 from server import auth, contrib, patch, review, tmpl
 from server.auth import require_user_login, session_auth_config
-from server.base import Request, http_client, pg, pg_pool_startup
+from server.base import BadRequestException, Request, http_client, pg, pg_pool_startup
 from server.migration import run_migration
 from server.model import PatchState
 from server.router import Router
@@ -96,32 +98,65 @@ async def __fetch_users(rows: list[asyncpg.Record]) -> dict[int, asyncpg.Record]
     return users
 
 
+class PatchType(str, enum.Enum):
+    Subject = "subject"
+    Episode = "episode"
+
+
 @router
 @litestar.get("/")
-async def index(request: Request) -> Template:
+async def index(
+    request: Request, patch_type: Annotated[PatchType, Parameter(query="type")] = PatchType.Subject
+) -> Template:
     if not request.auth:
         return Template("login.html.jinja2")
 
-    if not request.auth.allow_edit:
-        rows = await pg.fetch(
-            "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
-            request.auth.user_id,
-        )
-    else:
-        rows = await pg.fetch(
-            """
-            select * from patch where deleted_at is NULL and state = $1
-            union
-            (select * from patch  where deleted_at is NULL and state != $1 order by updated_at desc limit 10)
-            """,
-            PatchState.Pending,
-        )
+    if patch_type == PatchType.Subject:
+        if not request.auth.allow_edit:
+            rows = await pg.fetch(
+                "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
+                request.auth.user_id,
+            )
+        else:
+            rows = await pg.fetch(
+                """
+                select * from patch where deleted_at is NULL and state = $1
+                union
+                (select * from patch  where deleted_at is NULL and state != $1 order by updated_at desc limit 10)
+                """,
+                PatchState.Pending,
+            )
 
-        rows.sort(key=__index_row_sorter, reverse=True)
+            rows.sort(key=__index_row_sorter, reverse=True)
+
+    elif patch_type == PatchType.Episode:
+        if not request.auth.allow_edit:
+            rows = await pg.fetch(
+                "select * from episode_patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
+                request.auth.user_id,
+            )
+        else:
+            rows = await pg.fetch(
+                """
+                select * from episode_patch where deleted_at is NULL and state = $1
+                union
+                (select * from episode_patch  where deleted_at is NULL and state != $1 order by updated_at desc limit 10)
+                """,
+                PatchState.Pending,
+            )
+
+            rows.sort(key=__index_row_sorter, reverse=True)
+    else:
+        raise BadRequestException(f"{patch_type} is not valid")
 
     return Template(
         "list.html.jinja2",
-        context={"rows": rows, "auth": request.auth, "users": await __fetch_users(rows)},
+        context={
+            "rows": rows,
+            "auth": request.auth,
+            "users": await __fetch_users(rows),
+            "patch_type": patch_type,
+        },
     )
 
 

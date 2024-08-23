@@ -1,7 +1,6 @@
 create table episode_patch
 (
-    id                   uuid                                               not null
-        primary key,
+    id                   uuid primary key                                   not null,
     episode_id           integer                                            not null,
     state                integer                  default 0                 not null,
     from_user_id         integer                                            not null,
