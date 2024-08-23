@@ -2,9 +2,6 @@
 
 {% block head %}
     <title>修改请求列表</title>
-{% endblock %}
-
-{% block content %}
     <style>
         .oneline-hide-overflow {
             text-wrap: nowrap;
@@ -12,39 +9,44 @@
             text-overflow: ellipsis;
         }
     </style>
+{% endblock %}
+
+{% block content %}
+    {% include 'component/header.html' %}
+
+    <div class="row pt-4 pb-4">
+        <nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
+            <nav aria-label="...">
+                <ul class="pagination">
+                    <li class="page-item">
+                        <a
+                                {% if patch_type == 'subject' %}
+                                    class="page-link active"
+                                {% else %}
+                                    class="page-link"
+                                {% endif %}
+                                    href="{{ request.url.path }}?type=subject">条目</a>
+                    </li>
+                    <li class="page-item">
+                        <a
+                                {% if patch_type == 'episode' %}
+                                    class="page-link active"
+                                {% else %}
+                                    class="page-link"
+                                {% endif %} href="{{ request.url.path }}?type=episode">章节</a>
+                    </li>
+                </ul>
+            </nav>
+        </nav>
+    </div>
+
     {% if user_id is defined %}
-        {% include 'component/header.html' %}
         <div class="row m-1">
             <a href="https://bgm.tv/user/{{ user_id }}" style="text-underline: none">
                 <h3>用户 {{ users.get(user_id).nickname }} 的个人主页</h3>
             </a>
         </div>
     {% else %}
-        <div class="row pt-4 pb-4">
-            <nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
-                <nav aria-label="...">
-                    <ul class="pagination">
-                        <li class="page-item">
-                            <a
-                                    {% if patch_type == 'subject' %}
-                                        class="page-link active"
-                                    {% else %}
-                                        class="page-link"
-                                    {% endif %}
-                                        href="/?type=subject">条目</a>
-                        </li>
-                        <li class="page-item">
-                            <a
-                                    {% if patch_type == 'episode' %}
-                                        class="page-link active"
-                                    {% else %}
-                                        class="page-link"
-                                    {% endif %} href="/?type=episode">章节</a>
-                        </li>
-                    </ul>
-                </nav>
-            </nav>
-        </div>
         {% if not auth.allow_edit %}
             <div class="row m-0">
                 <a href="/suggest"><h3>添加Patch</h3></a>

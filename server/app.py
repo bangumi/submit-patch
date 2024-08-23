@@ -162,11 +162,23 @@ async def index(
 
 @router
 @litestar.get("/contrib/{user_id:int}", guards=[require_user_login])
-async def show_user_contrib(user_id: int, request: Request) -> Template:
-    rows = await pg.fetch(
-        "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
-        user_id,
-    )
+async def show_user_contrib(
+    user_id: int,
+    request: Request,
+    patch_type: Annotated[PatchType, Parameter(query="type")] = PatchType.Subject,
+) -> Template:
+    if patch_type == PatchType.Subject:
+        rows = await pg.fetch(
+            "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
+            user_id,
+        )
+    elif patch_type == PatchType.Episode:
+        rows = await pg.fetch(
+            "select * from episode_patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
+            user_id,
+        )
+    else:
+        raise BadRequestException(f"invalid type {patch_type}")
 
     users = await __fetch_users(rows)
 
@@ -177,6 +189,7 @@ async def show_user_contrib(user_id: int, request: Request) -> Template:
             "users": users,
             "auth": request.auth,
             "user_id": user_id,
+            "patch_type": patch_type,
             "title": f"{users[user_id]['nickname']} 的历史贡献",
         },
     )
@@ -184,11 +197,23 @@ async def show_user_contrib(user_id: int, request: Request) -> Template:
 
 @router
 @litestar.get("/review/{user_id:int}", guards=[require_user_login])
-async def show_user_review(user_id: int, request: Request) -> Template:
-    rows = await pg.fetch(
-        "select * from patch where wiki_user_id = $1 and deleted_at is NULL order by created_at desc",
-        user_id,
-    )
+async def show_user_review(
+    user_id: int,
+    request: Request,
+    patch_type: Annotated[PatchType, Parameter(query="type")] = PatchType.Subject,
+) -> Template:
+    if patch_type == PatchType.Subject:
+        rows = await pg.fetch(
+            "select * from patch where wiki_user_id = $1 and deleted_at is NULL order by created_at desc",
+            user_id,
+        )
+    elif patch_type == PatchType.Episode:
+        rows = await pg.fetch(
+            "select * from episode_patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
+            user_id,
+        )
+    else:
+        raise BadRequestException(f"invalid type {patch_type}")
 
     users = await __fetch_users(rows)
 
@@ -200,6 +225,7 @@ async def show_user_review(user_id: int, request: Request) -> Template:
             "auth": request.auth,
             "user_id": user_id,
             "title": f"{users[user_id]['nickname']} 的历史审核",
+            "patch_type": patch_type,
         },
     )
 
@@ -234,12 +260,17 @@ def internal_error_handler(_: Request, exc: Exception) -> Response[Any]:
 
 async def startup_fetch_missing_users() -> None:
     logger.info("fetch missing users")
-    results = await pg.fetch("select from_user_id, wiki_user_id from patch")
     s = set()
-    for u1, u2 in results:
+
+    for u1, u2 in await pg.fetch("select from_user_id, wiki_user_id from patch"):
         s.add(u1)
         s.add(u2)
 
+    for u1, u2 in await pg.fetch("select from_user_id, wiki_user_id from episode_patch"):
+        s.add(u1)
+        s.add(u2)
+
+    s.discard(None)
     s.discard(0)
 
     user_fetched = [

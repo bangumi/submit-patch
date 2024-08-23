@@ -63,7 +63,7 @@ async def run_migration() -> None:
 
     current_version = int(v)
     for migrate in migrations:
-        if migrate.version < current_version:
+        if migrate.version <= current_version:
             continue
         await pg.execute(migrate.sql)
         await pg.execute(
