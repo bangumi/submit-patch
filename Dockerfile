@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . ./
 COPY pyproject.toml poetry.lock requirements-poetry.txt ./
 
-RUN pip install -r requirements-poetry.txt &&\
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements-poetry.txt &&\
   poetry export -f requirements.txt --output requirements.txt --without-hashes
 
 ### final image ###
@@ -17,7 +17,7 @@ ENV PYTHONPATH=/app
 
 COPY --from=poetry /app/requirements.txt ./requirements.txt
 
-RUN pip install -U pip && \
+RUN --mount=type=cache,target=/root/.cache/pip pip install -U pip && \
     pip install -r requirements.txt --no-cache-dir
 
 WORKDIR /app
