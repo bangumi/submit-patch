@@ -1,3 +1,4 @@
+import asyncio
 import enum
 import html
 import mimetypes
@@ -304,25 +305,38 @@ async def badge() -> Response[bytes]:
     if pending is not None:
         return Response(pending, media_type="image/svg+xml")
 
-    rest = await pg.fetchval(
-        "select count(1) from patch where deleted_at IS NULL and state = $1", PatchState.Pending
-    ) + await pg.fetchval(
-        "select count(1) from episode_patch where deleted_at IS NULL and state = $1",
-        PatchState.Pending,
+    rest = sum(
+        await asyncio.gather(
+            pg.fetchval(
+                "select count(1) from patch where deleted_at IS NULL and state = $1",
+                PatchState.Pending,
+            ),
+            pg.fetchval(
+                "select count(1) from episode_patch where deleted_at IS NULL and state = $1",
+                PatchState.Pending,
+            ),
+        )
     )
 
     if rest == 0:
-        res = await http_client.get(
-            f"https://img.shields.io/badge/%E5%BE%85%E5%AE%A1%E6%A0%B8-{rest}-green"
-        )
+        # https://img.shields.io/badge/%E5%BE%85%E5%AE%A1%E6%A0%B8-0-green
+        res = """
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="60" height="20" role="img" aria-label="待审核: 0"><title>待审核: 0</title><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="60" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="43" height="20" fill="#555"/><rect x="43" width="17" height="20" fill="#97ca00"/><rect width="60" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text aria-hidden="true" x="225" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="330">待审核</text><text x="225" y="140" transform="scale(.1)" fill="#fff" textLength="330">待审核</text><text aria-hidden="true" x="505" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="70">0</text><text x="505" y="140" transform="scale(.1)" fill="#fff" textLength="70">0</text></g></svg>
+        """.encode()
+    elif rest < 10:
+        # https://img.shields.io/badge/%E5%BE%85%E5%AE%A1%E6%A0%B8-%3E8-blue
+        res = f"""
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="60" height="20" role="img" aria-label="待审核: 8"><title>待审核: 8</title><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="60" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="43" height="20" fill="#555"/><rect x="43" width="17" height="20" fill="#007ec6"/><rect width="60" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text aria-hidden="true" x="225" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="330">待审核</text><text x="225" y="140" transform="scale(.1)" fill="#fff" textLength="330">待审核</text><text aria-hidden="true" x="505" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="70">8</text><text x="505" y="140" transform="scale(.1)" fill="#fff" textLength="70">{rest}</text></g></svg>
+        """.encode()
     else:
-        res = await http_client.get(
-            f"https://img.shields.io/badge/%E5%BE%85%E5%AE%A1%E6%A0%B8-{rest}-blue"
-        )
+        # https://img.shields.io/badge/待审核->10-red
+        res = """
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="76" height="20" role="img" aria-label="待审核: &gt;10"><title>待审核: &gt;10</title><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="76" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#r)"><rect width="43" height="20" fill="#555"/><rect x="43" width="33" height="20" fill="#e05d44"/><rect width="76" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><text aria-hidden="true" x="225" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="330">待审核</text><text x="225" y="140" transform="scale(.1)" fill="#fff" textLength="330">待审核</text><text aria-hidden="true" x="585" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="230">&gt;10</text><text x="585" y="140" transform="scale(.1)" fill="#fff" textLength="230">&gt;10</text></g></svg>
+        """.encode()
 
-    await redis_client.set(key, res.content, ex=60)
+    await redis_client.set(key, res, ex=10)
 
-    return Response(res.content, media_type="image/svg+xml")
+    return Response(res, media_type="image/svg+xml")
 
 
 app = litestar.Litestar(

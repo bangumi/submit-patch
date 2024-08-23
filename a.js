@@ -21,5 +21,7 @@
         el.after(
             `<a href="https://patch.bgm38.tv/suggest?subject_id=${m[1]}" class="l rr" target="_blank">[提供修改建议]</a>`
         );
+    } else if (path === '/') {
+        $('#header').prepend(`<a href="https://patch.bgm38.tv/" target='_blank'><img src="https://patch.bgm38.tv/badge.svg"/></a>`)
     }
 })();
