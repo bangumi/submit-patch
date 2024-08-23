@@ -29,7 +29,7 @@
         </div>
         <div class="col">
             <h3>
-                提交者: <a href="/contrib/{{ patch.from_user_id }}" target="_blank"
+                提交者: <a href="/contrib/{{ patch.from_user_id }}?type=episode" target="_blank"
                            rel="noopener">
                 {{ submitter.nickname }}
             </a>
@@ -135,7 +135,7 @@
         {% elif patch.state == 1 %}
             <hr>
             <div class="col">
-                <h2> 已被 <a href="/review/{{ patch.wiki_user_id }}"
+                <h2> 已被 <a href="/review/{{ patch.wiki_user_id }}?type=episode"
                              target="_blank">{{ reviewer.nickname }}</a>
                     <span class="badge bg-success"> 接受 </span>
                 </h2>
@@ -143,7 +143,7 @@
         {% elif patch.state == 2 %}
             <hr>
             <div class="col">
-                <h3> 已被 <a href="/review/{{ patch.wiki_user_id }}"
+                <h3> 已被 <a href="/review/{{ patch.wiki_user_id }}?type=episode"
                              target="_blank">{{ reviewer.nickname }}</a>
                     <span class="badge bg-danger"> 拒绝 </span>
                 </h3>
