@@ -25,7 +25,15 @@
                                 {% else %}
                                     class="page-link"
                                 {% endif %}
-                                    href="{{ request.url.path }}?type=subject">条目</a>
+                                    href="{{ request.url.path }}?type=subject">条目
+
+                            {% if pending_subject %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+    {{ pending_subject }}
+    <span class="visually-hidden">unread messages</span>
+  </span>
+                            {% endif %}
+                        </a>
                     </li>
                     <li class="page-item">
                         <a
@@ -33,7 +41,15 @@
                                     class="page-link active"
                                 {% else %}
                                     class="page-link"
-                                {% endif %} href="{{ request.url.path }}?type=episode">章节</a>
+                                {% endif %} href="{{ request.url.path }}?type=episode">章节
+
+                            {% if pending_episode %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+    {{ pending_episode }}
+    <span class="visually-hidden">unread messages</span>
+  </span>
+                            {% endif %}
+                        </a>
                     </li>
                 </ul>
             </nav>

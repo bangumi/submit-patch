@@ -162,6 +162,16 @@ async def index(
     else:
         raise BadRequestException(f"{patch_type} is not valid")
 
+    pending_episode = await pg.fetchval(
+        "select count(1) from episode_patch where deleted_at is NULL and state = $1",
+        PatchState.Pending,
+    )
+
+    pending_subject = await pg.fetchval(
+        "select count(1) from patch where deleted_at is NULL and state = $1",
+        PatchState.Pending,
+    )
+
     return Template(
         "list.html.jinja2",
         context={
@@ -169,6 +179,8 @@ async def index(
             "auth": request.auth,
             "users": await __fetch_users(rows),
             "patch_type": patch_type,
+            "pending_episode": pending_episode,
+            "pending_subject": pending_subject,
         },
     )
 
