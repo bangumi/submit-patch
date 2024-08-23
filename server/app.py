@@ -240,9 +240,9 @@ async def show_user_review(
 
 def __index_row_sorter(r: asyncpg.Record) -> tuple[int, datetime]:
     if r["state"] == PatchState.Pending:
-        return 1, r["created_at"]
+        return 1, -r["created_at"].timestamp()
 
-    return 0, r["updated_at"]
+    return 0, r["updated_at"].timestamp()
 
 
 def before_req(req: litestar.Request[None, None, State]) -> None:
