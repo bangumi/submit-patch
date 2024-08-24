@@ -22,7 +22,7 @@ uvicorn = { version = "^0.30.6", extras = ['standard'] }
 uuid6 = "^2024.7.10"
 pydash = "^8.0.3"
 dacite = "^1.8.1"
-sqlalchemy = "^2.0.32"
+pypika = "^0.48.9"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.1"
@@ -76,6 +76,7 @@ ignore = [
     "ISC001",
     "N815", "N818",
     "PERF401",
+    "PD",
     "PGH003",
     "PLR0911", "PLR0912", "PLR0913", "PLR0914", "PLR0915", "PLR0917", "PLR2004", "PLR6104", "PLR6301",
     "PLW2901",

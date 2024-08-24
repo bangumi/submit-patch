@@ -9,7 +9,6 @@ from litestar.exceptions import ClientException
 from litestar.status_codes import HTTP_400_BAD_REQUEST
 from loguru import logger
 from redis.asyncio import Redis
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from typing_extensions import Never
 
 from config import PG_DSN, REDIS_DSN
@@ -46,13 +45,6 @@ http_client = httpx.AsyncClient(
     follow_redirects=False, headers={"user-agent": "trim21/submit-patch"}
 )
 pg = asyncpg.create_pool(dsn=PG_DSN)
-
-engine = create_async_engine(
-    "postgresql+asyncpg://" + PG_DSN.partition("://")[-1],
-    # echo=True,
-)
-
-async_session = async_sessionmaker(engine, expire_on_commit=False)
 
 
 async def pg_pool_startup(*args: Any, **kwargs: Any) -> None:

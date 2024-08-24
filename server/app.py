@@ -236,9 +236,13 @@ app = litestar.Litestar(
     csrf_config=CSRFConfig(secret=CSRF_SECRET_TOKEN, cookie_name="s-csrf-token"),
     before_request=before_req,
     middleware=[session_auth_config.middleware],
-    exception_handlers={
-        HTTPException: plain_text_exception_handler,
-        Exception: internal_error_handler,
-    },
+    exception_handlers=(
+        {
+            HTTPException: plain_text_exception_handler,
+            Exception: internal_error_handler,
+        }
+        if not DEV
+        else {}
+    ),
     debug=DEV,
 )

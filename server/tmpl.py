@@ -46,7 +46,7 @@ def add_filter(s: str | Callable[P, T]) -> Any:
     return real_wrapper(s.__name__, s)
 
 
-def add_global_function(fn: T) -> T:
+def add_global_function(fn: Callable[P, T]) -> Callable[P, T]:
     name = fn.__name__
     if name in engine.globals:
         raise ValueError(f"filter '{name}' already exists")
