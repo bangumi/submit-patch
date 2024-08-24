@@ -1,7 +1,6 @@
 {% extends "layout/base.html.jinja2" %}
 
 {% block head %}
-  <title>修改请求列表</title>
   <style>
       .oneline-hide-overflow {
           text-wrap: nowrap;
@@ -70,9 +69,12 @@
 
   {% if user_id is defined %}
     <div class="row m-1">
-      <a href="https://bgm.tv/user/{{ user_id }}" style="text-underline: none">
-        <h3>用户 {{ users.get(user_id).nickname }} 的个人主页</h3>
-      </a>
+      <h3>
+        用户
+        <a href="https://bgm.tv/user/{{ user_id }}"
+           style="text-underline: none">{{ users.get(user_id).nickname }}</a>
+        的个人主页
+      </h3>
     </div>
   {% else %}
     {% if not auth.allow_edit %}
