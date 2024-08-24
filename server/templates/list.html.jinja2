@@ -18,10 +18,10 @@
 {% endblock %}
 
 {% block content %}
-    {% include 'component/header.html' %}
+    {% include 'component/header.html.jinja2' %}
 
-    <div class="row pt-4 pb-4">
-        <nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
+    <div class="row pt-2 pb-2 d-flex flex-row">
+        <nav class="col" style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
             <nav aria-label="...">
                 <ul class="pagination">
                     <li class="page-item">
@@ -70,7 +70,6 @@
         </div>
     {% else %}
         {% if not auth.allow_edit %}
-
             <div class="row m-0">
                 {% if patch_type == 'subject' %}
                     <a href="/suggest"><h3>添加Patch</h3></a>
