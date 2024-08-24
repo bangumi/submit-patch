@@ -10,6 +10,7 @@ from litestar.exceptions import (
     HTTPException,
     NotAuthorizedException,
     NotFoundException,
+    PermissionDeniedException,
     ValidationException,
 )
 from litestar.params import Body
@@ -19,7 +20,7 @@ from uuid_utils import uuid7
 from config import TURNSTILE_SECRET_KEY, UTC
 from server.auth import require_user_editor, require_user_login
 from server.base import AuthorizedRequest, BadRequestException, Request, http_client, pg
-from server.model import SubjectPatch
+from server.model import PatchState, SubjectPatch
 from server.router import Router
 
 
@@ -156,6 +157,88 @@ async def delete_patch(patch_id: str, request: AuthorizedRequest) -> Redirect:
 
 
 @router
+@litestar.get("/edit/subject/{patch_id:uuid}", guards=[require_user_login])
+async def _(request: AuthorizedRequest, patch_id: uuid.UUID) -> Response[Any]:
+    p = await pg.fetchrow(
+        "select * from view_subject_patch where id = $1",
+        patch_id,
+    )
+    if not p:
+        raise NotFoundException()
+
+    if p["from_user_id"] != request.auth.user_id:
+        raise PermissionDeniedException()
+
+    if p["state"] != PatchState.Pending:
+        raise BadRequestException("patch已经被审核")
+
+    return Template("suggest.html.jinja2", context={"data": p, "edit": True, "patch_id": patch_id})
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class EditSubjectPatch:
+    name: str | None = None
+    infobox: str | None = None
+    summary: str | None = None
+    reason: str
+    cf_turnstile_response: str
+    # HTML form will only include checkbox when it's checked,
+    # so any input is true, default value is false.
+    nsfw: str | None = None
+
+
+@router
+@litestar.post("/edit/subject/{patch_id:uuid}", guards=[require_user_login])
+async def _(
+    request: AuthorizedRequest,
+    patch_id: uuid.UUID,
+    data: Annotated[EditSubjectPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
+) -> Response[Any]:
+    await _validate_captcha(data.cf_turnstile_response)
+
+    async with pg.acquire() as conn:
+        async with conn.transaction():
+            p = await conn.fetchrow(
+                "select * from view_subject_patch where id = $1 for update",
+                patch_id,
+            )
+            if not p:
+                raise NotFoundException()
+            if p["from_user_id"] != request.auth.user_id:
+                raise PermissionDeniedException()
+            if p["state"] != PatchState.Pending:
+                raise BadRequestException("patch已经被审核")
+
+            for field in ["name", "infobox", "summary"]:
+                if p[field] is None:
+                    if getattr(data, field) is not None:
+                        raise BadRequestException("can't add more edit field")
+
+            res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{p['subject_id']}")
+            res.raise_for_status()
+            original = res.json()
+
+            await conn.execute(
+                """
+            update subject_patch set name=$1, infobox=$2, summary=$3, reason=$4,
+            original_name=$5, original_infobox=$6,original_summary=$7,updated_at=$8
+            where id=$9
+            """,
+                data.name,
+                data.infobox,
+                data.summary,
+                data.reason,
+                original["name"],
+                original["infobox"],
+                original["summary"],
+                datetime.now(tz=UTC),
+                patch_id,
+            )
+
+            return Redirect(f"/subject/{patch_id}")
+
+
+@router
 @litestar.get("/suggest-episode")
 async def episode_suggest_ui(request: Request, episode_id: int = 0) -> Response[Any]:
     if episode_id == 0:
@@ -260,7 +343,7 @@ async def delete_episode_patch(patch_id: uuid.UUID, request: AuthorizedRequest) 
     async with pg.acquire() as conn:
         async with conn.transaction():
             p = await conn.fetchrow(
-                """select from_user_id from episode_patch where id = $1 and deleted_at is NULL""",
+                "select from_user_id from view_episode_patch where id = $1",
                 patch_id,
             )
             if not p:

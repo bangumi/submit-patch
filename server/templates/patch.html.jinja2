@@ -147,7 +147,10 @@
 
     {% if patch.from_user_id == auth.user_id %}
       <div class="row mb-1">
-        <form action="/api/delete-patch/{{ patch.id }}" method="post">
+        <form action="/edit/subject/{{ patch.id }}" method="get" class="col">
+          <button type="submit" class="btn btn-success">Edit</button>
+        </form>
+        <form action="/api/delete-patch/{{ patch.id }}" method="post" class="col">
           {{ csrf_input | safe }}
           <button type="submit" class="btn btn-danger">Delete</button>
         </form>

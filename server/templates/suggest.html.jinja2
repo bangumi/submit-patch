@@ -1,59 +1,74 @@
 {% extends "layout/base.html.jinja2" %}
 
 {% block head %}
-    <title>提交修改请求</title>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async
-            defer></script>
+  <title>提交修改请求</title>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async
+          defer></script>
 {% endblock %}
 
 {% block content %}
-    <div class="row m-1">
-        <p>
-            <a href="https://bgm.tv/group/wiki" target="_blank">
-                <h1>提交前请先阅读置顶了解常见错误</h1>
-            </a>
-        </p>
+  <div class="row m-1">
+    <p>
+      <a href="https://bgm.tv/group/wiki" target="_blank">
+        <h1>提交前请先阅读置顶了解常见错误</h1>
+      </a>
+    </p>
+  </div>
+  <form method="post"
+    {% if patch_id %}
+        action="/edit/subject/{{ patch_id }}"
+    {% else %}
+        action="/suggest?subject_id={{ subject_id }}"
+    {% endif %}
+        enctype="application/x-www-form-urlencoded">
+    {{ csrf_input | safe }}
+
+    {% if not data.name is none %}
+      <div class="form-group">
+        <label for="name">条目名称</label>
+        <input class="form-control" id="name" name="name" value="{{ data.name }}">
+      </div>
+    {% endif %}
+
+    {% if not data.infobox is none %}
+      <div class="form-group">
+        <label for="infobox">Infobox</label>
+        <textarea rows="15" class="form-control" id="infobox"
+                  name="infobox">{{ data.infobox }}</textarea>
+      </div>
+    {% endif %}
+
+    {% if not data.summary is none %}
+      <div class="form-group">
+        <label for="summary">简介</label>
+        <textarea rows="10" class="form-control" id="summary"
+                  name="summary">{{ data.summary }}</textarea>
+      </div>
+    {% endif %}
+
+    <div class="form-check">
+      <input type="checkbox" name="nsfw" class="form-check-input"
+        {% if data.nsfw %}
+             checked
+        {% endif %}
+             id="exampleCheck1">
+      <label class="form-check-label" for="exampleCheck1">NSFW</label>
     </div>
-    <form action="/suggest?subject_id={{ subject_id }}" method="post"
-          enctype="application/x-www-form-urlencoded">
-        {{ csrf_input | safe }}
-        <div class="form-group">
-            <label for="name">条目名称</label>
-            <input class="form-control" id="name" name="name" value="{{ data.name }}">
-        </div>
 
-        <div class="form-group">
-            <label for="infobox">Infobox</label>
-            <textarea rows="15" class="form-control" id="infobox"
-                      name="infobox">{{ data.infobox }}</textarea>
-        </div>
+    <div class="form-group">
+      <label for="reason">原因</label>
+      <textarea cols="3"
+                class="form-control"
+                id="reason"
+                name="reason">{{ data.reason }}</textarea>
+    </div>
 
-        <div class="form-group">
-            <label for="summary">简介</label>
-            <textarea rows="10" class="form-control" id="summary"
-                      name="summary">{{ data.summary }}</textarea>
-        </div>
+    <div class="cf-turnstile m-1" data-theme="light"
+         data-response-field-name="cf_turnstile_response"
+         data-sitekey="{{ TURNSTILE_SITE_KEY }}"></div>
 
-        <div class="form-check">
-            <input type="checkbox" name="nsfw" class="form-check-input"
-                    {% if data.nsfw %}
-                   checked
-                    {% endif %}
-                   id="exampleCheck1">
-            <label class="form-check-label" for="exampleCheck1">NSFW</label>
-        </div>
+    <p>请等待验证码通过再进行提交</p>
 
-        <div class="form-group">
-            <label for="reason">原因</label>
-            <textarea cols="3" class="form-control" id="reason" name="reason"></textarea>
-        </div>
-
-        <div class="cf-turnstile m-1" data-theme="light"
-             data-response-field-name="cf_turnstile_response"
-             data-sitekey="{{ TURNSTILE_SITE_KEY }}"></div>
-
-        <p>请等待验证码通过再进行提交</p>
-
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
 {% endblock %}
