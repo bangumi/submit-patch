@@ -20,6 +20,8 @@ engine = jinja2.Environment(
 )
 
 engine.globals["TURNSTILE_SITE_KEY"] = TURNSTILE_SITE_KEY
+engine.globals["min"] = min
+engine.globals["max"] = max
 
 P = typing.ParamSpec("P")
 T = typing.TypeVar("T")
