@@ -139,7 +139,7 @@ async def index(
             )
         elif reviewed:
             rows = await pg.fetch(
-                """select * from patch where deleted_at is NULL and state != $1 order by updated_at""",
+                """select * from patch where deleted_at is NULL and state != $1 order by updated_at desc""",
                 PatchState.Pending,
             )
         else:
@@ -156,7 +156,7 @@ async def index(
             )
         elif reviewed:
             rows = await pg.fetch(
-                """select * from episode_patch where deleted_at is NULL and state != $1 order by updated_at""",
+                """select * from episode_patch where deleted_at is NULL and state != $1 order by updated_at desc""",
                 PatchState.Pending,
             )
         else:
