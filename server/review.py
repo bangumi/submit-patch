@@ -123,8 +123,9 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
         },
     )
     if res.status_code >= 300:
-        data = res.json()
-        if data.get("code") == "SUBJECT_CHANGED":
+        data: dict[str, Any] = res.json()
+        err_code = data.get("code")
+        if err_code == "SUBJECT_CHANGED":
             await conn.execute(
                 """
                             update patch set
@@ -139,6 +140,24 @@ async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: 
                 patch.id,
             )
             return Redirect("/")
+
+        if err_code == "INVALID_SYNTAX_ERROR":
+            await conn.execute(
+                """
+                update patch set
+                    state = $1,
+                    wiki_user_id = $2,
+                    updated_at = $3,
+                    reject_reason = $4
+                where id = $5 and deleted_at is NULL
+                """,
+                PatchState.Rejected,
+                auth.user_id,
+                datetime.now(tz=UTC),
+                f"建议包含语法错误，已经自动拒绝: {data.get('message')}",
+                patch.id,
+            )
+            raise BadRequestException("建议包含语法错误，已经自动拒绝")
 
         logger.error("failed to apply patch {!r}", data)
         raise InternalServerException()
