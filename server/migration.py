@@ -1,5 +1,6 @@
 """A simple run_migration"""
 
+import itertools
 from pathlib import Path
 from typing import NamedTuple
 
@@ -20,10 +21,11 @@ async def run_migration() -> None:
 
     migrations: list[Migrate] = [
         Migrate(1, sql_dir.joinpath("001-init.sql").read_text(encoding="utf8")),
-        Migrate(2, "select 1;"),  # noop
-        Migrate(3, "alter table patch rename to subject_patch"),
         Migrate(4, sql_dir.joinpath("004-deleted-view.sql").read_text(encoding="utf-8")),
     ]
+
+    if not all(x <= y for x, y in itertools.pairwise(migrations[:-1])):
+        raise Exception("migration list is not sorted")
 
     v = None
     try:

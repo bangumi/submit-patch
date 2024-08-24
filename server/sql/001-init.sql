@@ -1,7 +1,14 @@
-create table patch
+create table patch_users
 (
-    id               uuid                     default gen_random_uuid()     not null
-        primary key,
+    user_id  integer      not null primary key,
+    username varchar(255) not null,
+    nickname varchar(255) not null
+);
+
+
+create table subject_patch
+(
+    id               uuid primary key                                       not null,
     subject_id       integer                                                not null,
     state            integer                  default 0                     not null,
     from_user_id     integer                                                not null,
@@ -21,22 +28,13 @@ create table patch
     subject_type     bigint                   default 0                     not null
 );
 
-create index idx_subject_id on patch (subject_id);
+create index idx_subject_id on subject_patch (subject_id);
 
-create index idx_deleted_at on patch (deleted_at);
-
-create table patch_users
-(
-    user_id  integer      not null
-        primary key,
-    username varchar(255) not null,
-    nickname varchar(255) not null
-);
+create index idx_deleted_at on subject_patch (deleted_at);
 
 create table episode_patch
 (
-    id                   uuid                                                   not null
-        primary key,
+    id                   uuid primary key                                       not null,
     episode_id           integer                                                not null,
     state                integer                  default 0                     not null,
     from_user_id         integer                                                not null,
