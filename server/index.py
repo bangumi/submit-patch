@@ -6,8 +6,6 @@ import litestar
 from litestar import params
 from litestar.exceptions import NotFoundException
 from litestar.response import Redirect, Template
-from pypika import Field, Order, Parameter, PostgreSQLQuery, Table  # type: ignore
-from pypika.functions import Count  # type: ignore
 
 from server.auth import require_user_login
 from server.base import BadRequestException, Request, pg
@@ -45,24 +43,22 @@ async def index(
         return Redirect(f"/contrib/{request.auth.user_id}")
 
     if patch_type == PatchType.Subject:
-        query = Table("subject_patch", query_cls=PostgreSQLQuery)
+        table = "subject_patch"
     elif patch_type == PatchType.Episode:
-        query = Table("episode_patch", query_cls=PostgreSQLQuery)
+        table = "episode_patch"
     else:
         raise BadRequestException(f"{patch_type} is not valid")
 
-    where = Field("deleted_at").isnull()
+    where = "deleted_at IS NULL"
     if not reviewed:
-        where = where & Field("state").eq(Parameter("$1"))
-        order_field = "created_at"
-        order_sort = Order.asc
+        where = where + " AND state = $1"
+        order_by = "created_at asc"
     else:
-        where = where & Field("state").ne(Parameter("$1"))
-        order_field = "updated_at"
-        order_sort = Order.desc
+        where = where + " AND state != $1"
+        order_by = "updated_at desc"
 
     total: int = await pg.fetchval(
-        query.select(Count("1")).where(where).get_sql(), PatchState.Pending
+        f"select count(1) from {table} where {where}", PatchState.Pending
     )
 
     # total=0 -> total_page=1
@@ -89,13 +85,10 @@ async def index(
         rows = []
     else:
         rows = await pg.fetch(
-            query.select("*")
-            .where(where)
-            .limit(_page_size)
-            .offset((page - 1) * _page_size)
-            .orderby(order_field, order=order_sort)
-            .get_sql(),
+            f"select * from {table} where {where} order by {order_by} limit $2 offset $3 ",
             PatchState.Pending,
+            _page_size,
+            (page - 1) * _page_size,
         )
 
     pending_episode = await pg.fetchval(

@@ -22,7 +22,6 @@ uvicorn = { version = "^0.30.6", extras = ['standard'] }
 uuid6 = "^2024.7.10"
 pydash = "^8.0.3"
 dacite = "^1.8.1"
-pypika = "^0.48.9"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.1"
