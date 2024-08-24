@@ -7,6 +7,7 @@ import litestar
 from litestar.exceptions import InternalServerException, NotFoundException
 from litestar.response import Template
 from loguru import logger
+from markupsafe import Markup
 
 from server.base import Request, pg
 from server.model import Patch, PatchState
@@ -36,7 +37,7 @@ def __render_maybe_url(s: str) -> str:
     return s
 
 
-def render_reason(s: str) -> str:
+def render_reason(s: str) -> Markup:
     lines = s.splitlines()
 
     ss = []
@@ -44,7 +45,7 @@ def render_reason(s: str) -> str:
     for line in lines:
         ss.append(" ".join(__render_maybe_url(x) for x in line.split(" ")))
 
-    return "<br>".join(ss)
+    return Markup("<br>".join(ss))
 
 
 @router
