@@ -92,14 +92,10 @@
     <ul class="list-group p-0 m-0">
       {% for patch in rows %}
         <a
-          {% if patch_type == 'subject' %}
-            href="/patch/{{ patch.id }}"
-          {% elif patch_type == 'episode' %}
-            href="/episode/{{ patch.id }}"
-          {% endif %}
-            id="{{ patch.id }}"
-            rel="noopener"
-            class="list-group-item list-group-item-action flex-column align-items-start"
+          href="/{{ patch_type }}/{{ patch.id }}"
+          id="{{ patch.id }}"
+          rel="noopener"
+          class="list-group-item list-group-item-action flex-column align-items-start"
         >
           <div class="d-flex w-100 justify-content-between">
             <div>

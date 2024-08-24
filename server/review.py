@@ -121,7 +121,7 @@ class SubjectReviewController(Controller):
             f"https://next.bgm.tv/p1/wiki/subjects/{patch.subject_id}",
             headers={"Authorization": f"Bearer {auth.access_token}"},
             json={
-                "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/patch/{patch.id}]",
+                "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/subject/{patch.id}]",
                 "expectedRevision": pydash.pick(
                     {
                         "infobox": patch.original_infobox,
@@ -261,7 +261,7 @@ class EpisodeReviewController(Controller):
             f"https://next.bgm.tv/p1/wiki/ep/{patch.episode_id}",
             headers={"Authorization": f"Bearer {auth.access_token}"},
             json={
-                "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/patch/{patch.id}]",
+                "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/episode/{patch.id}]",
                 "episode": episode,
             },
         )
@@ -329,6 +329,6 @@ class CommentReviewController(Controller):
         )
 
         if patch_type == PatchType.Subject:
-            return Redirect(f"/patch/{patch_id}")
+            return Redirect(f"/subject/{patch_id}")
 
         return Redirect(f"/episode/{patch_id}")
