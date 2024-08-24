@@ -139,12 +139,12 @@ async def index(
             )
         elif reviewed:
             rows = await pg.fetch(
-                """select * from patch where deleted_at is NULL and state = $1 order by created_at""",
+                """select * from patch where deleted_at is NULL and state != $1 order by updated_at""",
                 PatchState.Pending,
             )
         else:
             rows = await pg.fetch(
-                """select * from patch where deleted_at is NULL and state != $1 order by updated_at""",
+                """select * from patch where deleted_at is NULL and state = $1 order by created_at""",
                 PatchState.Pending,
             )
 
@@ -156,14 +156,15 @@ async def index(
             )
         elif reviewed:
             rows = await pg.fetch(
-                """select * from episode_patch where deleted_at is NULL and state = $1 order by created_at""",
+                """select * from episode_patch where deleted_at is NULL and state != $1 order by updated_at""",
                 PatchState.Pending,
             )
         else:
             rows = await pg.fetch(
-                """select * from episode_patch where deleted_at is NULL and state != $1 order by updated_at""",
+                """select * from episode_patch where deleted_at is NULL and state = $1 order by created_at""",
                 PatchState.Pending,
             )
+
     else:
         raise BadRequestException(f"{patch_type} is not valid")
 
