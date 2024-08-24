@@ -1,13 +1,11 @@
 import asyncio
-import enum
 import html
 import mimetypes
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Annotated, Any, NamedTuple
+from typing import Any, NamedTuple
 
-import asyncpg
 import litestar
 from litestar import Response
 from litestar.config.csrf import CSRFConfig
@@ -17,7 +15,6 @@ from litestar.exceptions import (
     HTTPException,
     NotFoundException,
 )
-from litestar.params import Parameter
 from litestar.response import Template
 from litestar.static_files import create_static_files_router
 from litestar.status_codes import HTTP_500_INTERNAL_SERVER_ERROR
@@ -31,8 +28,8 @@ from config import (
     PROJECT_PATH,
     UTC,
 )
-from server import auth, contrib, patch, review, tmpl
-from server.auth import require_user_login, session_auth_config
+from server import auth, contrib, index, patch, review, tmpl
+from server.auth import session_auth_config
 from server.badge import (
     badge_0,
     badge_gt10,
@@ -47,7 +44,13 @@ from server.badge import (
     badge_gt100,
     badge_lt10,
 )
-from server.base import BadRequestException, Request, http_client, pg, pg_pool_startup, redis_client
+from server.base import (
+    Request,
+    http_client,
+    pg,
+    pg_pool_startup,
+    redis_client,
+)
 from server.migration import run_migration
 from server.model import PatchState
 from server.router import Router
@@ -96,185 +99,6 @@ else:
             html_mode=False,
         )
     )
-
-
-async def __fetch_users(rows: list[asyncpg.Record]) -> dict[int, asyncpg.Record]:
-    user_id = {x["from_user_id"] for x in rows} | {x["wiki_user_id"] for x in rows}
-    user_id.discard(None)
-    user_id.discard(0)
-
-    users = {
-        x["user_id"]: x
-        for x in await pg.fetch("select * from patch_users where user_id = any($1)", user_id)
-    }
-
-    return users
-
-
-class PatchType(str, enum.Enum):
-    Subject = "subject"
-    Episode = "episode"
-
-    def __str__(self) -> str:
-        return self.value
-
-
-@router
-@litestar.get("/", name="index")
-async def index(
-    request: Request,
-    patch_type: Annotated[PatchType, Parameter(query="type")] = PatchType.Subject,
-    # ?reviewed=0/1/true/false
-    # only work on index page
-    reviewed: Annotated[bool, Parameter(query="reviewed")] = False,
-) -> Template:
-    if not request.auth:
-        return Template("login.html.jinja2")
-
-    if patch_type == PatchType.Subject:
-        if not request.auth.allow_edit:
-            rows = await pg.fetch(
-                "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
-                request.auth.user_id,
-            )
-        elif reviewed:
-            rows = await pg.fetch(
-                """select * from patch where deleted_at is NULL and state != $1 order by updated_at desc""",
-                PatchState.Pending,
-            )
-        else:
-            rows = await pg.fetch(
-                """select * from patch where deleted_at is NULL and state = $1 order by created_at""",
-                PatchState.Pending,
-            )
-
-    elif patch_type == PatchType.Episode:
-        if not request.auth.allow_edit:
-            rows = await pg.fetch(
-                "select * from episode_patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
-                request.auth.user_id,
-            )
-        elif reviewed:
-            rows = await pg.fetch(
-                """select * from episode_patch where deleted_at is NULL and state != $1 order by updated_at desc""",
-                PatchState.Pending,
-            )
-        else:
-            rows = await pg.fetch(
-                """select * from episode_patch where deleted_at is NULL and state = $1 order by created_at""",
-                PatchState.Pending,
-            )
-
-    else:
-        raise BadRequestException(f"{patch_type} is not valid")
-
-    pending_episode = await pg.fetchval(
-        "select count(1) from episode_patch where deleted_at is NULL and state = $1",
-        PatchState.Pending,
-    )
-
-    pending_subject = await pg.fetchval(
-        "select count(1) from patch where deleted_at is NULL and state = $1",
-        PatchState.Pending,
-    )
-
-    return Template(
-        "list.html.jinja2",
-        context={
-            "rows": rows,
-            "filter_reviewed": reviewed,
-            "auth": request.auth,
-            "users": await __fetch_users(rows),
-            "patch_type": patch_type,
-            "pending_episode": pending_episode,
-            "pending_subject": pending_subject,
-        },
-    )
-
-
-@router
-@litestar.get("/contrib/{user_id:int}", guards=[require_user_login])
-async def show_user_contrib(
-    user_id: int,
-    request: Request,
-    patch_type: Annotated[PatchType, Parameter(query="type")] = PatchType.Subject,
-) -> Template:
-    if patch_type == PatchType.Subject:
-        rows = await pg.fetch(
-            "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
-            user_id,
-        )
-    elif patch_type == PatchType.Episode:
-        rows = await pg.fetch(
-            "select * from episode_patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
-            user_id,
-        )
-    else:
-        raise BadRequestException(f"invalid type {patch_type}")
-
-    nickname = await pg.fetchval("select nickname from patch_users where user_id = $1", user_id)
-    if not nickname:
-        raise NotFoundException()
-
-    users = await __fetch_users(rows)
-
-    return Template(
-        "list.html.jinja2",
-        context={
-            "rows": rows,
-            "users": users,
-            "auth": request.auth,
-            "user_id": user_id,
-            "patch_type": patch_type,
-            "title": f"{nickname} 的历史贡献",
-        },
-    )
-
-
-@router
-@litestar.get("/review/{user_id:int}", guards=[require_user_login])
-async def show_user_review(
-    user_id: int,
-    request: Request,
-    patch_type: Annotated[PatchType, Parameter(query="type")] = PatchType.Subject,
-) -> Template:
-    if patch_type == PatchType.Subject:
-        rows = await pg.fetch(
-            "select * from patch where wiki_user_id = $1 and deleted_at is NULL order by created_at desc",
-            user_id,
-        )
-    elif patch_type == PatchType.Episode:
-        rows = await pg.fetch(
-            "select * from episode_patch where wiki_user_id = $1 and deleted_at is NULL order by created_at desc",
-            user_id,
-        )
-    else:
-        raise BadRequestException(f"invalid type {patch_type}")
-
-    nickname = await pg.fetchval("select nickname from patch_users where user_id = $1", user_id)
-    if not nickname:
-        raise NotFoundException()
-
-    users = await __fetch_users(rows)
-
-    return Template(
-        "list.html.jinja2",
-        context={
-            "rows": rows,
-            "users": users,
-            "auth": request.auth,
-            "user_id": user_id,
-            "title": f"{nickname} 的历史审核",
-            "patch_type": patch_type,
-        },
-    )
-
-
-def __index_row_sorter(r: asyncpg.Record) -> tuple[int, datetime]:
-    if r["state"] == PatchState.Pending:
-        return 1, -r["created_at"].timestamp()
-
-    return 0, r["updated_at"].timestamp()
 
 
 def before_req(req: litestar.Request[None, None, State]) -> None:
@@ -397,6 +221,7 @@ async def badge() -> Response[bytes]:
 
 app = litestar.Litestar(
     [
+        *index.router,
         *auth.router,
         *contrib.router,
         *review.router,

@@ -22,6 +22,7 @@ uvicorn = { version = "^0.30.6", extras = ['standard'] }
 uuid6 = "^2024.7.10"
 pydash = "^8.0.3"
 dacite = "^1.8.1"
+sqlalchemy = "^2.0.32"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.1"
@@ -83,7 +84,7 @@ ignore = [
     "RET503", "RET504",
     "RSE102",
     "RUF001", "RUF003", "RUF029",
-    "S101",
+    "S101", "S608",
     "SIM102", "SIM108", "SIM110", "SIM117",
     "T20",
     "TCH001", "TCH002", "TCH003",
