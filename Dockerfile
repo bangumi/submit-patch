@@ -2,7 +2,6 @@
 FROM python:3.10-slim AS poetry
 
 WORKDIR /app
-COPY . ./
 COPY pyproject.toml poetry.lock requirements-poetry.txt ./
 
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements-poetry.txt &&\
