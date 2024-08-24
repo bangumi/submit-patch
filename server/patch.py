@@ -145,15 +145,26 @@ async def get_episode_patch(patch_id: uuid.UUID, request: Request) -> Template:
         original = p["original_" + key]
 
         if original != after:
-            diff[(key, cn)] = "".join(
-                # need a tailing new line to generate correct diff
-                difflib.unified_diff(
-                    (original + "\n").splitlines(True),
-                    (after + "\n").splitlines(True),
-                    key,
-                    key,
+            if key != "description":
+                diff[(key, cn)] = "".join(
+                    # need a tailing new line to generate correct diff
+                    difflib.unified_diff(
+                        [original + "\n"],
+                        [after + "\n"],
+                        key,
+                        key,
+                    )
                 )
-            )
+            else:
+                diff[(key, cn)] = "".join(
+                    # need a tailing new line to generate correct diff
+                    difflib.unified_diff(
+                        (original + "\n").splitlines(True),
+                        (after + "\n").splitlines(True),
+                        key,
+                        key,
+                    )
+                )
 
     reviewer = None
     if p["state"] != PatchState.Pending:
