@@ -179,11 +179,11 @@ async def badge() -> Response[bytes]:
     rest = sum(
         await asyncio.gather(
             pg.fetchval(
-                "select count(1) from subject_patch where deleted_at IS NULL and state = $1",
+                "select count(1) from view_subject_patch where state = $1",
                 PatchState.Pending,
             ),
             pg.fetchval(
-                "select count(1) from episode_patch where deleted_at IS NULL and state = $1",
+                "select count(1) from view_episode_patch where state = $1",
                 PatchState.Pending,
             ),
         )

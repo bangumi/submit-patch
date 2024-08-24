@@ -55,7 +55,7 @@ class SubjectReviewController(Controller):
         async with pg.acquire() as conn:
             async with conn.transaction():
                 p = await pg.fetchrow(
-                    """select * from subject_patch where id = $1 and deleted_at is NULL FOR UPDATE""",
+                    """select * from view_subject_patch where id = $1 FOR UPDATE""",
                     patch_id,
                 )
                 if not p:
@@ -83,12 +83,12 @@ class SubjectReviewController(Controller):
     ) -> Redirect:
         await conn.execute(
             """
-            update subject_patch set
+            update view_subject_patch set
                 state = $1,
                 wiki_user_id = $2,
                 updated_at = $3,
                 reject_reason = $4
-            where id = $5 and deleted_at is NULL
+            where id = $5
             """,
             PatchState.Rejected,
             auth.user_id,
@@ -138,11 +138,11 @@ class SubjectReviewController(Controller):
             if err_code == "SUBJECT_CHANGED":
                 await conn.execute(
                     """
-                    update subject_patch set
+                    update view_subject_patch set
                         state = $1,
                         wiki_user_id = $2,
                         updated_at = $3
-                    where id = $4 and deleted_at is NULL
+                    where id = $4
                     """,
                     PatchState.Outdated,
                     auth.user_id,
@@ -154,12 +154,12 @@ class SubjectReviewController(Controller):
             if err_code == "INVALID_SYNTAX_ERROR":
                 await conn.execute(
                     """
-                    update subject_patch set
+                    update view_subject_patch set
                         state = $1,
                         wiki_user_id = $2,
                         updated_at = $3,
                         reject_reason = $4
-                    where id = $5 and deleted_at is NULL
+                    where id = $5
                     """,
                     PatchState.Rejected,
                     auth.user_id,
@@ -200,7 +200,7 @@ class EpisodeReviewController(Controller):
         async with pg.acquire() as conn:
             async with conn.transaction():
                 p = await pg.fetchrow(
-                    """select * from episode_patch where id = $1 and deleted_at is NULL FOR UPDATE""",
+                    """select * from view_episode_patch where id = $1 FOR UPDATE""",
                     patch_id,
                 )
                 if not p:
@@ -225,12 +225,12 @@ class EpisodeReviewController(Controller):
     ) -> Redirect:
         await conn.execute(
             """
-            update episode_patch set
+            update view_episode_patch set
                 state = $1,
                 wiki_user_id = $2,
                 updated_at = $3,
                 reject_reason = $4
-            where id = $5 and deleted_at is NULL
+            where id = $5
             """,
             PatchState.Rejected,
             auth.user_id,
@@ -266,32 +266,16 @@ class EpisodeReviewController(Controller):
         )
         if res.status_code >= 300:
             data = res.json()
-            if data.get("code") == "SUBJECT_CHANGED":
-                await conn.execute(
-                    """
-                    update episode_patch set
-                        state = $1,
-                        wiki_user_id = $2,
-                        updated_at = $3
-                    where id = $4 and deleted_at is NULL
-                    """,
-                    PatchState.Outdated,
-                    auth.user_id,
-                    datetime.now(tz=UTC),
-                    patch.id,
-                )
-                return Redirect("/?type=episode")
-
             logger.error("failed to apply patch {!r}", data)
             raise InternalServerException()
 
         await conn.execute(
             """
-            update episode_patch set
+            update view_episode_patch set
                 state = $1,
                 wiki_user_id = $2,
                 updated_at = $3
-            where id = $4 and deleted_at is NULL
+            where id = $4
             """,
             PatchState.Accept,
             auth.user_id,

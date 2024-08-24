@@ -8,28 +8,27 @@ from asyncpg import UndefinedTableError
 from server.base import pg
 
 
-sql_dir = Path(__file__, "../sql").resolve()
-
-KEY_MIGRATION_VERSION = "version"
-
-
 class Migrate(NamedTuple):
     version: int
     sql: str
 
 
-migrations: list[Migrate] = [
-    Migrate(1, sql_dir.joinpath("001-init.sql").read_text(encoding="utf8")),
-    Migrate(2, "select 1;"),  # noop
-    Migrate(3, "alter table patch rename to subject_patch"),
-]
-
-
 async def run_migration() -> None:
+    sql_dir = Path(__file__, "../sql").resolve()
+
+    key_migration_version = "version"
+
+    migrations: list[Migrate] = [
+        Migrate(1, sql_dir.joinpath("001-init.sql").read_text(encoding="utf8")),
+        Migrate(2, "select 1;"),  # noop
+        Migrate(3, "alter table patch rename to subject_patch"),
+        Migrate(4, sql_dir.joinpath("004-deleted-view.sql").read_text(encoding="utf-8")),
+    ]
+
     v = None
     try:
         v = await pg.fetchval(
-            "select value from patch_db_migration where key=$1", KEY_MIGRATION_VERSION
+            "select value from patch_db_migration where key=$1", key_migration_version
         )
     except UndefinedTableError:
         # do init
@@ -45,7 +44,7 @@ async def run_migration() -> None:
     if v is None:
         await pg.execute(
             "insert into patch_db_migration (key, value) VALUES ($1, $2)",
-            KEY_MIGRATION_VERSION,
+            key_migration_version,
             "0",
         )
         v = "0"
@@ -58,5 +57,5 @@ async def run_migration() -> None:
         await pg.execute(
             "update patch_db_migration set value = $1 where key = $2",
             str(migrate.version),
-            KEY_MIGRATION_VERSION,
+            key_migration_version,
         )

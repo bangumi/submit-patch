@@ -43,18 +43,17 @@ async def index(
         return Redirect(f"/contrib/{request.auth.user_id}")
 
     if patch_type == PatchType.Subject:
-        table = "subject_patch"
+        table = "view_subject_patch"
     elif patch_type == PatchType.Episode:
-        table = "episode_patch"
+        table = "view_episode_patch"
     else:
         raise BadRequestException(f"{patch_type} is not valid")
 
-    where = "deleted_at IS NULL"
     if not reviewed:
-        where = where + " AND state = $1"
+        where = "state = $1"
         order_by = "created_at asc"
     else:
-        where = where + " AND state != $1"
+        where = " state != $1"
         order_by = "updated_at desc"
 
     total: int = await pg.fetchval(
@@ -92,12 +91,12 @@ async def index(
         )
 
     pending_episode = await pg.fetchval(
-        "select count(1) from episode_patch where deleted_at is NULL and state = $1",
+        "select count(1) from view_episode_patch where state = $1",
         PatchState.Pending,
     )
 
     pending_subject = await pg.fetchval(
-        "select count(1) from subject_patch where deleted_at is NULL and state = $1",
+        "select count(1) from view_subject_patch where state = $1",
         PatchState.Pending,
     )
 
@@ -139,12 +138,12 @@ async def show_user_contrib(
 ) -> Template:
     if patch_type == PatchType.Subject:
         rows = await pg.fetch(
-            "select * from subject_patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
+            "select * from view_subject_patch where from_user_id = $1 order by created_at desc",
             user_id,
         )
     elif patch_type == PatchType.Episode:
         rows = await pg.fetch(
-            "select * from episode_patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
+            "select * from view_episode_patch where from_user_id = $1 order by created_at desc",
             user_id,
         )
     else:
@@ -178,12 +177,12 @@ async def show_user_review(
 ) -> Template:
     if patch_type == PatchType.Subject:
         rows = await pg.fetch(
-            "select * from subject_patch where wiki_user_id = $1 and deleted_at is NULL order by created_at desc",
+            "select * from view_subject_patch where wiki_user_id = $1 order by created_at desc",
             user_id,
         )
     elif patch_type == PatchType.Episode:
         rows = await pg.fetch(
-            "select * from episode_patch where wiki_user_id = $1 and deleted_at is NULL order by created_at desc",
+            "select * from view_episode_patch where wiki_user_id = $1 order by created_at desc",
             user_id,
         )
     else:
