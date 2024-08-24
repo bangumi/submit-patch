@@ -109,7 +109,7 @@ async def suggest_api(
 
     await pg.execute(
         """
-        insert into patch (id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
+        insert into subject_patch (id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
                            original_name, original_infobox, original_summary, subject_type)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
     """,
@@ -136,7 +136,7 @@ async def delete_patch(patch_id: str, request: AuthorizedRequest) -> Redirect:
     async with pg.acquire() as conn:
         async with conn.transaction():
             p = await conn.fetchrow(
-                """select * from patch where id = $1 and deleted_at is NULL""", patch_id
+                """select * from subject_patch where id = $1 and deleted_at is NULL""", patch_id
             )
             if not p:
                 raise NotFoundException()
@@ -147,7 +147,7 @@ async def delete_patch(patch_id: str, request: AuthorizedRequest) -> Redirect:
                 raise NotAuthorizedException
 
             await conn.execute(
-                "update patch set deleted_at = $1 where id = $2",
+                "update subject_patch set deleted_at = $1 where id = $2",
                 datetime.now(tz=UTC),
                 patch_id,
             )

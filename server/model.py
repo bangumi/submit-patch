@@ -67,3 +67,11 @@ class Wiki:
     infobox: str
     summary: str
     nsfw: bool
+
+
+class PatchType(str, enum.Enum):
+    Subject = "subject"
+    Episode = "episode"
+
+    def __str__(self) -> str:
+        return self.value

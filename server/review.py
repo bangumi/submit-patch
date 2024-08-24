@@ -11,7 +11,7 @@ import pydash
 from asyncpg import Record
 from asyncpg.pool import PoolConnectionProxy
 from dacite import from_dict
-from litestar import Controller, Response
+from litestar import Controller, Response, params
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import InternalServerException, NotAuthorizedException, NotFoundException
 from litestar.params import Body
@@ -21,7 +21,7 @@ from loguru import logger
 from config import UTC
 from server.auth import require_user_editor
 from server.base import AuthorizedRequest, BadRequestException, User, http_client, pg
-from server.model import EpisodePatch, PatchState, SubjectPatch
+from server.model import EpisodePatch, PatchState, PatchType, SubjectPatch
 from server.router import Router
 
 
@@ -190,7 +190,7 @@ class SubjectReviewController(Controller):
 
 @router
 class EpisodeReviewController(Controller):
-    @litestar.post("/api/review-episode/{patch_id:uuid}")
+    @litestar.post("/api/review-episode/{patch_id:uuid}", guards=[require_user_editor])
     async def review_episode_patch(
         self,
         patch_id: uuid.UUID,
@@ -283,3 +283,15 @@ class EpisodeReviewController(Controller):
             patch.id,
         )
         return Redirect("/?type=episode")
+
+
+@router
+class SuggestReviewController(Controller):
+    @litestar.post("/api/add-suggestion/{patch_id:uuid}", guards=[require_user_editor])
+    async def handler(
+        self,
+        request: AuthorizedRequest,
+        patch_id: uuid.UUID,
+        patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
+    ) -> None:
+        pass

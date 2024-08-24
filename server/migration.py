@@ -22,6 +22,7 @@ async def run_migration() -> None:
     migrations: list[Migrate] = [
         Migrate(1, sql_dir.joinpath("001-init.sql").read_text(encoding="utf8")),
         Migrate(4, sql_dir.joinpath("004-deleted-view.sql").read_text(encoding="utf-8")),
+        # Migrate(5, sql_dir.joinpath("005-edit-suggestion.sql").read_text(encoding="utf-8")),
     ]
 
     if not all(x <= y for x, y in itertools.pairwise(migrations)):

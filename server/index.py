@@ -1,4 +1,3 @@
-import enum
 from typing import Annotated, Any
 
 import asyncpg
@@ -9,20 +8,11 @@ from litestar.response import Redirect, Template
 
 from server.auth import require_user_login
 from server.base import BadRequestException, Request, pg
-from server.model import PatchState
+from server.model import PatchState, PatchType
 from server.router import Router
 
 
 router = Router()
-
-
-class PatchType(str, enum.Enum):
-    Subject = "subject"
-    Episode = "episode"
-
-    def __str__(self) -> str:
-        return self.value
-
 
 _page_size = 30
 
