@@ -208,6 +208,8 @@
     </div>
 
     {% if total_page is defined %}
-        {% include "component/pagination.html.jinja2" %}
+        <div class="row mb-2">
+            {% include "component/pagination.html.jinja2" %}
+        </div>
     {% endif %}
 {% endblock %}
