@@ -46,6 +46,14 @@ def add_filter(s: str | Callable[P, T]) -> Any:
     return real_wrapper(s.__name__, s)
 
 
+def add_global_function(fn: T) -> T:
+    name = fn.__name__
+    if name in engine.globals:
+        raise ValueError(f"filter '{name}' already exists")
+    engine.globals[name] = fn
+    return fn
+
+
 @add_filter
 @pass_context
 def rel_time(ctx: Context, value: datetime) -> str:
@@ -109,6 +117,7 @@ def subject_type_readable(s: int) -> str:
             return "Unknown"
 
 
+@add_global_function
 @pass_context
 def replace_url_query(ctx: Context, **kwargs: Any) -> str:
     req: Request[Never, Never, Never] = ctx["request"]
@@ -116,6 +125,3 @@ def replace_url_query(ctx: Context, **kwargs: Any) -> str:
     for key, value in kwargs.items():
         q[key] = str(value)
     return req.url.path + "?" + urlencode(q)
-
-
-engine.globals["replace_url_query"] = replace_url_query
