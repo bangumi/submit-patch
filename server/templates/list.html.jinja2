@@ -34,8 +34,7 @@
                                     href="{{ replace_url_query(type='subject') }}">条目
 
                             {% if pending_subject %}
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                                      style="z-index: 20">
+                                <span class="badge rounded-pill bg-danger">
     {{ pending_subject }}
   </span>
                             {% endif %}
@@ -51,10 +50,8 @@
                                     href="{{ replace_url_query(type='episode') }}">章节
 
                             {% if pending_episode %}
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                                      style="z-index: 20">
+                                <span class="badge rounded-pill bg-danger">
     {{ pending_episode }}
-  </span>
                             {% endif %}
                         </a>
                     </li>
