@@ -1,209 +1,188 @@
 {% extends "layout/base.html.jinja2" %}
 
 {% block head %}
-    <title>修改请求列表</title>
-    <style>
-        .oneline-hide-overflow {
-            text-wrap: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+  <title>修改请求列表</title>
+  <style>
+      .oneline-hide-overflow {
+          text-wrap: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+      }
 
-        @media screen and (min-device-width: 480px) {
-            html {
-                overflow-y: scroll;
-            }
-        }
-    </style>
+      @media screen and (min-device-width: 480px) {
+          html {
+              overflow-y: scroll;
+          }
+      }
+  </style>
 {% endblock %}
 
 {% block content %}
-    {% include 'component/header.html.jinja2' %}
+  {% include 'component/header.html.jinja2' %}
 
-    <div class="row pt-2 pb-2 d-flex flex-row">
-        <nav class="col" style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
-            <nav aria-label="...">
-                <ul class="pagination">
-                    <li class="page-item">
-                        <a
-                                {% if patch_type == 'subject' %}
-                                    class="page-link active"
-                                {% else %}
-                                    class="page-link"
-                                {% endif %}
-                                    href="{{ replace_url_query(type='subject') }}">条目
-
-                            {% if pending_subject %}
-                                <span class="badge rounded-pill bg-danger">{{ pending_subject }}</span>
-                            {% endif %}
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a
-                                {% if patch_type == 'episode' %}
-                                    class="page-link active"
-                                {% else %}
-                                    class="page-link"
-                                {% endif %}
-                                    href="{{ replace_url_query(type='episode') }}">章节
-
-                            {% if pending_episode %}
-                                <span class="badge rounded-pill bg-danger">{{ pending_episode }}</span>
-                            {% endif %}
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </nav>
-        {% if user_id is undefined %}
-            <nav class="col" style="--bs-breadcrumb-divider: '';"
-                 aria-label="breadcrumb">
-                <nav aria-label="...">
-                    <ul class="pagination">
-                        <li class="page-item">
-                            <a
-                                    {% if filter_reviewed %}
-                                        class="page-link"
-                                    {% else %}
-                                        class="page-link active"
-                                    {% endif %}
-                                        href="{{ replace_url_query(reviewed='0') }}">
-                                未审核
-                            </a>
-                        </li>
-                        <li class="page-item">
-                            <a
-                                    {% if filter_reviewed %}
-                                        class="page-link active"
-                                    {% else %}
-                                        class="page-link"
-                                    {% endif %}
-                                        href="{{ replace_url_query(reviewed='1') }}"
-                            >
-                                已审核
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </nav>
-        {% endif %}
-    </div>
-
-    {% if user_id is defined %}
-        <div class="row m-1">
-            <a href="https://bgm.tv/user/{{ user_id }}" style="text-underline: none">
-                <h3>用户 {{ users.get(user_id).nickname }} 的个人主页</h3>
+  <div class="row pt-2 pb-2 d-flex flex-row">
+    <nav class="col" style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
+      <nav aria-label="...">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link {% if patch_type == 'subject' %}active{% endif %}"
+               href="{{ replace_url_query(type='subject') }}">
+              条目
+              {% if pending_subject %}
+                <span class="badge rounded-pill bg-danger">{{ pending_subject }}</span>
+              {% endif %}
             </a>
-        </div>
-    {% else %}
-        {% if not auth.allow_edit %}
-            <div class="row m-0">
-                {% if patch_type == 'subject' %}
-                    <a href="/suggest"><h3>添加Patch</h3></a>
-                {% elif patch_type == 'episode' %}
-                    <a href="/suggest-episode"><h3>添加Patch</h3></a>
-                {% endif %}
-            </div>
-        {% endif %}
+          </li>
+          <li class="page-item">
+            <a class="page-link {% if patch_type == 'episode' %}active{% endif %}"
+               href="{{ replace_url_query(type='episode') }}">
+              章节
+              {% if pending_episode %}
+                <span class="badge rounded-pill bg-danger">{{ pending_episode }}</span>
+              {% endif %}
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </nav>
+    {% if user_id is undefined %}
+      <nav class="col" style="--bs-breadcrumb-divider: '';"
+           aria-label="breadcrumb">
+        <nav aria-label="...">
+          <ul class="pagination">
+            <li class="page-item">
+              <a class="page-link {% if not filter_reviewed %}active{% endif %}"
+                 href="{{ replace_url_query(reviewed='0') }}">
+                未审核
+              </a>
+            </li>
+            <li class="page-item">
+              <a class="page-link {% if filter_reviewed %}active{% endif %}"
+                 href="{{ replace_url_query(reviewed='1') }}">
+                已审核
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </nav>
     {% endif %}
+  </div>
 
-    <div class="row m-0 mb-4">
-        <ul class="list-group p-0 m-0">
-            {% for patch in rows %}
-                <a
-                        {% if patch_type == 'subject' %}
-                            href="/patch/{{ patch.id }}"
-                        {% elif patch_type == 'episode' %}
-                            href="/episode/{{ patch.id }}"
-                        {% endif %}
-                            id="{{ patch.id }}"
-                            rel="noopener"
-                            class="list-group-item list-group-item-action flex-column align-items-start"
-                >
-                    <div class="d-flex w-100 justify-content-between">
-                        <div>
-                            {% if patch.state == 0 %}
-                                <h5 class="mb-1">
-                                    <span class="badge bg-primary">待审核</span>
-                                </h5>
-                            {% elif patch.state == 1 %}
-                                <!-- accept -->
-                                <h5 class="mb-1">
-                                    <span class="badge bg-success">Accept</span>
-                                </h5>
-                            {% elif patch.state == 2 %}
-                                <!-- rejected -->
-                                <h5 class="mb-1">
-                                    <span class="badge bg-danger">Rejected</span>
-                                </h5>
-                            {% elif patch.state == 3 %}
-                                <h5 class="mb-1">
-                                    <span class="badge bg-secondary">Outdated</span>
-                                </h5>
-                            {% endif %}
-                        </div>
+  {% if user_id is defined %}
+    <div class="row m-1">
+      <a href="https://bgm.tv/user/{{ user_id }}" style="text-underline: none">
+        <h3>用户 {{ users.get(user_id).nickname }} 的个人主页</h3>
+      </a>
+    </div>
+  {% else %}
+    {% if not auth.allow_edit %}
+      <div class="row m-0">
+        {% if patch_type == 'subject' %}
+          <a href="/suggest"><h3>添加Patch</h3></a>
+        {% elif patch_type == 'episode' %}
+          <a href="/suggest-episode"><h3>添加Patch</h3></a>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endif %}
 
-                        {% if user_id is defined %}
-                            <small style="text-wrap: nowrap;"
-                                   title="{{ patch.created_at }}">
-                                created at {{ patch.created_at | rel_time }}
-                            </small>
-                        {% else %}
-                            {% if patch.state %}
-                                <small style="text-wrap: nowrap;"
-                                       class="font-monospace"
-                                       title="{{ patch.updated_at }}">
-                                    reviewed at {{ patch.updated_at | rel_time }}
-                                </small>
-                            {% else %}
-                                <small style="text-wrap: nowrap;"
-                                       class="font-monospace"
-                                       title="{{ patch.created_at }}">
-                                    created at {{ patch.created_at | rel_time }}
-                                </small>
-                            {% endif %}
-                        {% endif %}
-                    </div>
+  <div class="row m-0 mb-4">
+    <ul class="list-group p-0 m-0">
+      {% for patch in rows %}
+        <a
+          {% if patch_type == 'subject' %}
+            href="/patch/{{ patch.id }}"
+          {% elif patch_type == 'episode' %}
+            href="/episode/{{ patch.id }}"
+          {% endif %}
+            id="{{ patch.id }}"
+            rel="noopener"
+            class="list-group-item list-group-item-action flex-column align-items-start"
+        >
+          <div class="d-flex w-100 justify-content-between">
+            <div>
+              {% if patch.state == 0 %}
+                <h5 class="mb-1">
+                  <span class="badge bg-primary">待审核</span>
+                </h5>
+              {% elif patch.state == 1 %}
+                <!-- accept -->
+                <h5 class="mb-1">
+                  <span class="badge bg-success">Accept</span>
+                </h5>
+              {% elif patch.state == 2 %}
+                <!-- rejected -->
+                <h5 class="mb-1">
+                  <span class="badge bg-danger">Rejected</span>
+                </h5>
+              {% elif patch.state == 3 %}
+                <h5 class="mb-1">
+                  <span class="badge bg-secondary">Outdated</span>
+                </h5>
+              {% endif %}
+            </div>
 
-                    <div>
-                        <p class="oneline-hide-overflow m-0 p-0">
-                            修改原因：{{ patch.reason }}
-                        </p>
-                        <p class="oneline-hide-overflow m-0 p-0">
-                            {% if patch.subject_type %}
-                                分类：
-                                <span class="badge bg-light text-dark border border-info">
+            {% if user_id is defined %}
+              <small style="text-wrap: nowrap;"
+                     title="{{ patch.created_at }}">
+                created at {{ patch.created_at | rel_time }}
+              </small>
+            {% else %}
+              {% if patch.state %}
+                <small style="text-wrap: nowrap;"
+                       class="font-monospace"
+                       title="{{ patch.updated_at }}">
+                  reviewed at {{ patch.updated_at | rel_time }}
+                </small>
+              {% else %}
+                <small style="text-wrap: nowrap;"
+                       class="font-monospace"
+                       title="{{ patch.created_at }}">
+                  created at {{ patch.created_at | rel_time }}
+                </small>
+              {% endif %}
+            {% endif %}
+          </div>
+
+          <div>
+            <p class="oneline-hide-overflow m-0 p-0">
+              修改原因：{{ patch.reason }}
+            </p>
+            <p class="oneline-hide-overflow m-0 p-0">
+              {% if patch.subject_type %}
+                分类：
+                <span class="badge bg-light text-dark border border-info">
                                   {{ patch.subject_type | subject_type_readable }}
                               </span>
-                            {% endif %}
-                            {% if patch.original_name %}
-                                {% if patch_type == 'subject' %}
-                                    条目名:
-                                {% elif patch_type == 'episode' %}
-                                    章节名:
-                                {% endif %}
+              {% endif %}
+              {% if patch.original_name %}
+                {% if patch_type == 'subject' %}
+                  条目名:
+                {% elif patch_type == 'episode' %}
+                  章节名:
+                {% endif %}
 
-                                <span class="badge bg-light text-dark border border-info">{{ patch.original_name }}</span>
-                            {% endif %}
-                        </p>
-                    </div>
+                <span class="badge bg-light text-dark border border-info">{{ patch.original_name }}</span>
+              {% endif %}
+            </p>
+          </div>
 
-                    <small>from:
-                        <span class="badge bg-light text-dark border border-info">{{ users.get(patch.from_user_id).nickname | default(patch.from_user_id) }}</span>
-                    </small>
-                    {% if patch.state != 0 %}
-                        <small>reviewed by:
-                            <span class="badge bg-light text-dark border border-info">{{ users.get(patch.wiki_user_id).nickname | default(patch.wiki_user_id) }}</span>
-                        </small>
-                    {% endif %}
-                </a>
-            {% endfor %}
-        </ul>
+          <small>from:
+            <span class="badge bg-light text-dark border border-info">{{ users.get(patch.from_user_id).nickname | default(patch.from_user_id) }}</span>
+          </small>
+          {% if patch.state != 0 %}
+            <small>reviewed by:
+              <span class="badge bg-light text-dark border border-info">{{ users.get(patch.wiki_user_id).nickname | default(patch.wiki_user_id) }}</span>
+            </small>
+          {% endif %}
+        </a>
+      {% endfor %}
+    </ul>
+  </div>
+
+  {% if total_page is defined %}
+    <div class="row mb-2">
+      {% include "component/pagination.html.jinja2" %}
     </div>
-
-    {% if total_page is defined %}
-        <div class="row mb-2">
-            {% include "component/pagination.html.jinja2" %}
-        </div>
-    {% endif %}
+  {% endif %}
 {% endblock %}

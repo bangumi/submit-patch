@@ -1,32 +1,39 @@
-<div class="row d-flex flex-row">
-    <div class="col">
-        <a href="/" class="link-underline link-underline-opacity-0"><h3>
-            返回首页</h3>
+<div class="row d-flex flex-row justify-content-around header">
+  <div class="col">
+    <a href="/" class="link-underline link-underline-opacity-0">
+      <h3>返回首页</h3>
+    </a>
+  </div>
+
+  <div class="col">
+    {% if title is defined %}
+      <h3>{{ title }}</h3>
+    {% endif %}
+  </div>
+
+  <div class="col">
+    {% if auth %}
+      {% if auth.allow_edit %}
+        <a href="/review/{{ auth.user_id }}"
+           class="link-underline link-underline-opacity-0 float-end"
+           target="_blank">
+          <h3>查看我的历史审核</h3>
         </a>
-    </div>
-
-    <div class="col">
-        {% if title is defined %}
-            <h3>{{ title }}</h3>
-        {% endif %}
-    </div>
-
-    <div class="col">
-        {% if auth %}
-            {% if auth.allow_edit %}
-                <a href="/review/{{ auth.user_id }}"
-                   class="link-underline link-underline-opacity-0 float-end"
-                   target="_blank">
-                    <h3>查看我的历史审核</h3>
-                </a>
-            {% else %}
-                <a href="/contrib/{{ auth.user_id }}"
-                   class="link-underline link-underline-opacity-0 float-end"
-                   target="_blank">
-                    <h3>查看我的历史建议</h3>
-                </a>
-            {% endif %}
-        {% endif %}
-    </div>
-    <hr>
+      {% else %}
+        <a href="/contrib/{{ auth.user_id }}"
+           class="link-underline link-underline-opacity-0 float-end"
+           target="_blank">
+          <h3>查看我的历史建议</h3>
+        </a>
+      {% endif %}
+    {% endif %}
+  </div>
+  <hr>
 </div>
+<style>
+    @media screen and (min-device-width: 480px) {
+        .header h3 {
+            text-wrap: nowrap;
+        }
+    }
+</style>
