@@ -1,6 +1,6 @@
 import typing
 from collections.abc import Callable
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 from urllib.parse import urlencode
 
@@ -117,6 +117,14 @@ def subject_type_readable(s: int) -> str:
             return "三次元"
         case _:
             return "Unknown"
+
+
+local_tz = timezone(timedelta(hours=8), name="Asia/Shanghai")
+
+
+@add_filter
+def to_user_local_time(dt: datetime) -> str:
+    return str(dt.replace(microsecond=0).astimezone(local_tz))
 
 
 @add_global_function

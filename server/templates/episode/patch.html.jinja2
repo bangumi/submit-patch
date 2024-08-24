@@ -1,162 +1,169 @@
 {% extends "layout/base.html.jinja2" %}
 
 {% block head %}
-    <title>查看修改请求</title>
-    <script src="/static/jquery/3.7.1/dist/jquery.min.js"></script>
-    <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/diff2html/3.4.48/bundles/css/diff2html.min.css"
-    />
-    <script type="text/javascript"
-            src="/static/diff2html/3.4.48/bundles/js/diff2html-ui.min.js"></script>
-    <style>
-        .diff .d2h-code-line-ctn, .diff .d2h-code-line *, .diff * {
-            font-family: Consolas, Menlo, monospace !important;
-        }
-    </style>
+  <title>查看修改请求</title>
+  <script src="/static/jquery/3.7.1/dist/jquery.min.js"></script>
+  <link
+    rel="stylesheet"
+    type="text/css"
+    href="/static/diff2html/3.4.48/bundles/css/diff2html.min.css"
+  />
+  <script type="text/javascript"
+          src="/static/diff2html/3.4.48/bundles/js/diff2html-ui.min.js"></script>
+  <style>
+      .diff .d2h-code-line-ctn, .diff .d2h-code-line *, .diff * {
+          font-family: Consolas, Menlo, monospace !important;
+      }
+  </style>
 {% endblock %}
 
 {% block content %}
-    {% include 'component/header.html.jinja2' %}
+  {% include 'component/header.html.jinja2' %}
 
+  <div class="row">
+    <div class="col">
+      <a href="https://bgm.tv/ep/{{ patch.episode_id }}" target="_blank"
+         rel="noopener">
+        <h3>条目链接</h3>
+      </a>
+    </div>
+    <div class="col">
+      <h3>
+        提交者: <a href="/contrib/{{ patch.from_user_id }}?type=episode" target="_blank"
+                   rel="noopener">
+        {{ submitter.nickname }}
+      </a>
+      </h3>
+    </div>
+  </div>
+
+  <div class="row">
+    提交时间: {{ patch.created_at | date }}
+  </div>
+  <div class="row">
+    最后修改时间: {{ patch.created_at | date }}
+  </div>
+
+  <div class="row">
+    <h3>修改原因</h3>
+    <blockquote class="blockquote" style="background-color: #f7f7f9">
+      <p class="mb-0"
+         style="overflow: visible; overflow-wrap: anywhere;">
+        {{ reason }}
+      </p>
+    </blockquote>
+  </div>
+
+  <h3>具体变动</h3>
+
+  {% for (key, cn), value in diff.items() %}
     <div class="row">
-        <div class="col">
-            <a href="https://bgm.tv/ep/{{ patch.episode_id }}" target="_blank"
-               rel="noopener">
-                <h3>条目链接</h3>
-            </a>
-        </div>
-        <div class="col">
-            <h3>
-                提交者: <a href="/contrib/{{ patch.from_user_id }}?type=episode" target="_blank"
-                           rel="noopener">
-                {{ submitter.nickname }}
-            </a>
-            </h3>
-        </div>
+      <h4>{{ cn }}</h4>
+      <div id="{{ key }}diff" class="diff"></div>
     </div>
 
-    <div class="row">
-        <h3>修改原因</h3>
-        <blockquote class="blockquote" style="background-color: #f7f7f9">
-            <p class="mb-0"
-               style="overflow: visible; overflow-wrap: anywhere;">
-                {{ reason }}
-            </p>
-        </blockquote>
-    </div>
+    <script>
+        (() => {
+            const diffString = {{ value | tojson }};
+            const targetElement = document.getElementById('{{ key }}diff');
+            const configuration = {
+                drawFileList: false,
+                fileListToggle: false,
+                fileListStartVisible: false,
+                maxLineSizeInBlockForComparison: 80,
+                fileContentToggle: false,
+                matching: 'lines',
+                outputFormat: 'line-by-line',
+                synchronisedScroll: false,
+                renderNothingWhenEmpty: false,
+            };
+            const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+            diff2htmlUi.draw();
+        })()
+    </script>
+  {% endfor %}
 
-    <h3>具体变动</h3>
-
-    {% for (key, cn), value in diff.items() %}
-        <div class="row">
-            <h4>{{ cn }}</h4>
-            <div id="{{ key }}diff" class="diff"></div>
+  <div class="row">
+    {% if patch.state == 0 %}
+      {% if auth.allow_edit %}
+        <div class="col">
+          <form action="/api/review-episode/{{ patch.id }}" method="post"
+                enctype="application/x-www-form-urlencoded">
+            {{ csrf_input | safe }}
+            <input name="react" value="accept" hidden="hidden"/>
+            <button type="submit" class="btn btn-success">Accept</button>
+          </form>
         </div>
 
         <script>
-            (() => {
-                const diffString = {{ value | tojson }};
-                const targetElement = document.getElementById('{{ key }}diff');
-                const configuration = {
-                    drawFileList: false,
-                    fileListToggle: false,
-                    fileListStartVisible: false,
-                    maxLineSizeInBlockForComparison: 80,
-                    fileContentToggle: false,
-                    matching: 'lines',
-                    outputFormat: 'line-by-line',
-                    synchronisedScroll: false,
-                    renderNothingWhenEmpty: false,
-                };
-                const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
-                diff2htmlUi.draw();
-            })()
+            function onRejectSelectFormChange() {
+                const el = $('#reject-reason-select');
+                $('#reject-reason-input').val(el.val())
+            }
         </script>
-    {% endfor %}
 
-    <div class="row">
-        {% if patch.state == 0 %}
-            {% if auth.allow_edit %}
-                <div class="col">
-                    <form action="/api/review-episode/{{ patch.id }}" method="post"
-                          enctype="application/x-www-form-urlencoded">
-                        {{ csrf_input | safe }}
-                        <input name="react" value="accept" hidden="hidden"/>
-                        <button type="submit" class="btn btn-success">Accept</button>
-                    </form>
-                </div>
-
-                <script>
-                    function onRejectSelectFormChange() {
-                        const el = $('#reject-reason-select');
-                        $('#reject-reason-input').val(el.val())
-                    }
-                </script>
-
-                <div class="col">
-                    <form action="/api/review-episode/{{ patch.id }}" method="post"
-                          enctype="application/x-www-form-urlencoded">
-                        {{ csrf_input | safe }}
-                        <input name="react" value="reject" hidden="hidden"/>
-                        {#                        <div class="mb-3">#}
-                        {#                            <select class="form-select"#}
-                        {#                                    id="reject-reason-select"#}
-                        {#                                    aria-label="Default select example"#}
-                        {#                                    onchange="onRejectSelectFormChange()">#}
-                        {#                                <option selected>Open this select menu</option>#}
-                        {#                                <option value="1">One</option>#}
-                        {#                                <option value="2">Two</option>#}
-                        {#                                <option value="3">Three</option>#}
-                        {#                            </select>#}
-                        {#                        </div>#}
-                        <div class="mb-3">
-                            <label>拒绝原因</label>
-                            <input class="form-control" id="reject-reason-input"
-                                   type="text"
-                                   name="reject_reason"/>
-                        </div>
-                        <div class="mb-3">
-                            <button type="submit" class="btn btn-danger">Reject</button>
-                        </div>
-                    </form>
-                </div>
-            {% endif %}
-
-            {% if patch.from_user_id == auth.user_id %}
-                <div class="row mb-1">
-                    <form action="/api/delete-episode/{{ patch.id }}" method="post">
-                        {{ csrf_input | safe }}
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
-                </div>
-            {% endif %}
-        {% elif patch.state == 1 %}
-            <hr>
-            <div class="col">
-                <h2> 已被 <a href="/review/{{ patch.wiki_user_id }}?type=episode"
-                             target="_blank">{{ reviewer.nickname }}</a>
-                    <span class="badge bg-success"> 接受 </span>
-                </h2>
+        <div class="col">
+          <form action="/api/review-episode/{{ patch.id }}" method="post"
+                enctype="application/x-www-form-urlencoded">
+            {{ csrf_input | safe }}
+            <input name="react" value="reject" hidden="hidden"/>
+            {#                        <div class="mb-3">#}
+            {#                            <select class="form-select"#}
+            {#                                    id="reject-reason-select"#}
+            {#                                    aria-label="Default select example"#}
+            {#                                    onchange="onRejectSelectFormChange()">#}
+            {#                                <option selected>Open this select menu</option>#}
+            {#                                <option value="1">One</option>#}
+            {#                                <option value="2">Two</option>#}
+            {#                                <option value="3">Three</option>#}
+            {#                            </select>#}
+            {#                        </div>#}
+            <div class="mb-3">
+              <label>拒绝原因</label>
+              <input class="form-control" id="reject-reason-input"
+                     type="text"
+                     name="reject_reason"/>
             </div>
-        {% elif patch.state == 2 %}
-            <hr>
-            <div class="col">
-                <h3> 已被 <a href="/review/{{ patch.wiki_user_id }}?type=episode"
-                             target="_blank">{{ reviewer.nickname }}</a>
-                    <span class="badge bg-danger"> 拒绝 </span>
-                </h3>
+            <div class="mb-3">
+              <button type="submit" class="btn btn-danger">Reject</button>
+            </div>
+          </form>
+        </div>
+      {% endif %}
 
-                {% if patch.reject_reason %}
-                    <h4>原因：{{ patch.reject_reason }}</h4>
-                {% endif %}
-            </div>
-        {% elif patch.state == 3 %}
-            <hr>
-            <div class="col">
-                <h2> 已过期 </h2>
-            </div>
+      {% if patch.from_user_id == auth.user_id %}
+        <div class="row mb-1">
+          <form action="/api/delete-episode/{{ patch.id }}" method="post">
+            {{ csrf_input | safe }}
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </form>
+        </div>
+      {% endif %}
+    {% elif patch.state == 1 %}
+      <hr>
+      <div class="col">
+        <h2> 已被 <a href="/review/{{ patch.wiki_user_id }}?type=episode"
+                     target="_blank">{{ reviewer.nickname }}</a>
+          <span class="badge bg-success"> 接受 </span>
+        </h2>
+      </div>
+    {% elif patch.state == 2 %}
+      <hr>
+      <div class="col">
+        <h3> 已被 <a href="/review/{{ patch.wiki_user_id }}?type=episode"
+                     target="_blank">{{ reviewer.nickname }}</a>
+          <span class="badge bg-danger"> 拒绝 </span>
+        </h3>
+
+        {% if patch.reject_reason %}
+          <h4>原因：{{ patch.reject_reason }}</h4>
         {% endif %}
-    </div>
+      </div>
+    {% elif patch.state == 3 %}
+      <hr>
+      <div class="col">
+        <h2> 已过期 </h2>
+      </div>
+    {% endif %}
+  </div>
 {% endblock %}
