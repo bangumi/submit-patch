@@ -10,7 +10,7 @@ from loguru import logger
 from markupsafe import Markup
 
 from server.base import Request, pg
-from server.model import Patch, PatchState
+from server.model import PatchState, SubjectPatch
 from server.router import Router
 
 
@@ -52,12 +52,12 @@ def render_reason(s: str) -> Markup:
 @litestar.get("/patch/{patch_id:uuid}")
 async def get_patch(patch_id: uuid.UUID, request: Request) -> Template:
     p = await pg.fetchrow(
-        """select * from patch where id = $1 and deleted_at is NULL limit 1""", patch_id
+        """select * from subject_patch where id = $1 and deleted_at is NULL limit 1""", patch_id
     )
     if not p:
         raise NotFoundException()
 
-    patch = Patch(**p)
+    patch = SubjectPatch(**p)
 
     name_patch = ""
     if patch.name is not None:

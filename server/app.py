@@ -127,7 +127,7 @@ async def startup_fetch_missing_users() -> None:
     logger.info("fetch missing users")
     s = set()
 
-    for u1, u2 in await pg.fetch("select from_user_id, wiki_user_id from patch"):
+    for u1, u2 in await pg.fetch("select from_user_id, wiki_user_id from subject_patch"):
         s.add(u1)
         s.add(u2)
 
@@ -179,7 +179,7 @@ async def badge() -> Response[bytes]:
     rest = sum(
         await asyncio.gather(
             pg.fetchval(
-                "select count(1) from patch where deleted_at IS NULL and state = $1",
+                "select count(1) from subject_patch where deleted_at IS NULL and state = $1",
                 PatchState.Pending,
             ),
             pg.fetchval(

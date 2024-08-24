@@ -21,7 +21,7 @@ from loguru import logger
 from config import UTC
 from server.auth import require_user_editor
 from server.base import AuthorizedRequest, BadRequestException, User, http_client, pg
-from server.model import EpisodePatch, Patch, PatchState
+from server.model import EpisodePatch, PatchState, SubjectPatch
 from server.router import Router
 
 
@@ -55,13 +55,13 @@ class SubjectReviewController(Controller):
         async with pg.acquire() as conn:
             async with conn.transaction():
                 p = await pg.fetchrow(
-                    """select * from patch where id = $1 and deleted_at is NULL FOR UPDATE""",
+                    """select * from subject_patch where id = $1 and deleted_at is NULL FOR UPDATE""",
                     patch_id,
                 )
                 if not p:
                     raise NotFoundException()
 
-                patch = Patch(**p)
+                patch = SubjectPatch(**p)
 
                 if patch.state != PatchState.Pending:
                     raise BadRequestException("patch already reviewed")
@@ -76,14 +76,14 @@ class SubjectReviewController(Controller):
 
     async def __reject_patch(
         self,
-        patch: Patch,
+        patch: SubjectPatch,
         conn: PoolConnectionProxy[Record],
         auth: User,
         reason: str,
     ) -> Redirect:
         await conn.execute(
             """
-            update patch set
+            update subject_patch set
                 state = $1,
                 wiki_user_id = $2,
                 updated_at = $3,
@@ -100,7 +100,7 @@ class SubjectReviewController(Controller):
 
     async def __accept_patch(
         self,
-        patch: Patch,
+        patch: SubjectPatch,
         conn: PoolConnectionProxy[Record],
         auth: User,
     ) -> Redirect:
@@ -138,12 +138,12 @@ class SubjectReviewController(Controller):
             if err_code == "SUBJECT_CHANGED":
                 await conn.execute(
                     """
-                                update patch set
-                                    state = $1,
-                                    wiki_user_id = $2,
-                                    updated_at = $3
-                                where id = $4 and deleted_at is NULL
-                                """,
+                    update subject_patch set
+                        state = $1,
+                        wiki_user_id = $2,
+                        updated_at = $3
+                    where id = $4 and deleted_at is NULL
+                    """,
                     PatchState.Outdated,
                     auth.user_id,
                     datetime.now(tz=UTC),
@@ -154,7 +154,7 @@ class SubjectReviewController(Controller):
             if err_code == "INVALID_SYNTAX_ERROR":
                 await conn.execute(
                     """
-                    update patch set
+                    update subject_patch set
                         state = $1,
                         wiki_user_id = $2,
                         updated_at = $3,
@@ -174,7 +174,7 @@ class SubjectReviewController(Controller):
 
         await conn.execute(
             """
-                    update patch set
+                    update subject_patch set
                         state = $1,
                         wiki_user_id = $2,
                         updated_at = $3

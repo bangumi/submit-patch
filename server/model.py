@@ -25,7 +25,7 @@ class PatchBase:
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
-class Patch(PatchBase):
+class SubjectPatch(PatchBase):
     subject_id: int
     subject_type: int
 

@@ -45,7 +45,7 @@ async def index(
         return Redirect(f"/contrib/{request.auth.user_id}")
 
     if patch_type == PatchType.Subject:
-        query = Table("patch", query_cls=PostgreSQLQuery)
+        query = Table("subject_patch", query_cls=PostgreSQLQuery)
     elif patch_type == PatchType.Episode:
         query = Table("episode_patch", query_cls=PostgreSQLQuery)
     else:
@@ -104,7 +104,7 @@ async def index(
     )
 
     pending_subject = await pg.fetchval(
-        "select count(1) from patch where deleted_at is NULL and state = $1",
+        "select count(1) from subject_patch where deleted_at is NULL and state = $1",
         PatchState.Pending,
     )
 
@@ -146,7 +146,7 @@ async def show_user_contrib(
 ) -> Template:
     if patch_type == PatchType.Subject:
         rows = await pg.fetch(
-            "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
+            "select * from subject_patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
             user_id,
         )
     elif patch_type == PatchType.Episode:
@@ -185,7 +185,7 @@ async def show_user_review(
 ) -> Template:
     if patch_type == PatchType.Subject:
         rows = await pg.fetch(
-            "select * from patch where wiki_user_id = $1 and deleted_at is NULL order by created_at desc",
+            "select * from subject_patch where wiki_user_id = $1 and deleted_at is NULL order by created_at desc",
             user_id,
         )
     elif patch_type == PatchType.Episode:

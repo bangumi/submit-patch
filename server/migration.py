@@ -21,6 +21,7 @@ class Migrate(NamedTuple):
 migrations: list[Migrate] = [
     Migrate(1, sql_dir.joinpath("001-init.sql").read_text(encoding="utf8")),
     Migrate(2, "select 1;"),  # noop
+    Migrate(3, "alter table patch rename to subject_patch"),
 ]
 
 

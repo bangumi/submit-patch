@@ -13,7 +13,7 @@ class SubjectType(str, enum.Enum):
     real = "real"
 
 
-class Patch:
+class SubjectPatch:
     def __init__(
         self,
         original: str,
@@ -32,7 +32,7 @@ class Patch:
         return "\n".join(difflib.unified_diff(self.origin.splitlines(), self.after.splitlines()))
 
     def __str__(self) -> str:
-        return f"<Patch {self.category} {self.message}>"
+        return f"<SubjectPatch {self.category} {self.message}>"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

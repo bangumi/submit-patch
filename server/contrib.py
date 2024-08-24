@@ -19,7 +19,7 @@ from uuid6 import uuid7
 from config import TURNSTILE_SECRET_KEY, UTC
 from server.auth import require_user_login
 from server.base import AuthorizedRequest, BadRequestException, Request, http_client, pg
-from server.model import Patch
+from server.model import SubjectPatch
 from server.router import Router
 
 
@@ -141,7 +141,7 @@ async def delete_patch(patch_id: str, request: AuthorizedRequest) -> Redirect:
             if not p:
                 raise NotFoundException()
 
-            patch = Patch(**p)
+            patch = SubjectPatch(**p)
 
             if patch.from_user_id != request.auth.user_id:
                 raise NotAuthorizedException
