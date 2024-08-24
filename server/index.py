@@ -6,7 +6,7 @@ import litestar
 from litestar import params
 from litestar.exceptions import NotFoundException
 from litestar.response import Redirect, Template
-from pypika import Field, Order, Parameter, Query  # type: ignore
+from pypika import Field, Order, Parameter, PostgreSQLQuery, Table  # type: ignore
 from pypika.functions import Count  # type: ignore
 
 from server.auth import require_user_login
@@ -45,9 +45,9 @@ async def index(
         return Redirect(f"/contrib/{request.auth.user_id}")
 
     if patch_type == PatchType.Subject:
-        query = Query.Table("patch")
+        query = Table("patch", query_cls=PostgreSQLQuery)
     elif patch_type == PatchType.Episode:
-        query = Query.Table("episode_patch")
+        query = Table("episode_patch", query_cls=PostgreSQLQuery)
     else:
         raise BadRequestException(f"{patch_type} is not valid")
 
