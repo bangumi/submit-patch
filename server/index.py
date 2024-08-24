@@ -83,17 +83,17 @@ async def index(
         total_page = (total + _page_size - 1) // _page_size
 
     if page > total_page:
-        rows = []
-    else:
-        rows = await pg.fetch(
-            query.select("*")
-            .where(where)
-            .limit(_page_size)
-            .offset((page - 1) * _page_size)
-            .orderby(order_field, order=order_sort)
-            .get_sql(),
-            PatchState.Pending,
-        )
+        return Redirect(f"/?type={patch_type}&reviewed={int(reviewed)}&page=1")
+
+    rows = await pg.fetch(
+        query.select("*")
+        .where(where)
+        .limit(_page_size)
+        .offset((page - 1) * _page_size)
+        .orderby(order_field, order=order_sort)
+        .get_sql(),
+        PatchState.Pending,
+    )
 
     pending_episode = await pg.fetchval(
         "select count(1) from episode_patch where deleted_at is NULL and state = $1",
