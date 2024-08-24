@@ -24,7 +24,7 @@ async def run_migration() -> None:
         Migrate(4, sql_dir.joinpath("004-deleted-view.sql").read_text(encoding="utf-8")),
     ]
 
-    if not all(x <= y for x, y in itertools.pairwise(migrations[:-1])):
+    if not all(x <= y for x, y in itertools.pairwise(migrations)):
         raise Exception("migration list is not sorted")
 
     v = None
