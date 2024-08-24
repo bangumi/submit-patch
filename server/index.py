@@ -52,12 +52,12 @@ async def index(
         raise BadRequestException(f"{patch_type} is not valid")
 
     where = Field("deleted_at").isnull()
-    if reviewed:
-        where = where & Field("state").ne(Parameter("$1"))
+    if not reviewed:
+        where = where & Field("state").eq(Parameter("$1"))
         order_field = "created_at"
         order_sort = Order.asc
     else:
-        where = where & Field("state").eq(Parameter("$1"))
+        where = where & Field("state").ne(Parameter("$1"))
         order_field = "updated_at"
         order_sort = Order.desc
 
