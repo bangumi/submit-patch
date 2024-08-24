@@ -19,9 +19,9 @@ loguru = "^0.7.0"
 litestar = { version = "^2.10.0", extras = ['jinja', 'standard'] }
 redis = { extras = ["hiredis"], version = "^5.0.0" }
 uvicorn = { version = "^0.30.6", extras = ['standard'] }
-uuid6 = "^2024.7.10"
 pydash = "^8.0.3"
 dacite = "^1.8.1"
+uuid-utils = "^0.9.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.1"

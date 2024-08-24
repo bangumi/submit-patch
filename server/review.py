@@ -17,6 +17,7 @@ from litestar.exceptions import InternalServerException, NotAuthorizedException,
 from litestar.params import Body
 from litestar.response import Redirect
 from loguru import logger
+from uuid_utils import uuid7
 
 from config import UTC
 from server.auth import require_user_editor
@@ -285,13 +286,49 @@ class EpisodeReviewController(Controller):
         return Redirect("/?type=episode")
 
 
+@dataclass(slots=True, frozen=True)
+class CommentOnPatch:
+    text: str = ""
+
+
 @router
-class SuggestReviewController(Controller):
+class CommentReviewController(Controller):
     @litestar.post("/api/add-suggestion/{patch_id:uuid}", guards=[require_user_editor])
     async def handler(
         self,
         request: AuthorizedRequest,
         patch_id: uuid.UUID,
+        data: Annotated[CommentOnPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
         patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
-    ) -> None:
-        pass
+    ) -> Response[Any]:
+        if patch_type == PatchType.Subject:
+            p = await pg.fetchval(
+                "select id from view_subject_patch where id = $1 AND state = $2",
+                patch_id,
+                PatchState.Pending,
+            )
+        else:
+            p = await pg.fetchval(
+                "select id from view_episode_patch where id = $1 AND state = $2",
+                patch_id,
+                PatchState.Pending,
+            )
+        if not p:
+            raise NotFoundException("patch not found")
+
+        await pg.execute(
+            """
+        insert into edit_suggestion (id, patch_id, patch_type, text, from_user)
+        values ($1, $2, $3, $4, $5)
+            """,
+            uuid7(),
+            patch_id,
+            patch_type,
+            data.text,
+            request.auth.user_id,
+        )
+
+        if patch_type == PatchType.Subject:
+            return Redirect(f"/patch/{patch_id}")
+
+        return Redirect(f"/episode/{patch_id}")

@@ -1,12 +1,16 @@
-CREATE TYPE patch_type AS ENUM ('subject', 'episode');
+-- CREATE TYPE patch_type AS ENUM ('subject', 'episode');
+
+drop table edit_suggestion;
 
 create table if not exists edit_suggestion
 (
-    id         uuid primary key not null,
-    patch_id   uuid             not null,
-    patch_type patch_type       not null,
-    text       text             not null,
-    from_user  int              not null
+    id         uuid primary key                      not null,
+    patch_id   uuid                                  not null,
+    patch_type patch_type                            not null,
+    text       text                                  not null,
+    from_user  int                                   not null,
+    created_at timestamptz default current_timestamp not null,
+    deleted_at timestamptz
 );
 
 create index idx_edit_patch_lookup on edit_suggestion (patch_id, patch_type);

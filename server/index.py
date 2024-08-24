@@ -1,6 +1,5 @@
 from typing import Annotated, Any
 
-import asyncpg
 import litestar
 from litestar import params
 from litestar.exceptions import NotFoundException
@@ -8,6 +7,7 @@ from litestar.response import Redirect, Template
 
 from server.auth import require_user_login
 from server.base import BadRequestException, Request, pg
+from server.db import fetch_users
 from server.model import PatchState, PatchType
 from server.router import Router
 
@@ -98,25 +98,12 @@ async def index(
             "rows": rows,
             "filter_reviewed": reviewed,
             "auth": request.auth,
-            "users": await __fetch_users(rows),
+            "users": await fetch_users(rows),
             "patch_type": patch_type,
             "pending_episode": pending_episode,
             "pending_subject": pending_subject,
         },
     )
-
-
-async def __fetch_users(rows: list[asyncpg.Record]) -> dict[int, asyncpg.Record]:
-    user_id = {x["from_user_id"] for x in rows} | {x["wiki_user_id"] for x in rows}
-    user_id.discard(None)
-    user_id.discard(0)
-
-    users = {
-        x["user_id"]: x
-        for x in await pg.fetch("select * from patch_users where user_id = any($1)", user_id)
-    }
-
-    return users
 
 
 @router
@@ -143,7 +130,7 @@ async def show_user_contrib(
     if not nickname:
         raise NotFoundException()
 
-    users = await __fetch_users(rows)
+    users = await fetch_users(rows)
 
     return Template(
         "list.html.jinja2",
@@ -182,7 +169,7 @@ async def show_user_review(
     if not nickname:
         raise NotFoundException()
 
-    users = await __fetch_users(rows)
+    users = await fetch_users(rows)
 
     return Template(
         "list.html.jinja2",
