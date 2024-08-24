@@ -26,7 +26,7 @@ class PatchType(str, enum.Enum):
         return self.value
 
 
-_page_size = 100
+_page_size = 30
 
 
 @router
