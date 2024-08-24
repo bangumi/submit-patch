@@ -1,6 +1,4 @@
--- CREATE TYPE patch_type AS ENUM ('subject', 'episode');
-
-drop table edit_suggestion;
+CREATE TYPE patch_type AS ENUM ('subject', 'episode');
 
 create table if not exists edit_suggestion
 (
