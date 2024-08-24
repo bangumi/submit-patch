@@ -31,7 +31,7 @@
                                 {% else %}
                                     class="page-link"
                                 {% endif %}
-                                    href="{{ request.url.path }}?type=subject">条目
+                                    href="{{ replace_url_query(type='subject') }}">条目
 
                             {% if pending_subject %}
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -47,7 +47,7 @@
                                     class="page-link active"
                                 {% else %}
                                     class="page-link"
-                                {% endif %} href="{{ request.url.path }}?type=episode">章节
+                                {% endif %} href="{{ replace_url_query(type='episode') }}">章节
 
                             {% if pending_episode %}
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -72,7 +72,7 @@
                                     {% else %}
                                         class="page-link active"
                                     {% endif %}
-                                        href="/?type={{patch_type}}&reviewed=0">
+                                        href="{{ replace_url_query(reviewed='0') }}">
                                 未审核
                             </a>
                         </li>
@@ -83,7 +83,7 @@
                                     {% else %}
                                         class="page-link"
                                     {% endif %}
-                                        href="/?type={{patch_type}}&reviewed=1"
+                                        href="{{ replace_url_query(reviewed='1') }}"
                                 >
                                 已审核
                             </a>

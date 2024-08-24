@@ -2,11 +2,13 @@ import typing
 from collections.abc import Callable
 from datetime import datetime, timedelta
 from typing import Any
+from urllib.parse import urlencode
 
 import jinja2
 from jinja2 import pass_context, select_autoescape
 from jinja2.runtime import Context
 from litestar import Request
+from typing_extensions import Never
 
 from config import DEV, PROJECT_PATH, TURNSTILE_SITE_KEY, UTC
 
@@ -105,3 +107,15 @@ def subject_type_readable(s: int) -> str:
             return "三次元"
         case _:
             return "Unknown"
+
+
+@pass_context
+def replace_url_query(ctx: Context, **kwargs: Any) -> str:
+    req: Request[Never, Never, Never] = ctx["request"]
+    q = req.url.query_params.copy()
+    for key, value in kwargs.items():
+        q[key] = str(value)
+    return req.url.path + "?" + urlencode(q)
+
+
+engine.globals["replace_url_query"] = replace_url_query
