@@ -58,7 +58,7 @@ async def index(
         order_sort = Order.asc
     else:
         where = where & Field("state").eq(Parameter("$1"))
-        order_field = "created_at"
+        order_field = "updated_at"
         order_sort = Order.desc
 
     total: int = await pg.fetchval(
