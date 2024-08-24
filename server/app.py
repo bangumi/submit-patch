@@ -115,11 +115,18 @@ class PatchType(str, enum.Enum):
     Subject = "subject"
     Episode = "episode"
 
+    def __str__(self) -> str:
+        return self.value
+
 
 @router
-@litestar.get("/")
+@litestar.get("/", name="index")
 async def index(
-    request: Request, patch_type: Annotated[PatchType, Parameter(query="type")] = PatchType.Subject
+    request: Request,
+    patch_type: Annotated[PatchType, Parameter(query="type")] = PatchType.Subject,
+    # ?reviewed=0/1/true/false
+    # only work on index page
+    reviewed: Annotated[bool, Parameter(query="reviewed")] = False,
 ) -> Template:
     if not request.auth:
         return Template("login.html.jinja2")
@@ -130,17 +137,16 @@ async def index(
                 "select * from patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
                 request.auth.user_id,
             )
-        else:
+        elif reviewed:
             rows = await pg.fetch(
-                """
-                select * from patch where deleted_at is NULL and state = $1
-                union
-                (select * from patch  where deleted_at is NULL and state != $1 order by updated_at desc limit 10)
-                """,
+                """select * from patch where deleted_at is NULL and state = $1 order by created_at""",
                 PatchState.Pending,
             )
-
-            rows.sort(key=__index_row_sorter, reverse=True)
+        else:
+            rows = await pg.fetch(
+                """select * from patch where deleted_at is NULL and state != $1 order by updated_at""",
+                PatchState.Pending,
+            )
 
     elif patch_type == PatchType.Episode:
         if not request.auth.allow_edit:
@@ -148,17 +154,16 @@ async def index(
                 "select * from episode_patch where from_user_id = $1 and deleted_at is NULL order by created_at desc",
                 request.auth.user_id,
             )
-        else:
+        elif reviewed:
             rows = await pg.fetch(
-                """
-                select * from episode_patch where deleted_at is NULL and state = $1
-                union
-                (select * from episode_patch  where deleted_at is NULL and state != $1 order by updated_at desc limit 10)
-                """,
+                """select * from episode_patch where deleted_at is NULL and state = $1 order by created_at""",
                 PatchState.Pending,
             )
-
-            rows.sort(key=__index_row_sorter, reverse=True)
+        else:
+            rows = await pg.fetch(
+                """select * from episode_patch where deleted_at is NULL and state != $1 order by updated_at""",
+                PatchState.Pending,
+            )
     else:
         raise BadRequestException(f"{patch_type} is not valid")
 
@@ -176,6 +181,7 @@ async def index(
         "list.html.jinja2",
         context={
             "rows": rows,
+            "filter_reviewed": reviewed,
             "auth": request.auth,
             "users": await __fetch_users(rows),
             "patch_type": patch_type,
