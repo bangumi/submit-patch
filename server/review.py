@@ -44,138 +44,148 @@ def _strip_none(d: dict[str, Any]) -> dict[str, Any]:
 
 
 @router
-@litestar.post("/api/review-patch/{patch_id:str}", guards=[require_user_editor])
-async def review_patch(
-    patch_id: str,
-    request: AuthorizedRequest,
-    data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
-) -> Response[Any]:
-    async with pg.acquire() as conn:
-        async with conn.transaction():
-            p = await pg.fetchrow(
-                """select * from patch where id = $1 and deleted_at is NULL FOR UPDATE""", patch_id
-            )
-            if not p:
-                raise NotFoundException()
+class SubjectReviewController(Controller):
+    @litestar.post("/api/review-patch/{patch_id:str}", guards=[require_user_editor])
+    async def review_patch(
+        self,
+        patch_id: str,
+        request: AuthorizedRequest,
+        data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
+    ) -> Response[Any]:
+        async with pg.acquire() as conn:
+            async with conn.transaction():
+                p = await pg.fetchrow(
+                    """select * from patch where id = $1 and deleted_at is NULL FOR UPDATE""",
+                    patch_id,
+                )
+                if not p:
+                    raise NotFoundException()
 
-            patch = Patch(**p)
+                patch = Patch(**p)
 
-            if patch.state != PatchState.Pending:
-                raise BadRequestException("patch already reviewed")
+                if patch.state != PatchState.Pending:
+                    raise BadRequestException("patch already reviewed")
 
-            if data.react == React.Reject:
-                return await __reject_patch(patch, conn, request.auth, data.reject_reason)
+                if data.react == React.Reject:
+                    return await self.__reject_patch(patch, conn, request.auth, data.reject_reason)
 
-            if data.react == React.Accept:
-                return await __accept_patch(patch, conn, request.auth)
+                if data.react == React.Accept:
+                    return await self.__accept_patch(patch, conn, request.auth)
 
-    raise NotAuthorizedException("暂不支持")
+        raise NotAuthorizedException("暂不支持")
 
+    async def __reject_patch(
+        self,
+        patch: Patch,
+        conn: PoolConnectionProxy[Record],
+        auth: User,
+        reason: str,
+    ) -> Redirect:
+        await conn.execute(
+            """
+            update patch set
+                state = $1,
+                wiki_user_id = $2,
+                updated_at = $3,
+                reject_reason = $4
+            where id = $5 and deleted_at is NULL
+            """,
+            PatchState.Rejected,
+            auth.user_id,
+            datetime.now(tz=UTC),
+            reason,
+            patch.id,
+        )
+        return Redirect("/")
 
-async def __reject_patch(
-    patch: Patch, conn: PoolConnectionProxy[Record], auth: User, reason: str
-) -> Redirect:
-    await conn.execute(
-        """
-        update patch set
-            state = $1,
-            wiki_user_id = $2,
-            updated_at = $3,
-            reject_reason = $4
-        where id = $5 and deleted_at is NULL
-        """,
-        PatchState.Rejected,
-        auth.user_id,
-        datetime.now(tz=UTC),
-        reason,
-        patch.id,
-    )
-    return Redirect("/")
+    async def __accept_patch(
+        self,
+        patch: Patch,
+        conn: PoolConnectionProxy[Record],
+        auth: User,
+    ) -> Redirect:
+        if not auth.is_access_token_fresh():
+            return Redirect("/login")
 
+        subject = _strip_none(
+            {
+                "infobox": patch.infobox,
+                "name": patch.name,
+                "summary": patch.summary,
+                "nsfw": patch.nsfw,
+            }
+        )
 
-async def __accept_patch(patch: Patch, conn: PoolConnectionProxy[Record], auth: User) -> Redirect:
-    if not auth.is_access_token_fresh():
-        return Redirect("/login")
+        res = await http_client.patch(
+            f"https://next.bgm.tv/p1/wiki/subjects/{patch.subject_id}",
+            headers={"Authorization": f"Bearer {auth.access_token}"},
+            json={
+                "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/patch/{patch.id}]",
+                "expectedRevision": pydash.pick(
+                    {
+                        "infobox": patch.original_infobox,
+                        "name": patch.original_name,
+                        "summary": patch.original_summary,
+                    },
+                    *subject.keys(),
+                ),
+                "subject": subject,
+            },
+        )
+        if res.status_code >= 300:
+            data: dict[str, Any] = res.json()
+            err_code = data.get("code")
+            if err_code == "SUBJECT_CHANGED":
+                await conn.execute(
+                    """
+                                update patch set
+                                    state = $1,
+                                    wiki_user_id = $2,
+                                    updated_at = $3
+                                where id = $4 and deleted_at is NULL
+                                """,
+                    PatchState.Outdated,
+                    auth.user_id,
+                    datetime.now(tz=UTC),
+                    patch.id,
+                )
+                return Redirect("/")
 
-    subject = _strip_none(
-        {
-            "infobox": patch.infobox,
-            "name": patch.name,
-            "summary": patch.summary,
-            "nsfw": patch.nsfw,
-        }
-    )
+            if err_code == "INVALID_SYNTAX_ERROR":
+                await conn.execute(
+                    """
+                    update patch set
+                        state = $1,
+                        wiki_user_id = $2,
+                        updated_at = $3,
+                        reject_reason = $4
+                    where id = $5 and deleted_at is NULL
+                    """,
+                    PatchState.Rejected,
+                    auth.user_id,
+                    datetime.now(tz=UTC),
+                    f"建议包含语法错误，已经自动拒绝: {data.get('message')}",
+                    patch.id,
+                )
+                raise BadRequestException("建议包含语法错误，已经自动拒绝")
 
-    res = await http_client.patch(
-        f"https://next.bgm.tv/p1/wiki/subjects/{patch.subject_id}",
-        headers={"Authorization": f"Bearer {auth.access_token}"},
-        json={
-            "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/patch/{patch.id}]",
-            "expectedRevision": pydash.pick(
-                {
-                    "infobox": patch.original_infobox,
-                    "name": patch.original_name,
-                    "summary": patch.original_summary,
-                },
-                *subject.keys(),
-            ),
-            "subject": subject,
-        },
-    )
-    if res.status_code >= 300:
-        data: dict[str, Any] = res.json()
-        err_code = data.get("code")
-        if err_code == "SUBJECT_CHANGED":
-            await conn.execute(
-                """
-                            update patch set
-                                state = $1,
-                                wiki_user_id = $2,
-                                updated_at = $3
-                            where id = $4 and deleted_at is NULL
-                            """,
-                PatchState.Outdated,
-                auth.user_id,
-                datetime.now(tz=UTC),
-                patch.id,
-            )
-            return Redirect("/")
+            logger.error("failed to apply patch {!r}", data)
+            raise InternalServerException()
 
-        if err_code == "INVALID_SYNTAX_ERROR":
-            await conn.execute(
-                """
-                update patch set
-                    state = $1,
-                    wiki_user_id = $2,
-                    updated_at = $3,
-                    reject_reason = $4
-                where id = $5 and deleted_at is NULL
-                """,
-                PatchState.Rejected,
-                auth.user_id,
-                datetime.now(tz=UTC),
-                f"建议包含语法错误，已经自动拒绝: {data.get('message')}",
-                patch.id,
-            )
-            raise BadRequestException("建议包含语法错误，已经自动拒绝")
-
-        logger.error("failed to apply patch {!r}", data)
-        raise InternalServerException()
-
-    await conn.execute(
-        """
-                update patch set
-                    state = $1,
-                    wiki_user_id = $2,
-                    updated_at = $3
-                where id = $4 and deleted_at is NULL
-                """,
-        PatchState.Accept,
-        auth.user_id,
-        datetime.now(tz=UTC),
-        patch.id,
-    )
-    return Redirect("/")
+        await conn.execute(
+            """
+                    update patch set
+                        state = $1,
+                        wiki_user_id = $2,
+                        updated_at = $3
+                    where id = $4 and deleted_at is NULL
+                    """,
+            PatchState.Accept,
+            auth.user_id,
+            datetime.now(tz=UTC),
+            patch.id,
+        )
+        return Redirect("/")
 
 
 @router
