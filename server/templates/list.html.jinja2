@@ -208,44 +208,6 @@
     </div>
 
     {% if total_page is defined %}
-        <div class="row">
-            <nav aria-label="...">
-                <ul class="pagination">
-                    <li class="page-item">
-                        <a class="page-link"
-                           href="{{ replace_url_query(page=1) }}">&laquo;</a>
-                    </li>
-                    {% if current_page > 1 %}
-                        <li class="page-item">
-                            <a class="page-link"
-                               href="{{ replace_url_query(page=current_page-1) }}">&lt;</a>
-                        </li>
-                    {% endif %}
-                    {% for index in range(max(1, current_page - 2) , min(current_page + 3, total_page + 1)) %}
-                        {% if index == current_page %}
-                            <li class="page-item active">
-                                <a class="page-link"
-                                   href="{{ replace_url_query(page=index) }}">{{ index }}</a>
-                            </li>
-                        {% else %}
-                            <li class="page-item">
-                                <a class="page-link"
-                                   href="{{ replace_url_query(page=index) }}">{{ index }}</a>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-                    {% if current_page < total_page %}
-                        <li class="page-item">
-                            <a class="page-link"
-                               href="{{ replace_url_query(page=current_page + 1) }}">&gt;</a>
-                        </li>
-                    {% endif %}
-                    <li class="page-item">
-                        <a class="page-link"
-                           href="{{ replace_url_query(page=total_page) }}">&raquo;</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
+        {% include "component/pagination.html.jinja2" %}
     {% endif %}
 {% endblock %}
