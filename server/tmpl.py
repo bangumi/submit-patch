@@ -22,13 +22,7 @@ engine = jinja2.Environment(
 engine.globals["TURNSTILE_SITE_KEY"] = TURNSTILE_SITE_KEY
 engine.globals["min"] = min
 engine.globals["max"] = max
-engine.globals["patch_state_filter"] = [
-    ("pending", "待审核"),
-    ("reviewed", "已审核"),
-    ("all", "全部"),
-    ("rejected", "拒绝"),
-    ("accepted", "接受"),
-]
+
 
 P = typing.ParamSpec("P")
 T = typing.TypeVar("T")

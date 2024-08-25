@@ -17,6 +17,32 @@ router = Router()
 
 _page_size = 30
 
+html_patch_state_filter = [
+    ("pending", "待审核"),
+    ("reviewed", "已审核"),
+    ("all", "全部"),
+    ("rejected", "拒绝"),
+    ("accepted", "接受"),
+]
+
+
+@enum.unique
+class ReviewedStateFilter(str, enum.Enum):
+    All = "all"
+    Rejected = "rejected"
+    Accepted = "accepted"
+
+    def to_sql(self, index: int = 1) -> tuple[str, Any]:
+        match self.value:
+            case "all":
+                return f"1=${index}", 1
+            case "rejected":
+                return f"state = ${index}", PatchState.Rejected
+            case "accepted":
+                return f"state = ${index}", PatchState.Accept
+
+        raise NotImplementedError()
+
 
 @enum.unique
 class StateFilter(str, enum.Enum):
@@ -123,6 +149,7 @@ async def _(
         "list.html.jinja2",
         context={
             "total_page": total_page,
+            "patch_state_filter": html_patch_state_filter,
             "current_state": patch_state_filter,
             "current_page": page,
             "rows": rows,
@@ -184,6 +211,7 @@ async def show_user_contrib(
         context={
             "rows": rows,
             "current_state": patch_state_filter,
+            "patch_state_filte": html_patch_state_filter,
             "total_page": total_page,
             "current_page": page,
             "users": users,
@@ -201,7 +229,9 @@ async def show_user_review(
     request: Request,
     user_id: int,
     *,
-    patch_state_filter: Annotated[StateFilter, params.Parameter(query="state")] = StateFilter.All,
+    patch_state_filter: Annotated[
+        ReviewedStateFilter, params.Parameter(query="state")
+    ] = ReviewedStateFilter.All,
     page: Annotated[int, params.Parameter(query="page", ge=1)] = 1,
     patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
 ) -> Template:
@@ -244,6 +274,8 @@ async def show_user_review(
         context={
             "rows": rows,
             "users": users,
+            "patch_state_filter": html_patch_state_filter[2:],
+            "skip_pending": True,
             "total_page": total_page,
             "current_page": page,
             "current_state": patch_state_filter,
