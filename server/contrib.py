@@ -61,7 +61,7 @@ async def suggest_ui(request: Request, subject_id: int = 0) -> Response[Any]:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class CreateSuggestion:
+class CreateSubjectPatch:
     name: str
     infobox: str
     summary: str
@@ -80,7 +80,7 @@ class CreateSuggestion:
 )
 async def suggest_api(
     subject_id: int,
-    data: Annotated[CreateSuggestion, Body(media_type=RequestEncodingType.URL_ENCODED)],
+    data: Annotated[CreateSubjectPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
     request: AuthorizedRequest,
 ) -> Redirect:
     if not data.reason:
