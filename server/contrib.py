@@ -156,7 +156,7 @@ async def delete_patch(patch_id: str, request: AuthorizedRequest) -> Redirect:
             patch = SubjectPatch(**p)
 
             if patch.from_user_id != request.auth.user_id:
-                raise NotAuthorizedException
+                raise NotAuthorizedException("you are not owner of this patch")
 
             await conn.execute(
                 "update subject_patch set deleted_at = $1 where id = $2",
@@ -178,10 +178,10 @@ async def _(request: AuthorizedRequest, patch_id: uuid.UUID) -> Response[Any]:
         raise NotFoundException()
 
     if p["from_user_id"] != request.auth.user_id:
-        raise PermissionDeniedException()
+        raise PermissionDeniedException("you are not owner of this patch")
 
     if p["state"] != PatchState.Pending:
-        raise BadRequestException("patch已经被审核")
+        raise BadRequestException("patch 已经被审核")
 
     res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{p['subject_id']}")
     res.raise_for_status()
@@ -242,6 +242,7 @@ async def _(
 
             if p["from_user_id"] != request.auth.user_id:
                 raise PermissionDeniedException()
+
             if p["state"] != PatchState.Pending:
                 raise BadRequestException("patch已经被审核")
 
@@ -401,7 +402,7 @@ async def delete_episode_patch(patch_id: uuid.UUID, request: AuthorizedRequest) 
                 raise NotFoundException()
 
             if p["from_user_id"] != request.auth.user_id:
-                raise NotAuthorizedException
+                raise NotAuthorizedException("you are not owner of this patch")
 
             await conn.execute(
                 "update episode_patch set deleted_at = $1 where id = $2",

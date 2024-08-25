@@ -91,20 +91,30 @@ def before_req(req: litestar.Request[None, None, State]) -> None:
     req.state["now"] = datetime.now(tz=UTC)
 
 
-def plain_text_exception_handler(_: Request, exc: HTTPException) -> Template:
+def plain_text_exception_handler(req: Request, exc: HTTPException) -> Template:
     """Default handler for exceptions subclassed from HTTPException."""
     return Template(
         "error.html.jinja2",
         status_code=exc.status_code,
-        context={"error": exc, "detail": exc.detail},
+        context={
+            "error": exc,
+            "method": req.method,
+            "url": str(req.url),
+            "detail": exc.detail,
+        },
     )
 
 
-def internal_error_handler(_: Request, exc: Exception) -> Response[Any]:
+def internal_error_handler(req: Request, exc: Exception) -> Response[Any]:
     logger.exception("internal server error: {} {}", type(exc), exc)
 
     return Response(
-        content={"status_code": 500, "detail": "Internal Server Error"},
+        content={
+            "status_code": 500,
+            "detail": f"Internal Server Error: {type(exc)}",
+            "method": req.method,
+            "url": str(req.url),
+        },
         status_code=HTTP_500_INTERNAL_SERVER_ERROR,
     )
 
@@ -151,10 +161,8 @@ async def startup_fetch_missing_users() -> None:
 @router
 @litestar.get(
     "/badge.svg",
-    # this won't work until csrf stop to generate set-cookies for this router
-    # https://github.com/litestar-org/litestar/issues/3688
     response_headers={"Cache-Control": "public, max-age=5"},
-    opt={"skip_session": True, "exclude_from_auth": True},
+    opt={"skip_session": True, "exclude_from_auth": True, "exclude_from_csrf": True},
 )
 async def _() -> Response[bytes]:
     key = "patch:rest:pending"
