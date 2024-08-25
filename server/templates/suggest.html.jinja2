@@ -46,14 +46,16 @@
       </div>
     {% endif %}
 
-    <div class="form-check">
-      <input type="checkbox" name="nsfw" class="form-check-input"
-        {% if data.nsfw %}
-             checked
-        {% endif %}
-             id="exampleCheck1">
-      <label class="form-check-label" for="exampleCheck1">NSFW</label>
-    </div>
+    {% if not edi %}
+      <div class="form-check">
+        <input type="checkbox" name="nsfw" class="form-check-input"
+          {% if data.nsfw %}
+               checked
+          {% endif %}
+               id="exampleCheck1">
+        <label class="form-check-label" for="exampleCheck1">NSFW</label>
+      </div>
+    {% endif %}
 
     <div class="form-group">
       <label for="reason">原因</label>
