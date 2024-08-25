@@ -3,7 +3,7 @@ import unicodedata
 from server.base import BadRequestException
 
 
-_invalid_category = {"Cf", "Mn"}
+_invalid_category = {"Cf", "Mn", "Mc"}
 
 
 def check_invalid_input_str(*s: str) -> None:
