@@ -24,6 +24,7 @@ from server.auth import require_user_editor
 from server.base import AuthorizedRequest, BadRequestException, User, http_client, pg
 from server.model import EpisodePatch, PatchState, PatchType, SubjectPatch
 from server.router import Router
+from server.verify import check_invalid_input_str
 
 
 router = Router()
@@ -303,6 +304,8 @@ class CommentReviewController(Controller):
     ) -> Response[Any]:
         if not data.text:
             raise BadRequestException("请填写修改建议")
+
+        check_invalid_input_str(data.text)
 
         if patch_type == PatchType.Subject:
             p = await pg.fetchval(

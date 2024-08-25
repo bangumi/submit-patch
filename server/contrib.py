@@ -22,6 +22,7 @@ from server.auth import require_user_editor, require_user_login
 from server.base import AuthorizedRequest, BadRequestException, Request, http_client, pg
 from server.model import PatchState, SubjectPatch
 from server.router import Router
+from server.verify import check_invalid_input_str
 
 
 router = Router()
@@ -80,6 +81,8 @@ async def suggest_api(
 ) -> Redirect:
     if not data.reason:
         raise ValidationException("missing suggestion description")
+
+    check_invalid_input_str(data.name, data.infobox, data.summary, data.reason)
 
     await _validate_captcha(data.cf_turnstile_response)
 
@@ -200,6 +203,10 @@ async def _(
 ) -> Response[Any]:
     await _validate_captcha(data.cf_turnstile_response)
 
+    check_invalid_input_str(
+        *[x for x in [data.name, data.infobox, data.summary, data.reason] if x is not None]
+    )
+
     async with pg.acquire() as conn:
         async with conn.transaction():
             p = await conn.fetchrow(
@@ -294,6 +301,10 @@ async def creat_episode_patch(
 ) -> Response[Any]:
     if not data.reason:
         raise ValidationException("missing suggestion description")
+
+    check_invalid_input_str(
+        data.name, data.name_cn, data.duration, data.desc, data.airdate, data.reason
+    )
 
     await _validate_captcha(data.cf_turnstile_response)
 
