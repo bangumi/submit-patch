@@ -48,12 +48,13 @@
 
     {% if not edit %}
       <div class="form-check">
+        <label class="form-check-label" for="exampleCheck1">NSFW</label>
         <input type="checkbox" name="nsfw" class="form-check-input"
           {% if data.nsfw %}
                checked
           {% endif %}
                id="exampleCheck1">
-        <label class="form-check-label" for="exampleCheck1">NSFW</label>
+        （NSFW选项在提交后无法修改）
       </div>
     {% endif %}
 
