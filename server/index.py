@@ -74,7 +74,7 @@ async def index(
         rows = []
     else:
         rows = await pg.fetch(
-            f"select * from {table} where {where} order by {order_by} limit $2 offset $3 ",
+            f"select * from {table} where {where} order by {order_by} limit $2 offset $3",
             PatchState.Pending,
             _page_size,
             (page - 1) * _page_size,
@@ -112,19 +112,28 @@ async def show_user_contrib(
     user_id: int,
     request: Request,
     patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
+    page: Annotated[int, params.Parameter(query="page", ge=1)] = 1,
 ) -> Template:
     if patch_type == PatchType.Subject:
-        rows = await pg.fetch(
-            "select * from view_subject_patch where from_user_id = $1 order by created_at desc",
-            user_id,
-        )
+        table = "view_subject_patch"
     elif patch_type == PatchType.Episode:
-        rows = await pg.fetch(
-            "select * from view_episode_patch where from_user_id = $1 order by created_at desc",
-            user_id,
-        )
+        table = "view_episode_patch"
     else:
         raise BadRequestException(f"invalid type {patch_type}")
+
+    total = await pg.fetchval(f"select count(1) from {table} where from_user_id = $1", user_id)
+
+    if total == 0:
+        total_page = 1
+    else:
+        total_page = (total + _page_size - 1) // _page_size
+
+    rows = await pg.fetch(
+        f"select * from {table} where from_user_id = $1 order by created_at desc limit $2 offset $3",
+        user_id,
+        _page_size,
+        (page - 1) * _page_size,
+    )
 
     nickname = await pg.fetchval("select nickname from patch_users where user_id = $1", user_id)
     if not nickname:
@@ -136,6 +145,8 @@ async def show_user_contrib(
         "list.html.jinja2",
         context={
             "rows": rows,
+            "total_page": total_page,
+            "current_page": page,
             "users": users,
             "auth": request.auth,
             "user_id": user_id,
@@ -150,20 +161,29 @@ async def show_user_contrib(
 async def show_user_review(
     user_id: int,
     request: Request,
+    page: Annotated[int, params.Parameter(query="page", ge=1)] = 1,
     patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
 ) -> Template:
     if patch_type == PatchType.Subject:
-        rows = await pg.fetch(
-            "select * from view_subject_patch where wiki_user_id = $1 order by created_at desc",
-            user_id,
-        )
+        table = "view_subject_patch"
     elif patch_type == PatchType.Episode:
-        rows = await pg.fetch(
-            "select * from view_episode_patch where wiki_user_id = $1 order by created_at desc",
-            user_id,
-        )
+        table = "view_episode_patch"
     else:
         raise BadRequestException(f"invalid type {patch_type}")
+
+    total = await pg.fetchval(f"select count(1) from {table} where wiki_user_id = $1", user_id)
+
+    if total == 0:
+        total_page = 1
+    else:
+        total_page = (total + _page_size - 1) // _page_size
+
+    rows = await pg.fetch(
+        f"select * from {table} where wiki_user_id = $1 order by created_at desc limit $2 offset $3",
+        user_id,
+        _page_size,
+        (page - 1) * _page_size,
+    )
 
     nickname = await pg.fetchval("select nickname from patch_users where user_id = $1", user_id)
     if not nickname:
@@ -176,6 +196,8 @@ async def show_user_review(
         context={
             "rows": rows,
             "users": users,
+            "total_page": total_page,
+            "current_page": page,
             "auth": request.auth,
             "user_id": user_id,
             "title": f"{nickname} 的历史审核",
