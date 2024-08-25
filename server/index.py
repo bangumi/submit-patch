@@ -108,7 +108,7 @@ async def _(
     total_page = (total + _page_size - 1) // _page_size
 
     if page > total_page:
-        return Redirect(f"/?type={patch_type}&state={int(patch_state_filter)}&page=1")
+        return Redirect(f"/?type={patch_type}&state={patch_state_filter}&page=1")
 
     if total == 0:
         rows = []
@@ -193,7 +193,7 @@ async def show_user_contrib(
         context={
             "rows": rows,
             "current_state": patch_state_filter,
-            "patch_state_filte": html_patch_state_filter,
+            "patch_state_filter": html_patch_state_filter,
             "total_page": total_page,
             "current_page": page,
             "users": users,
