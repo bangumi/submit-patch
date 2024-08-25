@@ -165,9 +165,10 @@ async def startup_fetch_missing_users() -> None:
 @router
 @litestar.get(
     "/badge.svg",
-    # this won't work until csrf and session middleware dont' generate set-cookies for this router
+    # this won't work until csrf stop to generate set-cookies for this router
     # https://github.com/litestar-org/litestar/issues/3688
-    # response_headers={"Cache-Control": "public, max-age=5"},
+    response_headers={"Cache-Control": "public, max-age=5"},
+    opt={"skip_session": True, "exclude_from_auth": True},
 )
 async def badge() -> Response[bytes]:
     key = "patch:rest:pending"
