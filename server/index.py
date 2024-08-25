@@ -105,22 +105,7 @@ async def _(
 
     total: int = await pg.fetchval(f"select count(1) from {table} where {where}", arg)
 
-    # total=0 -> total_page=1
-    # ...
-    # total=1 -> total_page=1
-    # ...
-    # total=100 -> total_page=1
-
-    # total=101 -> total_page=2
-    # ...
-    # total=200 -> total_page=2
-
-    # total=201 -> total_page=32
-
-    if total == 0:
-        total_page = 1
-    else:
-        total_page = (total + _page_size - 1) // _page_size
+    total_page = (total + _page_size - 1) // _page_size
 
     if page > total_page:
         return Redirect(f"/?type={patch_type}&state={int(patch_state_filter)}&page=1")
@@ -187,10 +172,7 @@ async def show_user_contrib(
         arg,
     )
 
-    if total == 0:
-        total_page = 1
-    else:
-        total_page = (total + _page_size - 1) // _page_size
+    total_page = (total + _page_size - 1) // _page_size
 
     rows = await pg.fetch(
         f"select * from {table} where from_user_id = $1 AND {where} order by created_at desc limit $3 offset $4",
@@ -250,10 +232,7 @@ async def show_user_review(
         arg,
     )
 
-    if total == 0:
-        total_page = 1
-    else:
-        total_page = (total + _page_size - 1) // _page_size
+    total_page = (total + _page_size - 1) // _page_size
 
     rows = await pg.fetch(
         f"select * from {table} where wiki_user_id = $1 AND {where} order by created_at desc limit $3 offset $4",
