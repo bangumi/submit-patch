@@ -3,7 +3,7 @@ import unicodedata
 from server.base import BadRequestException
 
 
-def check_invalid_input_str(*s: str):
+def check_invalid_input_str(*s: str) -> None:
     for ss in s:
         for c in ss:
             v = unicodedata.category(c)
