@@ -172,7 +172,11 @@ async def _(request: AuthorizedRequest, patch_id: uuid.UUID) -> Response[Any]:
     if p["state"] != PatchState.Pending:
         raise BadRequestException("patch已经被审核")
 
-    return Template("suggest.html.jinja2", context={"data": p, "edit": True, "patch_id": patch_id})
+    res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{p['subject_id']}")
+    res.raise_for_status()
+    wiki = res.json()
+
+    return Template("suggest.html.jinja2", context={"data": dict(p) | wiki, "patch_id": patch_id})
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -204,30 +208,40 @@ async def _(
             )
             if not p:
                 raise NotFoundException()
+
+            changed = {}
+
+            res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{p['subject_id']}")
+            res.raise_for_status()
+            original = res.json()
+
             if p["from_user_id"] != request.auth.user_id:
                 raise PermissionDeniedException()
             if p["state"] != PatchState.Pending:
                 raise BadRequestException("patch已经被审核")
 
             for field in ["name", "infobox", "summary"]:
-                if p[field] is None:
-                    if getattr(data, field) is not None:
-                        raise BadRequestException("can't add more edit field")
+                if getattr(data, field) != original[field]:
+                    changed[field] = getattr(data, field)
 
-            res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{p['subject_id']}")
-            res.raise_for_status()
-            original = res.json()
+            nsfw = data.nsfw is not None
+            if nsfw != original["nsfw"]:
+                changed["nsfw"] = data.nsfw is not None
+
+            if not changed:
+                raise BadRequestException("没有实际修改")
 
             await conn.execute(
                 """
-            update subject_patch set name=$1, infobox=$2, summary=$3, reason=$4,
-            original_name=$5, original_infobox=$6,original_summary=$7,updated_at=$8
-            where id=$9
+            update subject_patch set name=$1, infobox=$2, summary=$3, reason=$4,nsfw=$5,
+            original_name=$6, original_infobox=$7,original_summary=$8,updated_at=$9
+            where id=$10
             """,
-                data.name,
-                data.infobox,
-                data.summary,
+                changed.get("name"),
+                changed.get("infobox"),
+                changed.get("summary"),
                 data.reason,
+                changed.get("nsfw"),
                 original["name"],
                 original["infobox"],
                 original["summary"],
