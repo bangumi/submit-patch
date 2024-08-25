@@ -69,7 +69,7 @@
       <form action="/edit/subject/{{ patch.id }}" method="get" class="col">
         <button type="submit" class="btn btn-success">Edit</button>
       </form>
-      <form action="/api/delete-patch/{{ patch.id }}" method="post" class="col">
+      <form action="/api/delete-subject/{{ patch.id }}" method="post" class="col">
         {{ csrf_input | safe }}
         <button type="submit" class="btn btn-danger">Delete</button>
       </form>

@@ -140,7 +140,7 @@ async def suggest_api(
 
 @router
 @litestar.post(
-    "/api/delete-patch/{patch_id:str}",
+    "/api/delete-subject/{patch_id:str}",
     guards=[require_user_login],
     status_code=200,
 )
