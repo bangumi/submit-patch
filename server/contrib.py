@@ -73,7 +73,11 @@ class CreateSuggestion:
 
 
 @router
-@litestar.post("/suggest-subject", guards=[require_user_login])
+@litestar.post(
+    "/suggest-subject",
+    guards=[require_user_login],
+    status_code=200,
+)
 async def suggest_api(
     subject_id: int,
     data: Annotated[CreateSuggestion, Body(media_type=RequestEncodingType.URL_ENCODED)],
@@ -135,7 +139,11 @@ async def suggest_api(
 
 
 @router
-@litestar.post("/api/delete-patch/{patch_id:str}", guards=[require_user_login])
+@litestar.post(
+    "/api/delete-patch/{patch_id:str}",
+    guards=[require_user_login],
+    status_code=200,
+)
 async def delete_patch(patch_id: str, request: AuthorizedRequest) -> Redirect:
     async with pg.acquire() as conn:
         async with conn.transaction():
@@ -201,7 +209,11 @@ class EditSubjectPatch:
 
 
 @router
-@litestar.post("/edit/subject/{patch_id:uuid}", guards=[require_user_login])
+@litestar.post(
+    "/edit/subject/{patch_id:uuid}",
+    guards=[require_user_login],
+    status_code=200,
+)
 async def _(
     request: AuthorizedRequest,
     patch_id: uuid.UUID,
@@ -299,7 +311,11 @@ class CreateEpisodePatch:
 
 
 @router
-@litestar.post("/suggest-episode", guards=[require_user_login])
+@litestar.post(
+    "/suggest-episode",
+    guards=[require_user_login],
+    status_code=200,
+)
 async def creat_episode_patch(
     request: AuthorizedRequest,
     episode_id: int,
@@ -369,7 +385,11 @@ async def creat_episode_patch(
 
 
 @router
-@litestar.post("/api/delete-episode/{patch_id:uuid}", guards=[require_user_editor])
+@litestar.post(
+    "/api/delete-episode/{patch_id:uuid}",
+    guards=[require_user_editor],
+    status_code=200,
+)
 async def delete_episode_patch(patch_id: uuid.UUID, request: AuthorizedRequest) -> Redirect:
     async with pg.acquire() as conn:
         async with conn.transaction():

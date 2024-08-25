@@ -47,7 +47,11 @@ def _strip_none(d: dict[str, Any]) -> dict[str, Any]:
 
 @router
 class SubjectReviewController(Controller):
-    @litestar.post("/api/review-patch/{patch_id:str}", guards=[require_user_editor])
+    @litestar.post(
+        "/api/review-patch/{patch_id:str}",
+        guards=[require_user_editor],
+        status_code=200,
+    )
     async def review_patch(
         self,
         patch_id: str,
@@ -192,7 +196,11 @@ class SubjectReviewController(Controller):
 
 @router
 class EpisodeReviewController(Controller):
-    @litestar.post("/api/review-episode/{patch_id:uuid}", guards=[require_user_editor])
+    @litestar.post(
+        "/api/review-episode/{patch_id:uuid}",
+        guards=[require_user_editor],
+        status_code=200,
+    )
     async def review_episode_patch(
         self,
         patch_id: uuid.UUID,
@@ -294,7 +302,11 @@ class CommentOnPatch:
 
 @router
 class CommentReviewController(Controller):
-    @litestar.post("/api/add-suggestion/{patch_id:uuid}", guards=[require_user_editor])
+    @litestar.post(
+        "/api/add-suggestion/{patch_id:uuid}",
+        guards=[require_user_editor],
+        status_code=200,
+    )
     async def handler(
         self,
         request: AuthorizedRequest,

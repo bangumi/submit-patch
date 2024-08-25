@@ -118,6 +118,7 @@ async def callback(code: str, request: Request) -> Redirect:
     res = await http_client.get(
         "https://api.bgm.tv/v0/me", headers={"Authorization": f"Bearer {access_token}"}
     )
+
     if res.status_code >= 300:
         raise InternalServerException("api request error")
     user = res.json()
@@ -135,7 +136,6 @@ async def callback(code: str, request: Request) -> Redirect:
         user["username"],
         html.unescape(user["nickname"]),
     )
-
     back_to = request.session.get("backTo", "/")
 
     request.set_session(
