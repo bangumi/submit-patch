@@ -164,7 +164,7 @@ async def startup_fetch_missing_users() -> None:
     response_headers={"Cache-Control": "public, max-age=5"},
     opt={"skip_session": True, "exclude_from_auth": True, "exclude_from_csrf": True},
 )
-async def badge() -> Response[bytes]:
+async def badge_handle() -> Response[bytes]:
     key = "patch:rest:pending"
     pending = await redis_client.get(key)
 
