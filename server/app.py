@@ -30,20 +30,6 @@ from config import (
 )
 from server import auth, contrib, index, patch, review, tmpl
 from server.auth import session_auth_config
-from server.badge import (
-    badge_0,
-    badge_gt10,
-    badge_gt20,
-    badge_gt30,
-    badge_gt40,
-    badge_gt50,
-    badge_gt60,
-    badge_gt70,
-    badge_gt80,
-    badge_gt90,
-    badge_gt100,
-    badge_lt10,
-)
 from server.base import (
     Request,
     http_client,
@@ -170,7 +156,7 @@ async def startup_fetch_missing_users() -> None:
     response_headers={"Cache-Control": "public, max-age=5"},
     opt={"skip_session": True, "exclude_from_auth": True},
 )
-async def badge() -> Response[bytes]:
+async def _() -> Response[bytes]:
     key = "patch:rest:pending"
     pending = await redis_client.get(key)
 
@@ -190,34 +176,28 @@ async def badge() -> Response[bytes]:
         )
     )
 
-    if rest == 0:
-        res = badge_0
-    elif rest <= 10:
-        res = badge_lt10
-    elif rest > 100:
-        res = badge_gt100
-    elif rest > 90:
-        res = badge_gt90
-    elif rest > 80:
-        res = badge_gt80
-    elif rest > 70:
-        res = badge_gt70
-    elif rest > 60:
-        res = badge_gt60
-    elif rest > 50:
-        res = badge_gt50
-    elif rest > 40:
-        res = badge_gt40
-    elif rest > 30:
-        res = badge_gt30
-    elif rest > 20:
-        res = badge_gt20
+    if rest >= 100:
+        val_key = f"{key}:100"
     else:
-        res = badge_gt10
+        val_key = f"{key}:{rest}"
+    badge = await redis_client.get(val_key)
 
-    await redis_client.set(key, res, ex=10)
+    if badge is None:
+        if rest >= 100:
+            rest = ">100"
+            color = "dc3545"
+        elif rest >= 50:
+            color = "ffc107"
+        else:
+            color = "green"
 
-    return Response(res, media_type="image/svg+xml")
+        res = await http_client.get(f"https://img.shields.io/badge/待审核-{rest}-{color}")
+        badge = res.content
+        await redis_client.set(val_key, badge, ex=7 * 24 * 3600)
+
+    await redis_client.set(key, badge, ex=10)
+
+    return Response(badge, media_type="image/svg+xml")
 
 
 app = litestar.Litestar(
