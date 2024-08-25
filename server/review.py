@@ -301,6 +301,9 @@ class CommentReviewController(Controller):
         data: Annotated[CommentOnPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
         patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
     ) -> Response[Any]:
+        if not data.text:
+            raise BadRequestException("请填写修改建议")
+
         if patch_type == PatchType.Subject:
             p = await pg.fetchval(
                 "select id from view_subject_patch where id = $1 AND state = $2",
