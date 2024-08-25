@@ -50,7 +50,7 @@
       <h3>修改建议</h3>
       <ul class="list-group">
         {% for s in suggestions %}
-          <li class="list-group-item list-group-item-warning">
+          <li class="list-group-item border-dark-subtle list-group-item-warning">
             <div class="d-flex w-100 justify-content-between">
               <h5> [{{ s.nickname }}]: </h5>
               <small>{{ s.created_at | to_user_local_time }}</small>
