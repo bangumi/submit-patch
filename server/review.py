@@ -313,12 +313,15 @@ class CommentReviewController(Controller):
                 patch_id,
                 PatchState.Pending,
             )
-        else:
+        elif patch_type == PatchType.Episode:
             p = await pg.fetchval(
                 "select id from view_episode_patch where id = $1 AND state = $2",
                 patch_id,
                 PatchState.Pending,
             )
+        else:
+            raise NotImplementedError()
+
         if not p:
             raise NotFoundException("patch not found")
 
@@ -334,7 +337,4 @@ class CommentReviewController(Controller):
             request.auth.user_id,
         )
 
-        if patch_type == PatchType.Subject:
-            return Redirect(f"/subject/{patch_id}")
-
-        return Redirect(f"/episode/{patch_id}")
+        return Redirect(f"/{patch_type}/{patch_id}")

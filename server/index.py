@@ -109,8 +109,10 @@ async def index(
 @router
 @litestar.get("/contrib/{user_id:int}", guards=[require_user_login])
 async def show_user_contrib(
-    user_id: int,
     request: Request,
+    user_id: int,
+    *,
+    reviewed: Annotated[bool, params.Parameter(query="reviewed")] = False,
     patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
     page: Annotated[int, params.Parameter(query="page", ge=1)] = 1,
 ) -> Template:
@@ -119,9 +121,18 @@ async def show_user_contrib(
     elif patch_type == PatchType.Episode:
         table = "view_episode_patch"
     else:
-        raise BadRequestException(f"invalid type {patch_type}")
+        raise NotImplementedError()
 
-    total = await pg.fetchval(f"select count(1) from {table} where from_user_id = $1", user_id)
+    if reviewed:
+        where = "state = $2"
+    else:
+        where = "state != $2"
+
+    total = await pg.fetchval(
+        f"select count(1) from {table} where from_user_id = $1 AND {where}",
+        user_id,
+        PatchState.Pending,
+    )
 
     if total == 0:
         total_page = 1
@@ -129,8 +140,9 @@ async def show_user_contrib(
         total_page = (total + _page_size - 1) // _page_size
 
     rows = await pg.fetch(
-        f"select * from {table} where from_user_id = $1 order by created_at desc limit $2 offset $3",
+        f"select * from {table} where from_user_id = $1 AND {where} order by created_at desc limit $3 offset $4",
         user_id,
+        PatchState.Pending,
         _page_size,
         (page - 1) * _page_size,
     )
@@ -145,6 +157,7 @@ async def show_user_contrib(
         "list.html.jinja2",
         context={
             "rows": rows,
+            "filter_reviewed": reviewed,
             "total_page": total_page,
             "current_page": page,
             "users": users,
@@ -159,8 +172,10 @@ async def show_user_contrib(
 @router
 @litestar.get("/review/{user_id:int}", guards=[require_user_login])
 async def show_user_review(
-    user_id: int,
     request: Request,
+    user_id: int,
+    *,
+    reviewed: Annotated[bool, params.Parameter(query="reviewed")] = False,
     page: Annotated[int, params.Parameter(query="page", ge=1)] = 1,
     patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
 ) -> Template:
@@ -171,7 +186,16 @@ async def show_user_review(
     else:
         raise BadRequestException(f"invalid type {patch_type}")
 
-    total = await pg.fetchval(f"select count(1) from {table} where wiki_user_id = $1", user_id)
+    if reviewed:
+        where = "state = $2"
+    else:
+        where = "state != $2"
+
+    total = await pg.fetchval(
+        f"select count(1) from {table} where wiki_user_id = $1 AND {where}",
+        user_id,
+        PatchState.Pending,
+    )
 
     if total == 0:
         total_page = 1
@@ -179,8 +203,9 @@ async def show_user_review(
         total_page = (total + _page_size - 1) // _page_size
 
     rows = await pg.fetch(
-        f"select * from {table} where wiki_user_id = $1 order by created_at desc limit $2 offset $3",
+        f"select * from {table} where wiki_user_id = $1 AND {where} order by created_at desc limit $3 offset $4",
         user_id,
+        PatchState.Pending,
         _page_size,
         (page - 1) * _page_size,
     )
@@ -194,6 +219,7 @@ async def show_user_review(
     return Template(
         "list.html.jinja2",
         context={
+            "filter_reviewed": reviewed,
             "rows": rows,
             "users": users,
             "total_page": total_page,

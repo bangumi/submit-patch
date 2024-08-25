@@ -44,27 +44,25 @@
         </ul>
       </nav>
     </nav>
-    {% if user_id is undefined %}
-      <nav class="col" style="--bs-breadcrumb-divider: '';"
-           aria-label="breadcrumb">
-        <nav aria-label="...">
-          <ul class="pagination">
-            <li class="page-item">
-              <a class="page-link {% if not filter_reviewed %}active{% endif %}"
-                 href="{{ replace_url_query(reviewed='0') }}">
-                未审核
-              </a>
-            </li>
-            <li class="page-item">
-              <a class="page-link {% if filter_reviewed %}active{% endif %}"
-                 href="{{ replace_url_query(reviewed='1') }}">
-                已审核
-              </a>
-            </li>
-          </ul>
-        </nav>
+    <nav class="col" style="--bs-breadcrumb-divider: '';"
+         aria-label="breadcrumb">
+      <nav aria-label="...">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link {% if not filter_reviewed %}active{% endif %}"
+               href="{{ replace_url_query(reviewed='0') }}">
+              未审核
+            </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link {% if filter_reviewed %}active{% endif %}"
+               href="{{ replace_url_query(reviewed='1') }}">
+              已审核
+            </a>
+          </li>
+        </ul>
       </nav>
-    {% endif %}
+    </nav>
   </div>
 
   {% if user_id is defined %}
