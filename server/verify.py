@@ -10,6 +10,5 @@ def check_invalid_input_str(*s: str) -> None:
     for ss in s:
         for c in ss:
             v = unicodedata.category(c)
-            print(repr(c), v)
             if v in _invalid_category:  # Format
                 raise BadRequestException("invalid character {!r}".format(c))
