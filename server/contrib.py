@@ -179,7 +179,13 @@ async def _(request: AuthorizedRequest, patch_id: uuid.UUID) -> Response[Any]:
     res.raise_for_status()
     wiki = res.json()
 
-    return Template("suggest.html.jinja2", context={"data": dict(p) | wiki, "patch_id": patch_id})
+    return Template(
+        "suggest.html.jinja2",
+        context={
+            "data": {key: value for key, value in p.items() if value is not None} | wiki,
+            "patch_id": patch_id,
+        },
+    )
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
