@@ -44,7 +44,7 @@ async def _validate_captcha(cf_turnstile_response: str) -> None:
 
 
 @router
-@litestar.get("/suggest")
+@litestar.get(["/suggest", "/suggest-subject"])
 async def suggest_ui(request: Request, subject_id: int = 0) -> Response[Any]:
     if subject_id == 0:
         return Template("select-subject.html.jinja2")
@@ -73,7 +73,7 @@ class CreateSuggestion:
 
 
 @router
-@litestar.post("/suggest", guards=[require_user_login])
+@litestar.post("/suggest-subject", guards=[require_user_login])
 async def suggest_api(
     subject_id: int,
     data: Annotated[CreateSuggestion, Body(media_type=RequestEncodingType.URL_ENCODED)],
@@ -131,7 +131,7 @@ async def suggest_api(
         original_wiki["typeID"],
     )
 
-    return Redirect(f"/patch/{pk}")
+    return Redirect(f"/subject/{pk}")
 
 
 @router

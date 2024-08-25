@@ -18,7 +18,7 @@
     {% if patch_id %}
         action="/edit/subject/{{ patch_id }}"
     {% else %}
-        action="/suggest?subject_id={{ subject_id }}"
+        action="/suggest-subject?subject_id={{ subject_id }}"
     {% endif %}
         enctype="application/x-www-form-urlencoded">
     {{ csrf_input | safe }}
