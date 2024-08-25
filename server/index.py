@@ -107,12 +107,12 @@ async def _(
 
     total_page = (total + _page_size - 1) // _page_size
 
-    if page > total_page:
-        return Redirect(f"/?type={patch_type}&state={patch_state_filter}&page=1")
-
     if total == 0:
         rows = []
     else:
+        if page > total_page:
+            return Redirect(f"/?type={patch_type}&state={patch_state_filter}&page=1")
+
         rows = await pg.fetch(
             f"select * from {table} where {where} order by {order_by} limit $2 offset $3",
             arg,
