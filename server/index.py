@@ -1,3 +1,4 @@
+import enum
 from typing import Annotated, Any
 
 import litestar
@@ -17,14 +18,43 @@ router = Router()
 _page_size = 30
 
 
+@enum.unique
+class StateFilter(str, enum.Enum):
+    All = "all"
+    Pending = "pending"
+    Reviewed = "reviewed"
+    Rejected = "rejected"
+    Accepted = "accepted"
+
+    def __str__(self) -> str:
+        return self.value
+
+    def to_sql(self, index: int = 1) -> tuple[str, Any]:
+        match self.value:
+            case "all":
+                return f"1=${index}", 1
+            case "pending":
+                return f"state = ${index}", PatchState.Pending
+            case "reviewed":
+                return f"state != ${index}", PatchState.Pending
+            case "rejected":
+                return f"state = ${index}", PatchState.Rejected
+            case "accepted":
+                return f"state = ${index}", PatchState.Accept
+
+        raise NotImplementedError()
+
+
 @router
 @litestar.get("/", name="index")
-async def index(
+async def _(
     request: Request,
     patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
     # ?reviewed=0/1/true/false
     # only work on index page
-    reviewed: Annotated[bool, params.Parameter(query="reviewed")] = False,
+    patch_state_filter: Annotated[
+        StateFilter, params.Parameter(query="state")
+    ] = StateFilter.Pending,
     page: Annotated[int, params.Parameter(query="page", ge=1)] = 1,
 ) -> litestar.Response[Any]:
     if not request.auth:
@@ -39,16 +69,15 @@ async def index(
     else:
         raise BadRequestException(f"{patch_type} is not valid")
 
-    if not reviewed:
-        where = "state = $1"
+    where, arg = patch_state_filter.to_sql(index=1)
+    if patch_state_filter == StateFilter.Pending:
         order_by = "created_at asc"
+    elif patch_state_filter == StateFilter.All:
+        order_by = "created_at desc"
     else:
-        where = " state != $1"
         order_by = "updated_at desc"
 
-    total: int = await pg.fetchval(
-        f"select count(1) from {table} where {where}", PatchState.Pending
-    )
+    total: int = await pg.fetchval(f"select count(1) from {table} where {where}", arg)
 
     # total=0 -> total_page=1
     # ...
@@ -68,14 +97,14 @@ async def index(
         total_page = (total + _page_size - 1) // _page_size
 
     if page > total_page:
-        return Redirect(f"/?type={patch_type}&reviewed={int(reviewed)}&page=1")
+        return Redirect(f"/?type={patch_type}&state={int(patch_state_filter)}&page=1")
 
     if total == 0:
         rows = []
     else:
         rows = await pg.fetch(
             f"select * from {table} where {where} order by {order_by} limit $2 offset $3",
-            PatchState.Pending,
+            arg,
             _page_size,
             (page - 1) * _page_size,
         )
@@ -94,9 +123,9 @@ async def index(
         "list.html.jinja2",
         context={
             "total_page": total_page,
+            "current_state": patch_state_filter,
             "current_page": page,
             "rows": rows,
-            "filter_reviewed": reviewed,
             "auth": request.auth,
             "users": await fetch_users(rows),
             "patch_type": patch_type,
@@ -112,7 +141,7 @@ async def show_user_contrib(
     request: Request,
     user_id: int,
     *,
-    reviewed: Annotated[bool, params.Parameter(query="reviewed")] = False,
+    patch_state_filter: Annotated[StateFilter, params.Parameter(query="state")] = StateFilter.All,
     patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
     page: Annotated[int, params.Parameter(query="page", ge=1)] = 1,
 ) -> Template:
@@ -123,15 +152,12 @@ async def show_user_contrib(
     else:
         raise NotImplementedError()
 
-    if reviewed:
-        where = "state = $2"
-    else:
-        where = "state != $2"
+    where, arg = patch_state_filter.to_sql(index=2)
 
     total = await pg.fetchval(
         f"select count(1) from {table} where from_user_id = $1 AND {where}",
         user_id,
-        PatchState.Pending,
+        arg,
     )
 
     if total == 0:
@@ -142,7 +168,7 @@ async def show_user_contrib(
     rows = await pg.fetch(
         f"select * from {table} where from_user_id = $1 AND {where} order by created_at desc limit $3 offset $4",
         user_id,
-        PatchState.Pending,
+        arg,
         _page_size,
         (page - 1) * _page_size,
     )
@@ -157,7 +183,7 @@ async def show_user_contrib(
         "list.html.jinja2",
         context={
             "rows": rows,
-            "filter_reviewed": reviewed,
+            "current_state": patch_state_filter,
             "total_page": total_page,
             "current_page": page,
             "users": users,
@@ -175,7 +201,7 @@ async def show_user_review(
     request: Request,
     user_id: int,
     *,
-    reviewed: Annotated[bool, params.Parameter(query="reviewed")] = False,
+    patch_state_filter: Annotated[StateFilter, params.Parameter(query="state")] = StateFilter.All,
     page: Annotated[int, params.Parameter(query="page", ge=1)] = 1,
     patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
 ) -> Template:
@@ -186,15 +212,12 @@ async def show_user_review(
     else:
         raise BadRequestException(f"invalid type {patch_type}")
 
-    if reviewed:
-        where = "state = $2"
-    else:
-        where = "state != $2"
+    where, arg = patch_state_filter.to_sql(index=2)
 
     total = await pg.fetchval(
         f"select count(1) from {table} where wiki_user_id = $1 AND {where}",
         user_id,
-        PatchState.Pending,
+        arg,
     )
 
     if total == 0:
@@ -205,7 +228,7 @@ async def show_user_review(
     rows = await pg.fetch(
         f"select * from {table} where wiki_user_id = $1 AND {where} order by created_at desc limit $3 offset $4",
         user_id,
-        PatchState.Pending,
+        arg,
         _page_size,
         (page - 1) * _page_size,
     )
@@ -219,11 +242,11 @@ async def show_user_review(
     return Template(
         "list.html.jinja2",
         context={
-            "filter_reviewed": reviewed,
             "rows": rows,
             "users": users,
             "total_page": total_page,
             "current_page": page,
+            "current_state": patch_state_filter,
             "auth": request.auth,
             "user_id": user_id,
             "title": f"{nickname} 的历史审核",

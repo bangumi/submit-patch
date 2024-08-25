@@ -48,18 +48,14 @@
          aria-label="breadcrumb">
       <nav aria-label="...">
         <ul class="pagination">
-          <li class="page-item">
-            <a class="page-link {% if not filter_reviewed %}active{% endif %}"
-               href="{{ replace_url_query(reviewed='0') }}">
-              未审核
-            </a>
-          </li>
-          <li class="page-item">
-            <a class="page-link {% if filter_reviewed %}active{% endif %}"
-               href="{{ replace_url_query(reviewed='1') }}">
-              已审核
-            </a>
-          </li>
+          {% for state, cn in patch_state_filter %}
+            <li class="page-item">
+              <a class="page-link {% if current_state == state %}active{% endif %}"
+                 href="{{ replace_url_query(state=state) }}">
+                {{ cn }}
+              </a>
+            </li>
+          {% endfor %}
         </ul>
       </nav>
     </nav>
