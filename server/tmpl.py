@@ -1,3 +1,5 @@
+import html
+import re
 import typing
 from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
@@ -8,6 +10,7 @@ import jinja2
 from jinja2 import pass_context, select_autoescape
 from jinja2.runtime import Context
 from litestar import Request
+from markupsafe import Markup
 from typing_extensions import Never
 
 from config import DEV, PROJECT_PATH, TURNSTILE_SITE_KEY, UTC
@@ -136,3 +139,35 @@ def replace_url_query(ctx: Context, **kwargs: Any) -> str:
     for key, value in kwargs.items():
         q[key] = str(value)
     return req.url.path + "?" + urlencode(q)
+
+
+# from https://stackoverflow.com/a/7160778/8062017
+# https// http:// only
+is_url_pattern = re.compile(
+    r"^https?://"  # http:// or https://
+    r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # domain...
+    r"localhost|"  # localhost...d
+    r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # ...or ip
+    r"(?::\d+)?"  # optional port
+    r"(?:/?|[/?]\S+)$",
+    re.IGNORECASE,
+)
+
+
+def __render_maybe_url(s: str) -> str:
+    if is_url_pattern.match(s):
+        escaped = html.escape(s)
+        return f'<a href="{escaped}" target="_blank">{escaped}</a>'
+    return s
+
+
+@add_filter
+def auto_url(s: str) -> Markup:
+    lines = s.splitlines()
+
+    ss = []
+
+    for line in lines:
+        ss.append(" ".join(__render_maybe_url(x) for x in line.split(" ")))
+
+    return Markup("<br>".join(ss))

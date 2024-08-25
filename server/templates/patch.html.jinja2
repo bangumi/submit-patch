@@ -50,9 +50,14 @@
       <h3>修改建议</h3>
       <ul class="list-group">
         {% for s in suggestions %}
-          <li class="list-group-item list-group-item-warning d-flex justify-content-between align-items-center">
-            [{{ s.nickname }}]: {{ s.text }}
-            <span>{{ s.created_at | to_user_local_time }}</span>
+          <li class="list-group-item list-group-item-warning">
+            <div class="d-flex w-100 justify-content-between">
+              <h5> [{{ s.nickname }}]: </h5>
+              <small>{{ s.created_at | to_user_local_time }}</small>
+            </div>
+            <p class="mb-1">
+              {{ s.text | auto_url }}
+            </p>
           </li>
         {% endfor %}
       </ul>
@@ -76,7 +81,7 @@
     <blockquote class="blockquote" style="background-color: #f7f7f9">
       <p class="mb-0"
          style="overflow: visible; overflow-wrap: anywhere;">
-        {{ reason }}
+        {{ reason | auto_url }}
       </p>
     </blockquote>
   </div>
