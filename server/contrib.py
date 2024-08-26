@@ -18,7 +18,7 @@ from litestar.response import Redirect, Template
 from uuid_utils import uuid7
 
 from config import TURNSTILE_SECRET_KEY, UTC
-from server.auth import require_user_editor, require_user_login
+from server.auth import require_user_login
 from server.base import AuthorizedRequest, BadRequestException, Request, http_client, pg
 from server.model import PatchState, SubjectPatch
 from server.router import Router
@@ -388,7 +388,7 @@ async def creat_episode_patch(
 @router
 @litestar.post(
     "/api/delete-episode/{patch_id:uuid}",
-    guards=[require_user_editor],
+    guards=[require_user_login],
     status_code=200,
 )
 async def delete_episode_patch(patch_id: uuid.UUID, request: AuthorizedRequest) -> Redirect:
