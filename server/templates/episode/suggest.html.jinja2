@@ -1,78 +1,78 @@
 {% extends "layout/base.html.jinja2" %}
 
 {% block head %}
-    <title>提交修改请求</title>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async
-            defer></script>
+  <title>提交修改请求</title>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async
+          defer></script>
 {% endblock %}
 
 {% block content %}
-    {% include 'component/header.html.jinja2' %}
+  {% include 'component/header.html.jinja2' %}
 
-    <div class="row m-1">
-        <p>
-            <a href="https://bgm.tv/group/wiki" target="_blank">
-                <h1>提交前请先阅读置顶了解常见错误</h1>
-            </a>
-        </p>
+  <div class="row m-1">
+    <p>
+      <a href="https://bgm.tv/group/wiki" target="_blank">
+        <h1>提交前请先阅读置顶了解常见错误</h1>
+      </a>
+    </p>
+  </div>
+  <form action="/suggest-episode?episode_id={{ subject_id }}" method="post"
+        enctype="application/x-www-form-urlencoded">
+    {{ csrf_input | safe }}
+    <div class="mb-3 row">
+      <label for="name" class="col-2 col-form-label">名称</label>
+      <div class="col-10">
+        <input class="form-control" id="name" name="name"
+               value="{{ data.name }}">
+      </div>
     </div>
-    <form action="/suggest-episode?episode_id={{ subject_id }}" method="post"
-          enctype="application/x-www-form-urlencoded">
-        {{ csrf_input | safe }}
-        <div class="mb-3 row">
-            <label for="name" class="col-2 col-form-label">名称</label>
-            <div class="col-10">
-                <input class="form-control" id="name" name="name"
-                       value="{{ data.name }}">
-            </div>
-        </div>
 
-        <div class="mb-3 row">
-            <label for="name_cn" class="col-2 col-form-label">中文名</label>
-            <div class="col-10">
-                <input class="form-control" id="name_cn" name="name_cn"
-                       value="{{ data.nameCN }}">
-            </div>
-        </div>
+    <div class="mb-3 row">
+      <label for="name_cn" class="col-2 col-form-label">中文名</label>
+      <div class="col-10">
+        <input class="form-control" id="name_cn" name="name_cn"
+               value="{{ data.nameCN }}">
+      </div>
+    </div>
 
-        <div class="mb-3 row">
-            <label for="duration" class="col-2 col-form-label">时长</label>
-            <div class="col-10">
-                <input class="form-control" id="duration"
-                       name="duration" value="{{ data.duration }}"/>
-            </div>
-        </div>
+    <div class="mb-3 row">
+      <label for="duration" class="col-2 col-form-label">时长</label>
+      <div class="col-10">
+        <input class="form-control" id="duration"
+               name="duration" value="{{ data.duration }}"/>
+      </div>
+    </div>
 
-        <div class="mb-3 row">
-            <label for="airdate" class="col-2 col-form-label">播放日期</label>
-            <div class="col-10">
-                <input class="form-control" id="airdate"
-                       name="airdate" value="{{ data.date }}"/>
-                <p>(YYYY-MM-DD) 格式</p>
-            </div>
-        </div>
+    <div class="mb-3 row">
+      <label for="airdate" class="col-2 col-form-label">播放日期</label>
+      <div class="col-10">
+        <input class="form-control" id="airdate"
+               name="airdate" value="{{ data.date }}"/>
+        <p>(YYYY-MM-DD) 格式</p>
+      </div>
+    </div>
 
-        <div class="mb-3 row">
-            <label for="desc" class="col-2 col-form-label">简介</label>
-            <div class="col-10">
+    <div class="mb-3 row">
+      <label for="desc" class="col-2 col-form-label">简介</label>
+      <div class="col-10">
             <textarea rows="5" class="form-control" id="desc"
                       name="desc">{{ data.summary }}</textarea>
-            </div>
-        </div>
+      </div>
+    </div>
 
-        <div class="mb-3 row">
-            <label for="reason" class="col-2 col-form-label">原因</label>
-            <div class="col-10">
-                <textarea rows="3" class="form-control" id="reason" name="reason"></textarea>
-            </div>
-        </div>
+    <div class="mb-3 row">
+      <label for="reason" class="col-2 col-form-label">原因</label>
+      <div class="col-10">
+        <textarea rows="3" class="form-control" id="reason" name="reason"></textarea>
+      </div>
+    </div>
 
-        <div class="cf-turnstile m-1" data-theme="light"
-             data-response-field-name="cf_turnstile_response"
-             data-sitekey="{{ TURNSTILE_SITE_KEY }}"></div>
+    <div class="cf-turnstile m-1" data-theme="light"
+         data-response-field-name="cf_turnstile_response"
+         data-sitekey="{{ TURNSTILE_SITE_KEY }}"></div>
 
-        <p>请等待验证码通过再进行提交</p>
+    <p>请等待验证码通过再进行提交</p>
 
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
 {% endblock %}
