@@ -161,7 +161,7 @@ def __render_maybe_url(s: str) -> str:
     return s
 
 
-__split_pattern = re.compile(r"([ （）()])")
+__split_pattern = re.compile(r"([ （）()，。\t、])")
 
 
 @add_filter
