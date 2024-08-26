@@ -97,7 +97,7 @@ def plain_text_exception_handler(req: Request, exc: HTTPException) -> Template:
         "error.html.jinja2",
         status_code=exc.status_code,
         context={
-            "error": exc,
+            "error": repr(exc),
             "method": req.method,
             "url": str(req.url),
             "detail": exc.detail,
