@@ -168,6 +168,6 @@ def auto_url(s: str) -> Markup:
     ss = []
 
     for line in lines:
-        ss.append(" ".join(__render_maybe_url(x) for x in line.split(" ")))
+        ss.append(" ".join(__render_maybe_url(x) for x in line.split(" （）()")))
 
     return Markup("<br>".join(ss))
