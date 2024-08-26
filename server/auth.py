@@ -154,11 +154,11 @@ async def callback(code: str, request: Request) -> Redirect:
 
 def require_user_login(connection: ASGIConnection[Any, Any, Any, Any], _: Any) -> None:
     if not connection.auth:
-        raise NotAuthorizedException
+        raise NotAuthorizedException("require user to login before this action")
 
 
 def require_user_editor(connection: ASGIConnection[Any, Any, Any, Any], _: Any) -> None:
     if not connection.auth:
-        raise NotAuthorizedException
+        raise NotAuthorizedException("require user to login before this action")
     if not connection.auth.allow_edit:
-        raise NotAuthorizedException
+        raise NotAuthorizedException("you don't have wiki edit permission")
