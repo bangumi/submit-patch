@@ -70,7 +70,7 @@ if not DEV:
             return Response(
                 content=f.content,
                 media_type=f.content_type,
-                headers={"cache-control": "max-age=1200"},
+                headers={"cache-control": "public, max-age=604800"},  # a week
             )
         except KeyError:
             raise NotFoundException()  # noqa: B904
