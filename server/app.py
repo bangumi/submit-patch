@@ -1,4 +1,3 @@
-import asyncio
 import html
 import mimetypes
 import os
@@ -28,7 +27,7 @@ from config import (
     PROJECT_PATH,
     UTC,
 )
-from server import auth, contrib, index, patch, review, tmpl
+from server import auth, badge, contrib, index, patch, review, tmpl
 from server.auth import session_auth_config
 from server.base import (
     Request,
@@ -38,7 +37,6 @@ from server.base import (
     redis_client,
 )
 from server.migration import run_migration
-from server.model import PatchState
 from server.router import Router
 
 
@@ -76,7 +74,6 @@ if not DEV:
             raise NotFoundException()  # noqa: B904
 
 else:
-
     router(
         create_static_files_router(
             path="/static/",
@@ -158,56 +155,6 @@ async def startup_fetch_missing_users() -> None:
         )
 
 
-@router
-@litestar.get(
-    "/badge.svg",
-    response_headers={"Cache-Control": "public, max-age=5"},
-    opt={"skip_session": True, "exclude_from_auth": True, "exclude_from_csrf": True},
-)
-async def badge_handle() -> Response[bytes]:
-    key = "patch:rest:pending"
-    pending = await redis_client.get(key)
-
-    if pending is not None:
-        return Response(pending, media_type="image/svg+xml")
-
-    rest = sum(
-        await asyncio.gather(
-            pg.fetchval(
-                "select count(1) from view_subject_patch where state = $1",
-                PatchState.Pending,
-            ),
-            pg.fetchval(
-                "select count(1) from view_episode_patch where state = $1",
-                PatchState.Pending,
-            ),
-        )
-    )
-
-    if rest >= 100:
-        val_key = f"{key}:100"
-    else:
-        val_key = f"{key}:{rest}"
-    badge = await redis_client.get(val_key)
-
-    if badge is None:
-        if rest >= 100:
-            rest = ">100"
-            color = "dc3545"
-        elif rest >= 50:
-            color = "ffc107"
-        else:
-            color = "green"
-
-        res = await http_client.get(f"https://img.shields.io/badge/待审核-{rest}-{color}")
-        badge = res.content
-        await redis_client.set(val_key, badge, ex=7 * 24 * 3600)
-
-    await redis_client.set(key, badge, ex=10)
-
-    return Response(badge, media_type="image/svg+xml")
-
-
 app = litestar.Litestar(
     [
         *index.router,
@@ -215,6 +162,7 @@ app = litestar.Litestar(
         *contrib.router,
         *review.router,
         *patch.router,
+        *badge.router,
         *router,
     ],
     template_config=TemplateConfig(

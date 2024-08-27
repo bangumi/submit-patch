@@ -363,7 +363,7 @@ async def creat_episode_patch(
         """
         insert into episode_patch (id, episode_id, from_user_id, reason, original_name, name,
             original_name_cn, name_cn, original_duration, duration,
-            original_airdate, airdate, original_description, description)
+            original_airdate, airdate, original_description, description, subject_id)
         VALUES ($1, $2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
     """,
         pk,
@@ -380,6 +380,7 @@ async def creat_episode_patch(
         changed.get("airdate"),
         original_wiki["desc"],
         changed.get("desc"),
+        org["subjectID"],
     )
 
     return Redirect(f"/episode/{pk}")

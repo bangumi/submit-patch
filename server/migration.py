@@ -15,14 +15,22 @@ class Migrate(NamedTuple):
 
 
 async def run_migration() -> None:
+    """Remember to fresh view after alter any table definition"""
     sql_dir = Path(__file__, "../sql").resolve()
 
     key_migration_version = "version"
 
+    fresh_view_sql = sql_dir.joinpath("004-deleted-view.sql").read_text(encoding="utf-8")
+
     migrations: list[Migrate] = [
         Migrate(1, sql_dir.joinpath("001-init.sql").read_text(encoding="utf8")),
-        Migrate(4, sql_dir.joinpath("004-deleted-view.sql").read_text(encoding="utf-8")),
+        Migrate(4, fresh_view_sql),
         Migrate(5, sql_dir.joinpath("005-edit-suggestion.sql").read_text(encoding="utf-8")),
+        Migrate(
+            6,
+            "alter table episode_patch add column subject_id int not null default 0;",
+        ),
+        Migrate(7, fresh_view_sql),
     ]
 
     if not all(x <= y for x, y in itertools.pairwise(migrations)):
