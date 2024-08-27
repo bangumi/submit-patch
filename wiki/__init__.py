@@ -21,34 +21,25 @@ __all__ = (
 )
 
 
-@dataclasses.dataclass(slots=True, frozen=True)
+@dataclasses.dataclass(slots=True, frozen=True, kw_only=True)
 class Item:
     key: str = ""
     value: str = ""
 
 
-@dataclasses.dataclass(slots=True, frozen=True)
+@dataclasses.dataclass(slots=True, frozen=True, kw_only=True)
 class Field:
     key: str
     value: str | list[Item] | None = None
 
 
+@dataclasses.dataclass(slots=True, frozen=True, kw_only=True)
 class Wiki:
-    type: str | None
-    fields: list[Field]
-
-    __slots__ = "fields", "type"
-
-    def __init__(self, type: str | None = None, fields: list[Field] | None = None):
-        self.type = type
-
-        if fields is None:
-            self.fields = []
-        else:
-            self.fields = fields
+    type: str | None = None
+    fields: list[Field] = dataclasses.field(default_factory=list)
 
     def non_zero(self) -> Wiki:
-        wiki = Wiki(type=self.type)
+        fields = []
         for f in self.fields:
             value = f.value
 
@@ -57,16 +48,49 @@ class Wiki:
 
             if isinstance(value, str):
                 if value:
-                    wiki.fields.append(f)
+                    fields.append(f)
                 continue
 
             if isinstance(value, list):
                 v = [x for x in value if x.key or x.value]
                 if v:
-                    wiki.fields.append(Field(f.key, value=v))
+                    fields.append(Field(key=f.key, value=v))
                 continue
 
-        return wiki
+        return Wiki(type=self.type, fields=fields)
+
+    def get_str(self, key: str) -> str:
+        for f in self.fields:
+            if f.key == f:
+                if isinstance(f.value, str):
+                    return f.value
+                raise ValueError(f"value of {key!r} is {type(f.value)}, not str")
+
+        return ""
+
+    def set_values(self, values: dict[str, str | list[Item] | None]) -> Wiki:
+        w = self
+        for key, value in values.items():
+            w = w.set_field(field=Field(key=key, value=value))
+        return w
+
+    def set(self, key: str, value: str | list[Item] | None = None) -> Wiki:
+        return self.set_field(field=Field(key=key, value=value))
+
+    def set_field(self, field: Field) -> Wiki:
+        fields = []
+        for f in self.fields:
+            if f.key == field.key:
+                fields.append(field)
+            else:
+                fields.append(f)
+
+        return Wiki(type=self.type, fields=fields)
+
+    def semantics_equal(self, other: Wiki) -> bool:
+        if self.type != other.type:
+            return False
+        return {f.key: f.value for f in self.fields} == {f.key: f.value for f in other.fields}
 
 
 class WikiSyntaxError(ValueError):
@@ -174,7 +198,7 @@ def parse(s: str) -> Wiki:
         if in_array:
             if line == "}":  # close array
                 in_array = False
-                w.fields.append(Field(current_key, item_container))
+                w.fields.append(Field(key=current_key, value=item_container))
                 item_container = []
                 continue
 
@@ -283,13 +307,15 @@ def __render(w: Wiki) -> Generator[str, None, None]:
 
     for field in w.fields:
         if isinstance(field.value, str):
-            yield f"| {field.key} = {field.value}"
+            yield f"|{field.key}= {field.value}"
         elif isinstance(field.value, list):
-            yield f"| {field.key} = {{"
+            yield f"|{field.key}= {{"
             yield from __render_items(field.value)
             yield "}"
+        elif field.value is None:
+            yield f"|{field.key}="
         else:
-            raise TypeError("type not support", type(field))
+            raise TypeError("type not support", type(field.value))
 
     yield "}}"
 

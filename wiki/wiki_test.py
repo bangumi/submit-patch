@@ -4,7 +4,7 @@ from typing import Any
 import pytest
 import yaml
 
-from lint.wiki import Wiki, parse, read_type
+from wiki import Wiki, parse, read_type
 
 
 spec_repo_path = Path(r"~\proj\bangumi\wiki-syntax-spec").expanduser().resolve()
