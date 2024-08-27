@@ -10,6 +10,8 @@ from tarfile import TarFile
 import httpx
 import semver
 from loguru import logger
+from packaging.specifiers import SpecifierSet
+from packaging.version import Version
 
 
 project_root = Path(__file__, "../..").resolve()
@@ -40,7 +42,8 @@ def download_npm_package(
 
     if package_json.exists():
         if json.loads(package_json.read_bytes())["version"] == latest_version:
-            return
+            if target.joinpath(latest_version).exists():
+                return
 
     logger.info("[{}]: download new version {}", name, latest_version)
 
@@ -69,16 +72,28 @@ def download_npm_package(
             target_file.write_bytes(f.read())
 
 
-def build_version_filter(major: int) -> Callable[[str], bool]:
+def build_version_filter(spec: SpecifierSet) -> Callable[[str], bool]:
     def f(s: str) -> bool:
         v = semver.VersionInfo.parse(s)
         if v.prerelease:
             return False
-        return v.major <= major
+
+        return spec.contains(Version(f"{v.major}.{v.minor}.{v.patch}"))
 
     return f
 
 
-download_npm_package("diff2html", ("bundles",), version_filter=build_version_filter(3))
-download_npm_package("bootstrap", version_filter=build_version_filter(5))
-download_npm_package("jquery", ("dist",), version_filter=build_version_filter(3))
+download_npm_package(
+    "diff2html",
+    ("bundles",),
+    version_filter=build_version_filter(SpecifierSet("<4")),
+)
+download_npm_package(
+    "bootstrap",
+    version_filter=build_version_filter(SpecifierSet("<6")),
+)
+download_npm_package(
+    "jquery",
+    ("dist",),
+    version_filter=build_version_filter(SpecifierSet("<4")),
+)
