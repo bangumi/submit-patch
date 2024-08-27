@@ -23,28 +23,24 @@
         enctype="application/x-www-form-urlencoded">
     {{ csrf_input | safe }}
 
-    {% if not data.name is none %}
-      <div class="form-group">
-        <label for="name">条目名称</label>
-        <input class="form-control" id="name" name="name" value="{{ data.name }}">
-      </div>
-    {% endif %}
+    <div class="form-group">
+      <label for="name">条目名称</label>
+      <input class="form-control" id="name" name="name" value="{{ data.name }}">
+    </div>
 
-    {% if not data.infobox is none %}
-      <div class="form-group">
-        <label for="infobox">Infobox</label>
-        <textarea rows="15" class="form-control" id="infobox"
-                  name="infobox">{{ data.infobox }}</textarea>
-      </div>
-    {% endif %}
+    <div class="form-group">
+      <label for="infobox">Infobox</label>
+      <textarea rows="{{ data.infobox.count('\n') + 3 }}"
+                class="form-control"
+                id="infobox"
+                name="infobox">{{ data.infobox }}</textarea>
+    </div>
 
-    {% if not data.summary is none %}
-      <div class="form-group">
-        <label for="summary">简介</label>
-        <textarea rows="10" class="form-control" id="summary"
-                  name="summary">{{ data.summary }}</textarea>
-      </div>
-    {% endif %}
+    <div class="form-group">
+      <label for="summary">简介</label>
+      <textarea rows="10" class="form-control" id="summary"
+                name="summary">{{ data.summary }}</textarea>
+    </div>
 
     <div class="form-check">
       <label class="form-check-label" for="exampleCheck1">NSFW</label>
