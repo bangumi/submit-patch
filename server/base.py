@@ -38,6 +38,11 @@ class User:
     def allow_edit(self) -> bool:
         return self.group_id in {1, 2, 9, 11}
 
+    def allow_bypass_captcha(self) -> bool:
+        return self.user_id in {
+            287622,  # https://bgm.tv/user/trim21
+        }
+
 
 redis_client = Redis.from_url(REDIS_DSN)
 

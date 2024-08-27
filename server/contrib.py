@@ -88,7 +88,8 @@ async def suggest_api(
 
     check_invalid_input_str(data.name, data.infobox, data.summary, data.reason)
 
-    await _validate_captcha(data.cf_turnstile_response)
+    if not request.auth.allow_bypass_captcha():
+        await _validate_captcha(data.cf_turnstile_response)
 
     res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{subject_id}")
     res.raise_for_status()
@@ -329,7 +330,8 @@ async def creat_episode_patch(
         data.name, data.name_cn, data.duration, data.desc, data.airdate, data.reason
     )
 
-    await _validate_captcha(data.cf_turnstile_response)
+    if not request.auth.allow_bypass_captcha():
+        await _validate_captcha(data.cf_turnstile_response)
 
     res = await http_client.get(f"https://next.bgm.tv/p1/wiki/ep/{episode_id}")
     if res.status_code == 404:
