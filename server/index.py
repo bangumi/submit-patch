@@ -90,8 +90,10 @@ async def _(
 
     if patch_type == PatchType.Subject:
         table = "view_subject_patch"
+        column = "id,created_at,updated_at,reason,from_user_id,wiki_user_id,state,original_name,subject_type"
     elif patch_type == PatchType.Episode:
         table = "view_episode_patch"
+        column = "id,created_at,updated_at,reason,from_user_id,wiki_user_id,state,original_name"
     else:
         raise BadRequestException(f"{patch_type} is not valid")
 
@@ -114,7 +116,13 @@ async def _(
             return Redirect(f"/?type={patch_type}&state={patch_state_filter}&page=1")
 
         rows = await pg.fetch(
-            f"select * from {table} where {where} order by {order_by} limit $2 offset $3",
+            f"""
+            select {column}
+              from {table}
+              where {where}
+              order by {order_by}
+              limit $2 offset $3
+            """,
             arg,
             _page_size,
             (page - 1) * _page_size,
