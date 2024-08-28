@@ -85,9 +85,6 @@ async def _(
 ) -> litestar.Response[Any]:
     if not request.auth:
         return Template("login.html.jinja2")
-    if not request.auth.allow_edit:
-        return Redirect(f"/contrib/{request.auth.user_id}")
-
     if patch_type == PatchType.Subject:
         table = "view_subject_patch"
         column = "id,created_at,updated_at,reason,from_user_id,wiki_user_id,state,original_name,subject_type"
