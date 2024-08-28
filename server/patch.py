@@ -9,6 +9,7 @@ from loguru import logger
 from server.base import Request, pg
 from server.model import PatchState, PatchType, SubjectPatch
 from server.router import Router
+from server.strings import invisible_escape
 
 
 router = Router()
@@ -44,8 +45,8 @@ async def get_patch(patch_id: uuid.UUID, request: Request) -> Template:
             raise InternalServerException
         infobox_patch = "".join(
             difflib.unified_diff(
-                (patch.original_infobox + "\n").splitlines(True),
-                (patch.infobox + "\n").splitlines(True),
+                (invisible_escape(patch.original_infobox) + "\n").splitlines(True),
+                (invisible_escape(patch.infobox) + "\n").splitlines(True),
                 "infobox",
                 "infobox",
                 n=5,

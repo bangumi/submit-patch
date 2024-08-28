@@ -24,7 +24,7 @@ from server.auth import require_user_editor
 from server.base import AuthorizedRequest, BadRequestException, User, http_client, pg
 from server.model import EpisodePatch, PatchState, PatchType, SubjectPatch
 from server.router import Router
-from server.verify import check_invalid_input_str
+from server.strings import check_invalid_input_str
 
 
 router = Router()
