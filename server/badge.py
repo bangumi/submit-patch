@@ -94,7 +94,9 @@ async def badge_handle() -> Response[bytes]:
 async def __get_badge(count: int) -> bytes:
     key = "badge:count"
 
-    if count >= 100:
+    if count >= 500:
+        val_key = f"{key}:500"
+    elif count >= 100:
         val_key = f"{key}:100"
     else:
         val_key = f"{key}:{count}"
@@ -104,7 +106,10 @@ async def __get_badge(count: int) -> bytes:
     s = str(count)
 
     if badge is None:
-        if count >= 100:
+        if count >= 500:
+            s = ">500"
+            color = "dc3545"
+        elif count >= 100:
             s = ">100"
             color = "dc3545"
         elif count >= 50:
