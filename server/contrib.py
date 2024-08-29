@@ -369,9 +369,9 @@ async def creat_episode_patch(
         reasons = []
         for key in changed:
             if original_wiki[key]:
-                reasons.append(f"修改 {patch_keys[key]}")
+                reasons.append(f"修改{patch_keys[key]}")
             else:
-                reasons.append(f"添加 {patch_keys[key]}")
+                reasons.append(f"添加{patch_keys[key]}")
 
         reason = "，".join(reasons)
 
