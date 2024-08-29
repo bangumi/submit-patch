@@ -58,35 +58,43 @@
   <h3>具体变动</h3>
 
   <script>
-      const outputFormatOpt = {'description': 'side-by-side'}
+    const outputFormatOpt = {'description': 'side-by-side'}
   </script>
 
-  {% for (key, cn), value in diff.items() %}
-    <div class="row">
-      <h4>{{ cn }}</h4>
-      <div id="{{ key }}diff" class="diff"></div>
-    </div>
+  {% for (key, cn) in keys %}
+    {% if key in diff %}
+      <div class="row">
+        <h4>{{ cn }}</h4>
+        <div id="{{ key }}diff" class="diff"></div>
+      </div>
 
-    <script>
+      <script>
         (() => {
-            const diffString = {{ value | tojson }};
-            const key = '{{ key }}'
-            const targetElement = document.getElementById('{{ key }}diff');
-            const configuration = {
-                drawFileList: false,
-                fileListToggle: false,
-                fileListStartVisible: false,
-                fileContentToggle: false,
-                matching: 'words',
-                maxLineSizeInBlockForComparison: 80,
-                outputFormat: 'line-by-line',
-                synchronisedScroll: true,
-                renderNothingWhenEmpty: false,
-            };
-            const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
-            diff2htmlUi.draw();
+          const diffString = {{ diff[key] | tojson }};
+          const key = '{{ key }}'
+          const targetElement = document.getElementById('{{ key }}diff');
+          const configuration = {
+            drawFileList: false,
+            fileListToggle: false,
+            fileListStartVisible: false,
+            fileContentToggle: false,
+            matching: 'words',
+            maxLineSizeInBlockForComparison: 80,
+            outputFormat: 'line-by-line',
+            synchronisedScroll: true,
+            renderNothingWhenEmpty: false,
+          };
+          const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+          diff2htmlUi.draw();
         })()
-    </script>
+      </script>
+    {% else %}
+      <div class="row">
+        <h4>{{ cn }}</h4>
+        <p class="blockquote"
+           style="background-color: #f7f7f9">{{ patch['original_' + key] }}</p>
+      </div>
+    {% endif %}
   {% endfor %}
 
   <div class="row">
@@ -102,10 +110,10 @@
         </div>
 
         <script>
-            function onRejectSelectFormChange() {
-                const el = $('#reject-reason-select');
-                $('#reject-reason-input').val(el.val())
-            }
+          function onRejectSelectFormChange() {
+            const el = $('#reject-reason-select');
+            $('#reject-reason-input').val(el.val())
+          }
         </script>
 
         <div class="col">
