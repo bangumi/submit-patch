@@ -14,6 +14,12 @@
       .diff .d2h-code-line-ctn, .diff .d2h-code-line *, .diff * {
           font-family: Consolas, Menlo, monospace !important;
       }
+
+      .original_description {
+          text-wrap: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+      }
   </style>
 {% endblock %}
 
@@ -91,7 +97,7 @@
     {% else %}
       <div class="row">
         <h4>{{ cn }}</h4>
-        <p class="blockquote"
+        <p class="blockquote original_{{ key }}"
            style="background-color: #f7f7f9">{{ patch['original_' + key] }}</p>
       </div>
     {% endif %}
