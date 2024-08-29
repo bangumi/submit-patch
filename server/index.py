@@ -85,6 +85,20 @@ async def _(
 ) -> litestar.Response[Any]:
     if not request.auth:
         return Template("login.html.jinja2")
+
+    if not request.query_params:
+        if await pg.fetchval(
+            "select count(1) from view_subject_patch where state = $1", PatchState.Pending
+        ):
+            print("redirect to subject")
+            return Redirect(f"/?type={PatchType.Subject}")
+        if await pg.fetchval(
+            "select count(1) from view_episode_patch where state = $1", PatchState.Pending
+        ):
+            print("redirect to episode")
+            return Redirect(f"/?type={PatchType.Episode}")
+        return Redirect(f"/?type={PatchType.Subject}")
+
     if patch_type == PatchType.Subject:
         table = "view_subject_patch"
         column = "id,created_at,updated_at,reason,from_user_id,wiki_user_id,state,original_name,subject_type"
