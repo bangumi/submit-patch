@@ -24,6 +24,7 @@ from server.base import (
     BadRequestException,
     Request,
     http_client,
+    patch_keys,
     pg,
     session_key_back_to,
 )
@@ -330,9 +331,6 @@ async def creat_episode_patch(
     episode_id: int,
     data: Annotated[CreateEpisodePatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
 ) -> Response[Any]:
-    if not data.reason:
-        raise ValidationException("missing suggestion description")
-
     check_invalid_input_str(
         data.name, data.name_cn, data.duration, data.desc, data.airdate, data.reason
     )
@@ -366,6 +364,17 @@ async def creat_episode_patch(
     if not changed:
         raise HTTPException("no changes found", status_code=400)
 
+    reason = data.reason.strip()
+    if not reason:
+        reasons = []
+        for key in changed:
+            if original_wiki[key]:
+                reasons.append(f"修改 {patch_keys[key]}")
+            else:
+                reasons.append(f"添加 {patch_keys[key]}")
+
+        reason = "，".join(reasons)
+
     pk = uuid7()
 
     await pg.execute(
@@ -378,7 +387,7 @@ async def creat_episode_patch(
         pk,
         episode_id,
         request.auth.user_id,
-        data.reason,
+        reason,
         original_wiki["name"],
         changed.get("name"),
         original_wiki["name_cn"],

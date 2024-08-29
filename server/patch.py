@@ -6,7 +6,7 @@ from litestar.exceptions import InternalServerException, NotFoundException
 from litestar.response import Redirect, Template
 from loguru import logger
 
-from server.base import Request, pg
+from server.base import Request, patch_keys, pg
 from server.model import PatchState, PatchType, SubjectPatch
 from server.router import Router
 from server.strings import invisible_escape
@@ -116,15 +116,7 @@ async def get_episode_patch(patch_id: uuid.UUID, request: Request) -> Template:
 
     diff = {}
 
-    keys = [
-        ("name", "标题"),
-        ("name_cn", "简体中文标题"),
-        ("duration", "时长"),
-        ("airdate", "放送日期"),
-        ("description", "简介"),
-    ]
-
-    for key, _ in keys:
+    for key in patch_keys:
         after = p[key]
         if after is None:
             continue
@@ -167,7 +159,7 @@ async def get_episode_patch(patch_id: uuid.UUID, request: Request) -> Template:
             "patch": p,
             "reason": p["reason"],
             "auth": request.auth,
-            "keys": keys,
+            "keys": patch_keys,
             "diff": diff,
             "reviewer": reviewer,
             "submitter": submitter,

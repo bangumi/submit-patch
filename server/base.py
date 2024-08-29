@@ -1,6 +1,7 @@
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Final
 
 import asyncpg
 import httpx
@@ -67,3 +68,12 @@ class BadRequestException(ClientException):
     """Server knows the request method, but the target resource doesn't support this method."""
 
     status_code = HTTP_400_BAD_REQUEST
+
+
+patch_keys: Final[Mapping[str, str]] = {
+    "name": "标题",
+    "name_cn": "简体中文标题",
+    "duration": "时长",
+    "airdate": "放送日期",
+    "description": "简介",
+}
