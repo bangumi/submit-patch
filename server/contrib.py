@@ -107,8 +107,6 @@ async def suggest_api(
 
     changed = {}
 
-    nsfw: bool | None = None
-
     for key in ["name", "infobox", "summary"]:
         before = original_wiki[key]
         after = getattr(data, key)
@@ -116,8 +114,10 @@ async def suggest_api(
             changed[key] = after
             original[key] = before
 
-    if original_wiki["nsfw"] != (data.nsfw is not None):  # true case
-        nsfw = not original_wiki["nsfw"]
+    nsfw: bool | None = None
+    nsfw_input = data.nsfw is not None
+    if original_wiki["nsfw"] != nsfw_input:  # true case
+        nsfw = nsfw_input
 
     if (not changed) and (nsfw is None):
         raise HTTPException("no changes found", status_code=400)
