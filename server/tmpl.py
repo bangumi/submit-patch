@@ -161,16 +161,9 @@ def __render_maybe_url(s: str) -> str:
     return html.escape(s)
 
 
-__split_pattern = re.compile(r"([ （）()，。\t、])")
+__split_pattern_with_linebreak = re.compile(r"([ （）()，。\t、\r\n])")
 
 
 @add_filter
 def auto_url(s: str) -> Markup:
-    lines = s.splitlines()
-
-    ss = []
-
-    for line in lines:
-        ss.append("".join(__render_maybe_url(x) for x in __split_pattern.split(line)))
-
-    return Markup("<br>".join(ss))
+    return Markup("".join(__render_maybe_url(x) for x in __split_pattern_with_linebreak.split(s)))
