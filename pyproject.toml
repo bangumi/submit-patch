@@ -5,7 +5,6 @@ description = ""
 authors = ["Trim21 <trim21.me@gmail.com>"]
 
 packages = [
-    { include = "lint" },
     { include = "server" },
 ]
 
