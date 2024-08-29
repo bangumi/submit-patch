@@ -61,7 +61,7 @@
     const outputFormatOpt = {'description': 'side-by-side'}
   </script>
 
-  {% for (key, cn) in keys %}
+  {% for key, cn in keys.items() %}
     {% if key in diff %}
       <div class="row">
         <h4>{{ cn }}</h4>
