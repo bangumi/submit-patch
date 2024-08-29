@@ -90,12 +90,10 @@ async def _(
         if await pg.fetchval(
             "select count(1) from view_subject_patch where state = $1", PatchState.Pending
         ):
-            print("redirect to subject")
             return Redirect(f"/?type={PatchType.Subject}")
         if await pg.fetchval(
             "select count(1) from view_episode_patch where state = $1", PatchState.Pending
         ):
-            print("redirect to episode")
             return Redirect(f"/?type={PatchType.Episode}")
         return Redirect(f"/?type={PatchType.Subject}")
 

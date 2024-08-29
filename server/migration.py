@@ -31,7 +31,7 @@ async def run_migration() -> None:
             "alter table episode_patch add column subject_id int not null default 0;",
         ),
         Migrate(7, fresh_view_sql),
-        Migrate(8, sql_dir.joinpath("006-create-index.sql").read_bytes().decode()),
+        Migrate(8, sql_dir.joinpath("008-create-index.sql").read_bytes().decode()),
     ]
 
     if not all(x <= y for x, y in itertools.pairwise(migrations)):
