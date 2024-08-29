@@ -14,6 +14,9 @@ from typing_extensions import Never
 from config import PG_DSN, REDIS_DSN
 
 
+session_key_back_to = "backTo"
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class User:
     user_id: int
@@ -39,9 +42,7 @@ class User:
         return self.group_id in {1, 2, 9, 11}
 
     def allow_bypass_captcha(self) -> bool:
-        return self.user_id in {
-            287622,  # https://bgm.tv/user/trim21
-        }
+        return self.user_id == 287622
 
 
 redis_client = Redis.from_url(REDIS_DSN)

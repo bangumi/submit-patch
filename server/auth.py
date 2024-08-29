@@ -16,7 +16,7 @@ from litestar.security.session_auth import SessionAuth, SessionAuthMiddleware
 from litestar.types import Empty
 
 from config import BGM_TV_APP_ID, BGM_TV_APP_SECRET, SERVER_BASE_URL
-from server.base import Request, User, http_client, pg
+from server.base import Request, User, http_client, pg, session_key_back_to
 from server.router import Router
 
 
@@ -136,7 +136,7 @@ async def callback(code: str, request: Request) -> Redirect:
         user["username"],
         html.unescape(user["nickname"]),
     )
-    back_to = request.session.get("backTo", "/")
+    back_to = request.session.get(session_key_back_to, "/")
 
     request.set_session(
         {

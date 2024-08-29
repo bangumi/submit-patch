@@ -21,7 +21,14 @@ from uuid_utils import uuid7
 
 from config import UTC
 from server.auth import require_user_editor
-from server.base import AuthorizedRequest, BadRequestException, User, http_client, pg
+from server.base import (
+    AuthorizedRequest,
+    BadRequestException,
+    User,
+    http_client,
+    pg,
+    session_key_back_to,
+)
 from server.model import EpisodePatch, PatchState, PatchType, SubjectPatch
 from server.router import Router
 from server.strings import check_invalid_input_str
@@ -76,7 +83,7 @@ class SubjectReviewController(Controller):
                     return await self.__reject_patch(patch, conn, request.auth, data.reject_reason)
 
                 if data.react == React.Accept:
-                    return await self.__accept_patch(patch, conn, request.auth)
+                    return await self.__accept_patch(patch, conn, request)
 
         raise NotAuthorizedException("暂不支持")
 
@@ -108,9 +115,10 @@ class SubjectReviewController(Controller):
         self,
         patch: SubjectPatch,
         conn: PoolConnectionProxy[Record],
-        auth: User,
+        request: AuthorizedRequest,
     ) -> Redirect:
-        if not auth.is_access_token_fresh():
+        if not request.auth.is_access_token_fresh():
+            request.set_session({session_key_back_to: request.url.path})
             return Redirect("/login")
 
         subject = _strip_none(
@@ -124,7 +132,7 @@ class SubjectReviewController(Controller):
 
         res = await http_client.patch(
             f"https://next.bgm.tv/p1/wiki/subjects/{patch.subject_id}",
-            headers={"Authorization": f"Bearer {auth.access_token}"},
+            headers={"Authorization": f"Bearer {request.auth.access_token}"},
             json={
                 "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/subject/{patch.id}]",
                 "expectedRevision": pydash.pick(
@@ -151,7 +159,7 @@ class SubjectReviewController(Controller):
                     where id = $4
                     """,
                     PatchState.Outdated,
-                    auth.user_id,
+                    request.auth.user_id,
                     datetime.now(tz=UTC),
                     patch.id,
                 )
@@ -168,7 +176,7 @@ class SubjectReviewController(Controller):
                     where id = $5
                     """,
                     PatchState.Rejected,
-                    auth.user_id,
+                    request.auth.user_id,
                     datetime.now(tz=UTC),
                     f"建议包含语法错误，已经自动拒绝: {data.get('message')}",
                     patch.id,
@@ -187,7 +195,7 @@ class SubjectReviewController(Controller):
                     where id = $4 and deleted_at is NULL
                     """,
             PatchState.Accept,
-            auth.user_id,
+            request.auth.user_id,
             datetime.now(tz=UTC),
             patch.id,
         )

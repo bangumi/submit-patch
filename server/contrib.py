@@ -19,7 +19,14 @@ from uuid_utils import uuid7
 
 from config import TURNSTILE_SECRET_KEY, UTC
 from server.auth import require_user_login
-from server.base import AuthorizedRequest, BadRequestException, Request, http_client, pg
+from server.base import (
+    AuthorizedRequest,
+    BadRequestException,
+    Request,
+    http_client,
+    pg,
+    session_key_back_to,
+)
 from server.model import PatchState, SubjectPatch
 from server.router import Router
 from server.strings import check_invalid_input_str
@@ -50,7 +57,7 @@ async def suggest_ui(request: Request, subject_id: int = 0) -> Response[Any]:
         return Template("select-subject.html.jinja2")
 
     if not request.auth:
-        request.set_session({"backTo": request.url.path + f"?subject_id={subject_id}"})
+        request.set_session({session_key_back_to: f"/suggest-subject?subject_id={subject_id}"})
         return Redirect("/login")
 
     res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{subject_id}")
@@ -286,7 +293,7 @@ async def episode_suggest_ui(request: Request, episode_id: int = 0) -> Response[
         return Template("episode/select.html.jinja2")
 
     if not request.auth:
-        request.set_session({"backTo": request.url.path + f"?episode_id={episode_id}"})
+        request.set_session({session_key_back_to: request.url.path + f"?episode_id={episode_id}"})
         return Redirect("/login")
 
     res = await http_client.get(f"https://next.bgm.tv/p1/wiki/ep/{episode_id}")
