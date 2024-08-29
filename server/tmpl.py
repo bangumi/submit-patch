@@ -158,7 +158,7 @@ def __render_maybe_url(s: str) -> str:
     if is_url_pattern.match(s):
         escaped = html.escape(s)
         return f'<a href="{escaped}" target="_blank">{escaped}</a>'
-    return s
+    return html.escape(s)
 
 
 __split_pattern = re.compile(r"([ （）()，。\t、])")
