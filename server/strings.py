@@ -10,8 +10,11 @@ __invisible_pattern = regex.compile(r"(?![\t\r\n])(\p{Cf}|\p{Cc})")
 
 def check_invalid_input_str(*ss: str) -> None:
     for s in ss:
-        if m := __invisible_pattern.search(s):
-            raise BadRequestException("invalid character {!r}".format(m.group(0)))
+        for line in s.splitlines():
+            if m := __invisible_pattern.search(line):
+                raise BadRequestException(
+                    "invalid character {!r} in line {!r}".format(m.group(0), line)
+                )
 
 
 def contains_invalid_input_str(*ss: str) -> str | None:
