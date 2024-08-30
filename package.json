@@ -1,21 +1,15 @@
 {
-  "name": "bgm_tv_wiki_lint",
+  "name": "pkg",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "private": true,
+  "scripts": {},
   "dependencies": {
     "bootstrap": "^5.3.3",
-    "jquery": "^3.7.1",
+    "jquery": "^3.7.0",
     "diff2html": "^3.4.48"
   },
   "devDependencies": {
     "@popperjs/core": "^2.11.8"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "yarn@1.22.22"
+  }
 }
