@@ -314,7 +314,7 @@ class CreateEpisodePatch:
     name: str
     name_cn: str
     duration: str
-    desc: str
+    description: str
 
     cf_turnstile_response: str
     reason: str
@@ -350,10 +350,10 @@ async def creat_episode_patch(
         "name": org["name"],
         "name_cn": org["nameCN"],
         "duration": org["duration"],
-        "desc": org["summary"],
+        "description": org["summary"],
     }
 
-    keys = ["airdate", "name", "name_cn", "duration", "desc"]
+    keys = ["airdate", "name", "name_cn", "duration", "description"]
 
     changed = {}
 
@@ -396,8 +396,8 @@ async def creat_episode_patch(
         changed.get("duration"),
         original_wiki["airdate"],
         changed.get("airdate"),
-        original_wiki["desc"],
-        changed.get("desc"),
+        original_wiki["description"],
+        changed.get("description"),
         org["subjectID"],
     )
 
