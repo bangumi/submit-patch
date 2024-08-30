@@ -429,4 +429,4 @@ async def delete_episode_patch(patch_id: uuid.UUID, request: AuthorizedRequest) 
                 patch_id,
             )
 
-            return Redirect("/")
+            return Redirect("/?type=episode")
