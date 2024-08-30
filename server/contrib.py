@@ -30,7 +30,7 @@ from server.base import (
 )
 from server.model import PatchState, SubjectPatch
 from server.router import Router
-from server.strings import check_invalid_input_str
+from server.strings import check_invalid_input_str, contains_invalid_input_str
 
 
 router = Router()
@@ -331,9 +331,7 @@ async def creat_episode_patch(
     episode_id: int,
     data: Annotated[CreateEpisodePatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
 ) -> Response[Any]:
-    check_invalid_input_str(
-        data.name, data.name_cn, data.duration, data.desc, data.airdate, data.reason
-    )
+    check_invalid_input_str(data.reason)
 
     if not request.auth.allow_bypass_captcha():
         await _validate_captcha(data.cf_turnstile_response)
@@ -374,6 +372,10 @@ async def creat_episode_patch(
                 reasons.append(f"添加{patch_keys[key]}")
 
         reason = "，".join(reasons)
+
+    for key in changed:
+        if c := contains_invalid_input_str(changed[key]):
+            raise BadRequestException(f"{patch_keys[key]} 包含不可见字符 {c!r}")
 
     pk = uuid7()
 

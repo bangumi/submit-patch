@@ -14,8 +14,14 @@ def check_invalid_input_str(*ss: str) -> None:
             raise BadRequestException("invalid character {!r}".format(m.group(0)))
 
 
+def contains_invalid_input_str(*ss: str) -> str | None:
+    for s in ss:
+        if m := __invisible_pattern.search(s):
+            return m.group(0)
+
+
 def __repl(m: regex.Match[str]) -> str:
-    return m.group(1).encode("unicode-escape").decode()
+    return m.group(0).encode("unicode-escape").decode()
 
 
 def invisible_escape(s: str) -> str:
