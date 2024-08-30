@@ -144,12 +144,12 @@ def replace_url_query(ctx: Context, **kwargs: Any) -> str:
 # from https://stackoverflow.com/a/7160778/8062017
 # https// http:// only
 is_url_pattern = re.compile(
-    r"^https?://"  # http:// or https://
+    r"https?://"  # http:// or https://
     r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # domain...
     r"localhost|"  # localhost...d
     r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # ...or ip
     r"(?::\d+)?"  # optional port
-    r"(?:/?|[/?]\S+)$",
+    r"(?:/?|[/?]\S+)",
     re.IGNORECASE,
 )
 
@@ -161,9 +161,11 @@ def __render_maybe_url(s: str) -> str:
     return html.escape(s)
 
 
-__split_pattern_with_linebreak = re.compile(r"([ （）()，。\t、\r\n])")
+def __repl_url(s: re.Match[str]) -> str:
+    escaped = html.escape(s.group(0))
+    return f'<a href="{escaped}" target="_blank">{escaped}</a>'
 
 
 @add_filter
 def auto_url(s: str) -> Markup:
-    return Markup("".join(__render_maybe_url(x) for x in __split_pattern_with_linebreak.split(s)))
+    return Markup(is_url_pattern.sub(__repl_url, s))
