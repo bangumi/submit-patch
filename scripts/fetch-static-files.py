@@ -53,6 +53,8 @@ def download_npm_package(
             if not file.isfile():
                 continue
             fn = file.path.removeprefix("package/")
+            if fn == "package.json":
+                continue
             if path_filter:
                 if not (fn.startswith(path_filter)):
                     continue
@@ -64,7 +66,7 @@ def download_npm_package(
             target_file.write_bytes(f.read())
 
 
-def main():
+def main() -> None:
     package_json = json.loads(Path(__file__, "../../package.json").read_bytes())
 
     download_npm_package(
