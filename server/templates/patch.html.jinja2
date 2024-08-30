@@ -15,8 +15,16 @@
           font-family: Consolas, Menlo, monospace !important;
       }
 
-      #summaryDiffElement .d2h-code-line, #summaryDiffElement .d2h-code-line-ctn {
-          white-space: normal;
+
+      #summaryDiffElement {
+          .d2h-code-line-ctn {
+              white-space: pre-wrap;
+              word-break: break-all;
+          }
+
+          .d2h-code-line, .d2h-code-side-line, .d2h-code-line-ctn {
+              width: revert;
+          }
       }
   </style>
 {% endblock %}
