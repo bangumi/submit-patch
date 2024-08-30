@@ -1,7 +1,8 @@
 import html
 import mimetypes
 import os
-from datetime import datetime
+import re
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, NamedTuple
 
@@ -48,6 +49,8 @@ class File(NamedTuple):
     content_type: str | None
 
 
+mimetypes.add_type("application/javascript", ".mjs", True)
+
 static_path = PROJECT_PATH.joinpath("server/static/")
 if not DEV:
     static_files: dict[str, File] = {}
@@ -84,8 +87,16 @@ else:
     )
 
 
+# \d will match many Unicode number
+__tz_pattern = re.compile(r"-?[0-9]+")
+
+
 def before_req(req: litestar.Request[None, None, State]) -> None:
     req.state["now"] = datetime.now(tz=UTC)
+    tz = req.cookies.get("tz")
+    if tz:
+        if __tz_pattern.match(tz):
+            req.state["tz"] = timezone(timedelta(minutes=-int(tz)))
 
 
 def plain_text_exception_handler(req: Request, exc: HTTPException) -> Template:

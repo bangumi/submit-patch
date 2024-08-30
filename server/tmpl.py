@@ -127,8 +127,9 @@ local_tz = timezone(timedelta(hours=8), name="Asia/Shanghai")
 
 
 @add_filter
-def to_user_local_time(dt: datetime) -> str:
-    return str(dt.replace(microsecond=0).astimezone(local_tz))
+@pass_context
+def to_user_local_time(ctx: Context, dt: datetime) -> str:
+    return str(dt.replace(microsecond=0).astimezone(ctx["request"].state.get("tz", local_tz)))
 
 
 @add_global_function
@@ -162,8 +163,7 @@ def auto_url(s: str) -> Markup:
 
     end = 0
     for m in __url_pattern.finditer(s):
-        ss.append(html.escape(s[end : m.start()]))
-        ss.append(__repl_url(m))
+        ss.extend((html.escape(s[end : m.start()]), __repl_url(m)))
         end = m.end()
 
     if end != len(s):

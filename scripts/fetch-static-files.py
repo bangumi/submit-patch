@@ -69,20 +69,17 @@ def download_npm_package(
 def main() -> None:
     package_json = json.loads(Path(__file__, "../../package.json").read_bytes())
 
-    download_npm_package(
-        "diff2html",
-        ("bundles",),
-        version_spec=package_json["dependencies"]["diff2html"],
-    )
-    download_npm_package(
-        "bootstrap",
-        version_spec=package_json["dependencies"]["bootstrap"],
-    )
-    download_npm_package(
-        "jquery",
-        ("dist",),
-        version_spec=package_json["dependencies"]["jquery"],
-    )
+    for pkg, skip in [
+        ("diff2html", ("bundles",)),
+        ("bootstrap", None),
+        ("jquery", ("dist",)),
+        ("js-cookie", None),
+    ]:
+        download_npm_package(
+            pkg,
+            skip,
+            version_spec=package_json["dependencies"][pkg],
+        )
 
 
 main()
