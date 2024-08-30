@@ -109,7 +109,7 @@ class SubjectReviewController(Controller):
             reason,
             patch.id,
         )
-        return Redirect("/")
+        return Redirect("/?type=subject")
 
     async def __accept_patch(
         self,
@@ -199,7 +199,15 @@ class SubjectReviewController(Controller):
             datetime.now(tz=UTC),
             patch.id,
         )
-        return Redirect("/")
+
+        next_pk = await conn.fetchval(
+            "select id from view_subject_patch where state = $1 limit 1", PatchState.Pending
+        )
+
+        if next_pk:
+            return Redirect(f"/subject/{next_pk}")
+
+        return Redirect("/?type=subject")
 
 
 @router
