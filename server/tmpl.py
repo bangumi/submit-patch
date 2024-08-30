@@ -143,19 +143,12 @@ def replace_url_query(ctx: Context, **kwargs: Any) -> str:
 
 # from https://stackoverflow.com/a/7160778/8062017
 # https// http:// only
-is_url_pattern = re.compile(
-    r"https?://"  # http:// or https://
+__url_pattern = re.compile(
+    r"(https?://"  # http:// or https://
     r"[^/]+"  # netloc
-    r"(?:/\S+)?",  # path#hash
+    r"(?:/\S+)?)",  # path#hash
     re.IGNORECASE,
 )
-
-
-def __render_maybe_url(s: str) -> str:
-    if is_url_pattern.match(s):
-        escaped = html.escape(s)
-        return f'<a href="{escaped}" target="_blank">{escaped}</a>'
-    return html.escape(s)
 
 
 def __repl_url(s: re.Match[str]) -> str:
@@ -165,4 +158,15 @@ def __repl_url(s: re.Match[str]) -> str:
 
 @add_filter
 def auto_url(s: str) -> Markup:
-    return Markup(is_url_pattern.sub(__repl_url, s))
+    ss = []
+
+    end = 0
+    for m in __url_pattern.finditer(s):
+        ss.append(html.escape(s[end : m.start()]))
+        ss.append(__repl_url(m))
+        end = m.end()
+
+    if end != len(s):
+        ss.append(html.escape(s[end:]))
+
+    return Markup("".join(ss))
