@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import enum
-import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any
+from uuid import UUID
 
 import litestar
 import pydash
@@ -220,7 +220,7 @@ class EpisodeReviewController(Controller):
     )
     async def review_episode_patch(
         self,
-        patch_id: uuid.UUID,
+        patch_id: UUID,
         request: AuthorizedRequest,
         data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
     ) -> Response[Any]:
@@ -248,7 +248,7 @@ class EpisodeReviewController(Controller):
         raise NotAuthorizedException("暂不支持")
 
     async def __reject_episode_patch(
-        self, patch_id: uuid.UUID, conn: PoolConnectionProxy[Record], auth: User, reason: str
+        self, patch_id: UUID, conn: PoolConnectionProxy[Record], auth: User, reason: str
     ) -> Redirect:
         await conn.execute(
             """
@@ -336,7 +336,7 @@ class CommentReviewController(Controller):
     async def handler(
         self,
         request: AuthorizedRequest,
-        patch_id: uuid.UUID,
+        patch_id: UUID,
         data: Annotated[CommentOnPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
         patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
     ) -> Response[Any]:

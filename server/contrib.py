@@ -1,7 +1,7 @@
-import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any
+from uuid import UUID
 
 import litestar
 from litestar import Response
@@ -178,7 +178,7 @@ async def delete_patch(patch_id: str, request: AuthorizedRequest) -> Redirect:
 
 @router
 @litestar.get("/edit/subject/{patch_id:uuid}", guards=[require_user_login])
-async def _(request: AuthorizedRequest, patch_id: uuid.UUID) -> Response[Any]:
+async def _(request: AuthorizedRequest, patch_id: UUID) -> Response[Any]:
     p = await pg.fetchrow(
         "select * from view_subject_patch where id = $1",
         patch_id,
@@ -225,7 +225,7 @@ class EditSubjectPatch:
 )
 async def _(
     request: AuthorizedRequest,
-    patch_id: uuid.UUID,
+    patch_id: UUID,
     data: Annotated[EditSubjectPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
 ) -> Response[Any]:
     await _validate_captcha(data.cf_turnstile_response)
@@ -412,7 +412,7 @@ async def creat_episode_patch(
     guards=[require_user_login],
     status_code=200,
 )
-async def delete_episode_patch(patch_id: uuid.UUID, request: AuthorizedRequest) -> Redirect:
+async def delete_episode_patch(patch_id: UUID, request: AuthorizedRequest) -> Redirect:
     async with pg.acquire() as conn:
         async with conn.transaction():
             p = await conn.fetchrow(

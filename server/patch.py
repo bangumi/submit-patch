@@ -1,5 +1,5 @@
 import difflib
-import uuid
+from uuid import UUID
 
 import litestar
 from litestar.exceptions import InternalServerException, NotFoundException
@@ -17,13 +17,13 @@ router = Router()
 
 @router
 @litestar.get("/patch/{patch_id:uuid}", sync_to_thread=False)
-def get_patch_redirect(patch_id: uuid.UUID) -> Redirect:
+def get_patch_redirect(patch_id: UUID) -> Redirect:
     return Redirect(f"/subject/{patch_id}")
 
 
 @router
 @litestar.get("/subject/{patch_id:uuid}")
-async def get_patch(patch_id: uuid.UUID, request: Request) -> Template:
+async def get_patch(patch_id: UUID, request: Request) -> Template:
     p = await pg.fetchrow(
         """select * from subject_patch where id = $1 and deleted_at is NULL limit 1""", patch_id
     )
@@ -112,7 +112,7 @@ async def get_patch(patch_id: uuid.UUID, request: Request) -> Template:
 
 @router
 @litestar.get("/episode/{patch_id:uuid}")
-async def get_episode_patch(patch_id: uuid.UUID, request: Request) -> Template:
+async def get_episode_patch(patch_id: UUID, request: Request) -> Template:
     p = await pg.fetchrow(
         """select * from episode_patch where id = $1 and deleted_at is NULL limit 1""", patch_id
     )

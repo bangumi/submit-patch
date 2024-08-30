@@ -1,7 +1,7 @@
 import enum
-import uuid
 from dataclasses import dataclass
 from datetime import datetime
+from uuid import UUID
 
 
 class PatchState(enum.IntEnum):
@@ -13,7 +13,7 @@ class PatchState(enum.IntEnum):
 
 @dataclass(frozen=True, kw_only=True, slots=True)
 class PatchBase:
-    id: uuid.UUID
+    id: UUID
     state: int
     from_user_id: int
     wiki_user_id: int
