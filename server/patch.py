@@ -35,7 +35,12 @@ async def get_patch(patch_id: uuid.UUID, request: Request) -> Template:
     name_patch = ""
     if patch.name is not None:
         name_patch = "".join(
-            difflib.unified_diff([patch.original_name + "\n"], [patch.name + "\n"], "name", "name")
+            difflib.unified_diff(
+                [escape_invisible(patch.original_name) + "\n"],
+                [escape_invisible(patch.name) + "\n"],
+                "name",
+                "name",
+            )
         )
 
     infobox_patch = ""
