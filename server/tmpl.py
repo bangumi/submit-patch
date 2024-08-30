@@ -145,11 +145,8 @@ def replace_url_query(ctx: Context, **kwargs: Any) -> str:
 # https// http:// only
 is_url_pattern = re.compile(
     r"https?://"  # http:// or https://
-    r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # domain...
-    r"localhost|"  # localhost...d
-    r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # ...or ip
-    r"(?::\d+)?"  # optional port
-    r"(?:/?|[/?]\S+)",
+    r"[^/]+"  # netloc
+    r"(?:/\S+)?",  # path#hash
     re.IGNORECASE,
 )
 
