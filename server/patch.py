@@ -9,7 +9,7 @@ from loguru import logger
 from server.base import Request, patch_keys, pg
 from server.model import PatchState, PatchType, SubjectPatch
 from server.router import Router
-from server.strings import invisible_escape
+from server.strings import escape_invisible
 
 
 router = Router()
@@ -45,8 +45,8 @@ async def get_patch(patch_id: uuid.UUID, request: Request) -> Template:
             raise InternalServerException
         infobox_patch = "".join(
             difflib.unified_diff(
-                (invisible_escape(patch.original_infobox) + "\n").splitlines(True),
-                (invisible_escape(patch.infobox) + "\n").splitlines(True),
+                (escape_invisible(patch.original_infobox) + "\n").splitlines(True),
+                (escape_invisible(patch.infobox) + "\n").splitlines(True),
                 "infobox",
                 "infobox",
                 n=5,
@@ -61,8 +61,8 @@ async def get_patch(patch_id: uuid.UUID, request: Request) -> Template:
         summary_patch = "".join(
             # need a tailing new line to generate correct diff
             difflib.unified_diff(
-                (patch.original_summary + "\n").splitlines(True),
-                (patch.summary + "\n").splitlines(True),
+                escape_invisible(patch.original_summary + "\n").splitlines(True),
+                escape_invisible(patch.summary + "\n").splitlines(True),
                 "summary",
                 "summary",
             )

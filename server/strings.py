@@ -27,5 +27,5 @@ def __repl(m: regex.Match[str]) -> str:
     return m.group(0).encode("unicode-escape").decode()
 
 
-def invisible_escape(s: str) -> str:
+def escape_invisible(s: str) -> str:
     return __invisible_pattern.sub(repl=__repl, string=s)
