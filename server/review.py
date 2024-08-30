@@ -201,7 +201,8 @@ class SubjectReviewController(Controller):
         )
 
         next_pk = await conn.fetchval(
-            "select id from view_subject_patch where state = $1 limit 1", PatchState.Pending
+            "select id from view_subject_patch where state = $1 order by random() limit 1",
+            PatchState.Pending,
         )
 
         if next_pk:
@@ -308,6 +309,15 @@ class EpisodeReviewController(Controller):
             datetime.now(tz=UTC),
             patch.id,
         )
+
+        next_pk = await conn.fetchval(
+            "select id from view_episode_patch where state = $1 order by random() limit 1",
+            PatchState.Pending,
+        )
+
+        if next_pk:
+            return Redirect(f"/episode/{next_pk}")
+
         return Redirect("/?type=episode")
 
 
