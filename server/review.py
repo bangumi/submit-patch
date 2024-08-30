@@ -181,7 +181,7 @@ class SubjectReviewController(Controller):
                     f"建议包含语法错误，已经自动拒绝: {data.get('message')}",
                     patch.id,
                 )
-                raise BadRequestException("建议包含语法错误，已经自动拒绝")
+                return Redirect(f"/subject/{patch.id}")
 
             logger.error("failed to apply patch {!r}", data)
             raise InternalServerException()
