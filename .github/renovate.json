@@ -7,9 +7,12 @@
   "npm": {
     "enabled": true
   },
-  "docker": {
-    "digest": {
-      "enabled": true
+  "packageRules": [
+    {
+      "matchDatasources": [
+        "docker"
+      ],
+      "pinDigests": true
     }
-  }
+  ]
 }
