@@ -6,5 +6,10 @@
   "rangeStrategy": "bump",
   "npm": {
     "enabled": true
+  },
+  "docker": {
+    "digest": {
+      "enabled": true
+    }
   }
 }
