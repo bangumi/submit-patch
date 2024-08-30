@@ -3,6 +3,7 @@
     "github>Trim21/renovate-config",
     "github>Trim21/renovate-config:monthly"
   ],
+  "rangeStrategy": "bump",
   "npm": {
     "enabled": true
   }
