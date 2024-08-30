@@ -3,15 +3,11 @@ import gzip
 import io
 import json
 import shutil
-from collections.abc import Callable
 from pathlib import Path
 from tarfile import TarFile
 
 import httpx
-import semver
 from loguru import logger
-from packaging.specifiers import SpecifierSet
-from packaging.version import Version
 
 
 project_root = Path(__file__, "../..").resolve()
@@ -22,21 +18,16 @@ client = httpx.Client(proxies="http://192.168.1.3:7890")
 def download_npm_package(
     name: str,
     path_filter: tuple[str, ...] | None = None,
-    version_filter: Callable[[str], bool] | None = None,
+    version_spec: str = "latest",
 ) -> None:
     target = static_path.joinpath(name)
-    package_json = target.joinpath("package.json")
+    package_json = target.joinpath("installed.json")
 
-    data = client.get(f"https://registry.npmjs.org/{name}/").raise_for_status().json()
-
-    if not version_filter:
-        latest_version = data["dist-tags"]["latest"]
-    else:
-        latest_version = sorted(
-            [v for v in data["versions"] if version_filter(v)],
-            key=semver.VersionInfo.parse,
-            reverse=True,
-        )[0]
+    latest_version = (
+        client.get(f"https://cdn.jsdelivr.net/npm/{name}@{version_spec}/package.json")
+        .raise_for_status()
+        .json()["version"]
+    )
 
     logger.info("[{}]: latest version {}", name, latest_version)
 
@@ -53,7 +44,8 @@ def download_npm_package(
     target.mkdir(exist_ok=True)
     package_json.write_bytes(json.dumps({"version": latest_version}).encode())
 
-    version = data["versions"][latest_version]
+    registry = client.get(f"https://registry.npmjs.org/{name}/").raise_for_status().json()
+    version = registry["versions"][latest_version]
     tarball = client.get(version["dist"]["tarball"]).raise_for_status()
 
     with TarFile(fileobj=io.BytesIO(gzip.decompress(tarball.content))) as tar:
@@ -72,28 +64,23 @@ def download_npm_package(
             target_file.write_bytes(f.read())
 
 
-def build_version_filter(spec: SpecifierSet) -> Callable[[str], bool]:
-    def f(s: str) -> bool:
-        v = semver.VersionInfo.parse(s)
-        if v.prerelease:
-            return False
+def main():
+    package_json = json.loads(Path(__file__, "../../package.json").read_bytes())
 
-        return spec.contains(Version(f"{v.major}.{v.minor}.{v.patch}"))
+    download_npm_package(
+        "diff2html",
+        ("bundles",),
+        version_spec=package_json["dependencies"]["diff2html"],
+    )
+    download_npm_package(
+        "bootstrap",
+        version_spec=package_json["dependencies"]["bootstrap"],
+    )
+    download_npm_package(
+        "jquery",
+        ("dist",),
+        version_spec=package_json["dependencies"]["jquery"],
+    )
 
-    return f
 
-
-download_npm_package(
-    "diff2html",
-    ("bundles",),
-    version_filter=build_version_filter(SpecifierSet("<4")),
-)
-download_npm_package(
-    "bootstrap",
-    version_filter=build_version_filter(SpecifierSet("<6")),
-)
-download_npm_package(
-    "jquery",
-    ("dist",),
-    version_filter=build_version_filter(SpecifierSet("<4")),
-)
+main()

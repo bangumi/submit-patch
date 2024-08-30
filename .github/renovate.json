@@ -4,6 +4,6 @@
     "github>Trim21/renovate-config:monthly"
   ],
   "npm": {
-    "enabled": false
+    "enabled": true
   }
 }
