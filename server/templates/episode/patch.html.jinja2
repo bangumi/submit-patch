@@ -48,6 +48,16 @@
     ({{ patch.updated_at | to_user_local_time }})
   </div>
 
+
+  {% if patch.state == 0 and patch.from_user_id == auth.user_id %}
+    <div class="row mb-2">
+      <form action="/api/delete-episode/{{ patch.id }}" method="post">
+        {{ csrf_input | safe }}
+        <button type="submit" class="btn btn-danger">Delete</button>
+      </form>
+    </div>
+  {% endif %}
+
   <div class="row">
     <h2>修改原因</h2>
     <blockquote class="blockquote" style="background-color: #f7f7f9">
@@ -144,15 +154,6 @@
             <div class="mb-3">
               <button type="submit" class="btn btn-danger">Reject</button>
             </div>
-          </form>
-        </div>
-      {% endif %}
-
-      {% if patch.from_user_id == auth.user_id %}
-        <div class="row mb-1">
-          <form action="/api/delete-episode/{{ patch.id }}" method="post">
-            {{ csrf_input | safe }}
-            <button type="submit" class="btn btn-danger">Delete</button>
           </form>
         </div>
       {% endif %}
