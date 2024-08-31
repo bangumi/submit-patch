@@ -130,47 +130,31 @@
   {% if patch.state == 0 %}
     {% if auth.allow_edit %}
       <div class="row">
-        <form action="/api/add-suggestion/{{ patch.id }}?type=subject" method="post"
+        <hr>
+        <form action="/api/review-patch/{{ patch.id }}" method="post"
               enctype="application/x-www-form-urlencoded">
           {{ csrf_input | safe }}
-          <div class="mb-3">
-            <label>建议修改：</label>
-            <textarea class="form-control" name="text"></textarea>
-          </div>
-          <div class="mb-3">
-            <button type="submit" class="btn btn-warning">要求修改</button>
+          <textarea class="form-control mb-4" name="text"></textarea>
+          <div class="row">
+            <div class="col">
+              <button type="submit" name="react" value="accept" class="btn btn-success">
+                Accept
+              </button>
+            </div>
+            <div class="col">
+              <button type="submit"
+                      name="react"
+                      value="comment"
+                      class="btn btn-warning">要求修改
+              </button>
+            </div>
+            <div class="col">
+              <button type="submit" name="react" value="reject" class="btn btn-danger">
+                Reject
+              </button>
+            </div>
           </div>
         </form>
-      </div>
-
-      <hr>
-
-      <div class="row">
-        <div class="col">
-          <form action="/api/review-patch/{{ patch.id }}" method="post"
-                enctype="application/x-www-form-urlencoded">
-            {{ csrf_input | safe }}
-            <input name="react" value="accept" hidden="hidden"/>
-            <button type="submit" class="btn btn-success">Accept</button>
-          </form>
-        </div>
-
-        <div class="col">
-          <form action="/api/review-patch/{{ patch.id }}" method="post"
-                enctype="application/x-www-form-urlencoded">
-            {{ csrf_input | safe }}
-            <input name="react" value="reject" hidden="hidden"/>
-            <div class="mb-3">
-              <label>拒绝原因</label>
-              <input class="form-control" id="reject-reason-input"
-                     type="text"
-                     name="reject_reason"/>
-            </div>
-            <div class="mb-3">
-              <button type="submit" class="btn btn-danger">Reject</button>
-            </div>
-          </form>
-        </div>
       </div>
     {% endif %}
   {% elif patch.state == 1 %}

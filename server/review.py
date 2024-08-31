@@ -10,7 +10,7 @@ import litestar
 import pydash
 from asyncpg import Record
 from asyncpg.pool import PoolConnectionProxy
-from litestar import Controller, Response, params
+from litestar import Controller, Response
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import InternalServerException, NotAuthorizedException, NotFoundException
 from litestar.params import Body
@@ -39,12 +39,13 @@ router = Router()
 class React(str, enum.Enum):
     Accept = "accept"
     Reject = "reject"
+    Comment = "comment"
 
 
 @dataclass
 class ReviewPatch:
     react: React
-    reject_reason: str = ""
+    text: str = ""
 
 
 def _strip_none(d: dict[str, Any]) -> dict[str, Any]:
@@ -60,7 +61,7 @@ class SubjectReviewController(Controller):
     )
     async def review_patch(
         self,
-        patch_id: str,
+        patch_id: UUID,
         request: AuthorizedRequest,
         data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
     ) -> Response[Any]:
@@ -79,7 +80,16 @@ class SubjectReviewController(Controller):
                     raise BadRequestException("patch already reviewed")
 
                 if data.react == React.Reject:
-                    return await self.__reject_patch(patch, conn, request.auth, data.reject_reason)
+                    return await self.__reject_patch(patch, conn, request.auth, data.text)
+
+                if data.react == React.Comment:
+                    return await add_comment(
+                        conn,
+                        patch_id,
+                        data.text,
+                        request.auth.user_id,
+                        patch_type=PatchType.Subject,
+                    )
 
                 if data.react == React.Accept:
                     return await self.__accept_patch(patch, conn, request)
@@ -237,7 +247,7 @@ class EpisodeReviewController(Controller):
 
                 if data.react == React.Reject:
                     return await self.__reject_episode_patch(
-                        patch_id, conn, request.auth, data.reject_reason
+                        patch_id, conn, request.auth, data.text
                     )
 
                 if data.react == React.Accept:
@@ -320,58 +330,28 @@ class EpisodeReviewController(Controller):
         return Redirect("/?type=episode")
 
 
-@dataclass(slots=True, frozen=True)
-class CommentOnPatch:
-    text: str = ""
+async def add_comment(
+    conn: PoolConnectionProxy[Record],
+    patch_id: UUID,
+    text: str,
+    from_user_id: int,
+    patch_type: PatchType,
+) -> Response[Any]:
+    if not text:
+        raise BadRequestException("请填写修改建议")
 
+    check_invalid_input_str(text)
 
-@router
-class CommentReviewController(Controller):
-    @litestar.post(
-        "/api/add-suggestion/{patch_id:uuid}",
-        guards=[require_user_editor],
-        status_code=200,
+    await conn.execute(
+        """
+    insert into edit_suggestion (id, patch_id, patch_type, text, from_user)
+    values ($1, $2, $3, $4, $5)
+        """,
+        uuid7(),
+        patch_id,
+        patch_type,
+        text,
+        from_user_id,
     )
-    async def handler(
-        self,
-        request: AuthorizedRequest,
-        patch_id: UUID,
-        data: Annotated[CommentOnPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
-        patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
-    ) -> Response[Any]:
-        if not data.text:
-            raise BadRequestException("请填写修改建议")
 
-        check_invalid_input_str(data.text)
-
-        if patch_type == PatchType.Subject:
-            p = await pg.fetchval(
-                "select id from view_subject_patch where id = $1 AND state = $2",
-                patch_id,
-                PatchState.Pending,
-            )
-        elif patch_type == PatchType.Episode:
-            p = await pg.fetchval(
-                "select id from view_episode_patch where id = $1 AND state = $2",
-                patch_id,
-                PatchState.Pending,
-            )
-        else:
-            raise NotImplementedError()
-
-        if not p:
-            raise NotFoundException("patch not found")
-
-        await pg.execute(
-            """
-        insert into edit_suggestion (id, patch_id, patch_type, text, from_user)
-        values ($1, $2, $3, $4, $5)
-            """,
-            uuid7(),
-            patch_id,
-            patch_type,
-            data.text,
-            request.auth.user_id,
-        )
-
-        return Redirect(f"/{patch_type}/{patch_id}")
+    return Redirect(f"/{patch_type}/{patch_id}")
