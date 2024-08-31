@@ -3,7 +3,6 @@ import asyncio
 from bgm_tv_wiki import WikiSyntaxError, parse
 from litestar import Litestar
 from loguru import logger
-from typing_extensions import Never
 from uuid_utils import uuid7
 
 from server.base import pg, subject_infobox_queue
@@ -11,7 +10,7 @@ from server.model import PatchType
 
 
 async def on_app_start_queue(app: Litestar) -> None:
-    async def queue_handler() -> Never:
+    async def queue_handler() -> None:
         logger.info("start queue handler")
         while True:
             item = await subject_infobox_queue.get()
