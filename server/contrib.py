@@ -4,7 +4,6 @@ from typing import Annotated, Any
 from uuid import UUID
 
 import litestar
-from bgm_tv_wiki import WikiSyntaxError, parse
 from litestar import Response
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import (
@@ -23,13 +22,15 @@ from server.auth import require_user_login
 from server.base import (
     AuthorizedRequest,
     BadRequestException,
+    QueueItem,
     Request,
     http_client,
     patch_keys,
     pg,
     session_key_back_to,
+    subject_infobox_queue,
 )
-from server.model import PatchState, PatchType, SubjectPatch
+from server.model import PatchState, SubjectPatch
 from server.router import Router
 from server.strings import check_invalid_input_str, contains_invalid_input_str
 
@@ -146,26 +147,7 @@ async def suggest_api(
     )
 
     if "infobox" in changed:
-        try:
-            parse(changed["infobox"])
-        except WikiSyntaxError as e:
-            msg = e.message
-            if e.lino:
-                msg = msg + f": line {e.lino}"
-            if e.lino:
-                msg = msg + f'. "{e.line}"'
-
-            await pg.execute(
-                """
-                insert into edit_suggestion (id, patch_id, patch_type, text, from_user)
-                VALUES ($1, $2, $3, $4, $5)
-            """,
-                uuid7(),
-                pk,
-                PatchType.Subject,
-                "infobox 包含语法错误，请检查\n" + msg,
-                287622,
-            )
+        await subject_infobox_queue.put(QueueItem(infobox=changed["infobox"], patch_id=pk))
 
     return Redirect(f"/subject/{pk}")
 
@@ -396,8 +378,8 @@ async def creat_episode_patch(
 
         reason = "，".join(reasons)
 
-    for key in changed:
-        if c := contains_invalid_input_str(changed[key]):
+    for key, value in changed.items():
+        if c := contains_invalid_input_str(value):
             raise BadRequestException(f"{patch_keys[key]} 包含不可见字符 {c!r}")
 
     pk = uuid7()

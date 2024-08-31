@@ -38,6 +38,7 @@ from server.base import (
     redis_client,
 )
 from server.migration import run_migration
+from server.queue import on_app_start_queue
 from server.router import Router
 
 
@@ -180,7 +181,7 @@ app = litestar.Litestar(
         engine=JinjaTemplateEngine.from_environment(tmpl.engine),
     ),
     stores={"sessions": RedisStore(redis_client, handle_client_shutdown=False)},
-    on_startup=[pg_pool_startup, run_migration, startup_fetch_missing_users],
+    on_startup=[pg_pool_startup, run_migration, startup_fetch_missing_users, on_app_start_queue],
     csrf_config=CSRFConfig(secret=CSRF_SECRET_TOKEN, cookie_name="s-csrf-token"),
     before_request=before_req,
     middleware=[session_auth_config.middleware],

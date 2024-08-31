@@ -1,6 +1,8 @@
+import asyncio
 import time
 from dataclasses import dataclass
 from typing import Any
+from uuid import UUID
 
 import asyncpg
 import httpx
@@ -45,6 +47,14 @@ class User:
     def allow_bypass_captcha(self) -> bool:
         return self.user_id == 287622
 
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class QueueItem:
+    patch_id: UUID
+    infobox: str
+
+
+subject_infobox_queue = asyncio.Queue[QueueItem](maxsize=128)
 
 redis_client = Redis.from_url(REDIS_DSN)
 
