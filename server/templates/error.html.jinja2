@@ -5,12 +5,21 @@
   <div class="row">
     method: {{ method }}
   </div>
+
   <div class="row">
     url: {{ url }}
   </div>
+
   <div class="row">
     {{ error }}
   </div>
+
+  {% if extra %}
+    <div class="row">
+      {{ detail }}
+    </div>
+  {% endif %}
+
   {% if detail %}
     <div class="row">
       {{ detail }}

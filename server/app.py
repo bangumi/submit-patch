@@ -109,6 +109,7 @@ def plain_text_exception_handler(req: Request, exc: HTTPException) -> Template:
             "error": repr(exc),
             "method": req.method,
             "url": str(req.url),
+            "extra": exc.extra,
             "detail": exc.detail,
         },
     )
