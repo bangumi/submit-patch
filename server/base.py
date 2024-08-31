@@ -12,7 +12,6 @@ from litestar.exceptions import ClientException
 from litestar.status_codes import HTTP_400_BAD_REQUEST
 from loguru import logger
 from redis.asyncio import Redis
-from typing_extensions import Never
 
 from config import PG_DSN, REDIS_DSN
 
@@ -69,9 +68,9 @@ async def pg_pool_startup(*args: Any, **kwargs: Any) -> None:
     await pg
 
 
-Request = litestar.Request[Never, User | None, Any]
+Request = litestar.Request[None, User | None, Any]
 
-AuthorizedRequest = litestar.Request[Never, User, Any]
+AuthorizedRequest = litestar.Request[None, User, Any]
 
 
 class BadRequestException(ClientException):

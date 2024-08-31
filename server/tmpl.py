@@ -11,7 +11,6 @@ from jinja2 import pass_context, select_autoescape
 from jinja2.runtime import Context
 from litestar import Request
 from markupsafe import Markup
-from typing_extensions import Never
 
 from config import DEV, PROJECT_PATH, TURNSTILE_SITE_KEY, UTC
 
@@ -135,7 +134,7 @@ def to_user_local_time(ctx: Context, dt: datetime) -> str:
 @add_global_function
 @pass_context
 def replace_url_query(ctx: Context, **kwargs: Any) -> str:
-    req: Request[Never, Never, Never] = ctx["request"]
+    req: Request[None, None, Any] = ctx["request"]
     q = req.url.query_params.copy()
     for key, value in kwargs.items():
         q[key] = str(value)
