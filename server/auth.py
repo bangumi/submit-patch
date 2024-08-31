@@ -1,6 +1,6 @@
 import html
 import time
-from typing import Any
+from typing import Any, TypedDict
 from urllib.parse import urlencode
 
 import litestar
@@ -25,39 +25,41 @@ CALLBACK_URL = f"{SERVER_BASE_URL}/oauth_callback"
 router = Router()
 
 
+class SessionDict(TypedDict):
+    user_id: int
+    group_id: int
+    access_token: str
+    refresh_token: str
+    access_token_created_at: int
+    access_token_expires_in: int
+
+
 async def retrieve_user_from_session(
     session: dict[str, Any], _: ASGIConnection[Any, Any, Any, Any]
 ) -> User | None:
     try:
-        return __user_from_session(session)
+        return __user_from_session(session)  # type: ignore
     except KeyError:
         return None
 
 
-def __user_from_session(session: dict[str, Any]) -> User:
+def __user_from_session(session: SessionDict) -> User:
     return User(
         user_id=session["user_id"],
         group_id=session["group_id"],
-        access_token=session.get("access_token", ""),
-        refresh_token=session.get("refresh_token", ""),
-        access_token_created_at=session.get("access_token_created_at", 0),
-        access_token_expires_in=session.get("access_token_expires_in", 0),
+        access_token=session["access_token"],
+        refresh_token=session["refresh_token"],
+        access_token_created_at=session["access_token_created_at"],
+        access_token_expires_in=session["access_token_expires_in"],
     )
 
 
-async def refresh(refresh_token: str) -> dict[str, Any]:
-    res = await http_client.post(
-        "https://bgm.tv/oauth/access_token",
-        data={
-            "refresh_token": refresh_token,
-            "client_id": BGM_TV_APP_ID,
-            "grant_type": "refresh_token",
-            "client_secret": BGM_TV_APP_SECRET,
-        },
-    )
-    if res.status_code >= 300:
-        raise InternalServerException("api request error")
-    return res.json()
+class OAuthResponse(TypedDict):
+    user_id: int
+    expires_in: int
+    access_token: str
+    refresh_token: str
+    token_type: str
 
 
 class MyAuthenticationMiddleware(SessionAuthMiddleware):
@@ -110,7 +112,8 @@ async def callback(code: str, request: Request) -> Redirect:
     )
     if res.status_code >= 300:
         raise InternalServerException("api request error")
-    data = res.json()
+    data: OAuthResponse = res.json()
+    print(data)
     user_id = data["user_id"]
 
     access_token = data["access_token"]
@@ -139,14 +142,14 @@ async def callback(code: str, request: Request) -> Redirect:
     back_to = request.session.get(session_key_back_to, "/")
 
     request.set_session(
-        {
-            "user_id": user_id,
-            "group_id": group_id,
-            "access_token": access_token,
-            "refresh_token": data["refresh_token"],
-            "access_token_created_at": time.time(),
-            "access_token_expires_in": int(data["expires_in"]),
-        }
+        SessionDict(
+            user_id=user_id,
+            group_id=group_id,
+            access_token=access_token,
+            refresh_token=data["refresh_token"],
+            access_token_created_at=int(time.time()),
+            access_token_expires_in=int(data["expires_in"]),
+        )
     )
 
     return Redirect(back_to)
