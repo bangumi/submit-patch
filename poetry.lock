@@ -106,6 +106,20 @@ asyncpg = ">=0.29,<0.30"
 typing-extensions = ">=4.7.0,<5.0.0"
 
 [[package]]
+name = "bgm-tv-wiki"
+version = "0.0.0"
+description = "bgm.tv wiki syntax parser"
+optional = false
+python-versions = "~=3.10"
+files = [
+    {file = "bgm_tv_wiki-0.0.0-py3-none-any.whl", hash = "sha256:7b5ea58ae81ff53218d441e5fba2effec2e92a13debf4c0b2036c91aed8bab87"},
+    {file = "bgm_tv_wiki-0.0.0.tar.gz", hash = "sha256:03b74747c3c8e7747d89b5cd30b5453b2daaf51c4ffacbbd4a909e8e5ca8751c"},
+]
+
+[package.extras]
+dev = ["coverage (==7.6.1)", "mypy (==1.11.1)", "pre-commit (==3.8.0)", "pytest (==8.3.2)", "pytest-github-actions-annotate-failures (==0.2.0)", "pyyaml (>=6,<7)", "types-PyYAML"]
+
+[[package]]
 name = "certifi"
 version = "2024.8.30"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -2027,4 +2041,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "b0a8deb04e3cb8f29fb668d0e59749369c9f5944f84d8c31d6562468d0e862c7"
+content-hash = "8672a729d23791bace9532f17cb6cc639b7351e276b3bdbde3b3243a7138003e"

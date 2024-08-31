@@ -4,6 +4,7 @@ from typing import Annotated, Any
 from uuid import UUID
 
 import litestar
+from bgm_tv_wiki import WikiSyntaxError, parse
 from litestar import Response
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import (
@@ -28,7 +29,7 @@ from server.base import (
     pg,
     session_key_back_to,
 )
-from server.model import PatchState, SubjectPatch
+from server.model import PatchState, PatchType, SubjectPatch
 from server.router import Router
 from server.strings import check_invalid_input_str, contains_invalid_input_str
 
@@ -143,6 +144,28 @@ async def suggest_api(
         original.get("summary"),
         original_wiki["typeID"],
     )
+
+    if "infobox" in changed:
+        try:
+            parse(changed["infobox"])
+        except WikiSyntaxError as e:
+            msg = e.message
+            if e.lino:
+                msg = msg + f": line {e.lino}"
+            if e.lino:
+                msg = msg + f'. "{e.line}"'
+
+            await pg.execute(
+                """
+                insert into edit_suggestion (id, patch_id, patch_type, text, from_user)
+                VALUES (%s, %s, %s, %s, %s)
+            """,
+                uuid7(),
+                pk,
+                PatchType.Subject,
+                "infobox 包含语法错误，请检查\n" + msg,
+                287622,
+            )
 
     return Redirect(f"/subject/{pk}")
 
