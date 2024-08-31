@@ -15,7 +15,7 @@ from litestar.exceptions import (
 )
 from litestar.params import Body
 from litestar.response import Redirect, Template
-from uuid_utils import uuid7
+from uuid_utils.compat import uuid7
 
 from config import TURNSTILE_SECRET_KEY, UTC
 from server.auth import require_user_login
@@ -96,7 +96,7 @@ async def suggest_api(
     if not data.reason:
         raise ValidationException("missing suggestion description")
 
-    check_invalid_input_str(data.name, data.infobox, data.summary, data.reason)
+    check_invalid_input_str(data.reason)
 
     if not request.auth.allow_bypass_captcha():
         await _validate_captcha(data.cf_turnstile_response)
@@ -123,6 +123,10 @@ async def suggest_api(
 
     if (not changed) and (nsfw is None):
         raise HTTPException("no changes found", status_code=400)
+
+    for key in ["name", "infobox", "summary"]:
+        if key in changed:
+            check_invalid_input_str(changed[key])
 
     pk = uuid7()
 

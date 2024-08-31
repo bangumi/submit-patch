@@ -159,7 +159,7 @@ def __repl_url(s: re.Match[str]) -> str:
 
 @add_filter
 def auto_url(s: str) -> Markup:
-    ss = []
+    ss: list[str] = []
 
     end = 0
     for m in __url_pattern.finditer(s):
