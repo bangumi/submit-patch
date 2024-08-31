@@ -10,7 +10,6 @@ import litestar
 import pydash
 from asyncpg import Record
 from asyncpg.pool import PoolConnectionProxy
-from dacite import from_dict
 from litestar import Controller, Response, params
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import InternalServerException, NotAuthorizedException, NotFoundException
@@ -74,7 +73,7 @@ class SubjectReviewController(Controller):
                 if not p:
                     raise NotFoundException()
 
-                patch = SubjectPatch(**p)
+                patch = SubjectPatch.from_dict(p)
 
                 if patch.state != PatchState.Pending:
                     raise BadRequestException("patch already reviewed")
@@ -242,7 +241,7 @@ class EpisodeReviewController(Controller):
                     )
 
                 if data.react == React.Accept:
-                    patch = from_dict(EpisodePatch, p)  # type: ignore
+                    patch = EpisodePatch.from_dict(p)
                     return await self.__accept_episode_patch(patch, conn, request.auth)
 
         raise NotAuthorizedException("暂不支持")

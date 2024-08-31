@@ -1,7 +1,10 @@
 import enum
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any, TypeVar
 from uuid import UUID
+
+from dacite import from_dict
 
 
 class PatchState(enum.IntEnum):
@@ -9,6 +12,9 @@ class PatchState(enum.IntEnum):
     Accept = 1
     Rejected = 2
     Outdated = 3
+
+
+T = TypeVar("T")
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
@@ -22,6 +28,11 @@ class PatchBase:
     updated_at: datetime
     deleted_at: datetime | None
     reject_reason: str
+
+    @classmethod
+    def from_dict(cls: type[T], d: Any) -> T:
+        # will remove extra fields and do field level instance checking
+        return from_dict(cls, d)
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)

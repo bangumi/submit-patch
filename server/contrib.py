@@ -171,7 +171,7 @@ async def delete_patch(patch_id: str, request: AuthorizedRequest) -> Redirect:
             if not p:
                 raise NotFoundException()
 
-            patch = SubjectPatch(**p)
+            patch = SubjectPatch.from_dict(p)
 
             if patch.from_user_id != request.auth.user_id:
                 raise NotAuthorizedException("you are not owner of this patch")

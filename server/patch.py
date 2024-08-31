@@ -7,7 +7,7 @@ from litestar.response import Redirect, Template
 from loguru import logger
 
 from server.base import Request, patch_keys, pg
-from server.model import PatchState, PatchType, SubjectPatch
+from server.model import EpisodePatch, PatchState, PatchType, SubjectPatch
 from server.router import Router
 from server.strings import escape_invisible
 
@@ -30,7 +30,7 @@ async def get_patch(patch_id: UUID, request: Request) -> Template:
     if not p:
         raise NotFoundException()
 
-    patch = SubjectPatch(**p)
+    patch = SubjectPatch.from_dict(p)
 
     name_patch = ""
     if patch.name is not None:
@@ -119,25 +119,22 @@ async def get_episode_patch(patch_id: UUID, request: Request) -> Template:
     if not p:
         raise NotFoundException()
 
+    patch = EpisodePatch.from_dict(p)
+
     diff = {}
 
     for key in patch_keys:
-        after = p[key]
+        after = getattr(patch, key)
         if after is None:
             continue
 
-        original = p["original_" + key]
+        original = getattr(patch, "original_" + key)
 
         if original != after:
             if key != "description":
                 diff[key] = "".join(
                     # need a tailing new line to generate correct diff
-                    difflib.unified_diff(
-                        [original + "\n"],
-                        [after + "\n"],
-                        key,
-                        key,
-                    )
+                    difflib.unified_diff([original + "\n"], [after + "\n"], key, key)
                 )
             else:
                 diff[key] = "".join(
@@ -151,18 +148,18 @@ async def get_episode_patch(patch_id: UUID, request: Request) -> Template:
                 )
 
     reviewer = None
-    if p["state"] != PatchState.Pending:
+    if patch.state != PatchState.Pending:
         reviewer = await pg.fetchrow(
-            "select * from patch_users where user_id=$1", p["wiki_user_id"]
+            "select * from patch_users where user_id=$1", patch.wiki_user_id
         )
 
-    submitter = await pg.fetchrow("select * from patch_users where user_id=$1", p["from_user_id"])
+    submitter = await pg.fetchrow("select * from patch_users where user_id=$1", patch.from_user_id)
 
     return Template(
         "episode/patch.html.jinja2",
         context={
-            "patch": p,
-            "reason": p["reason"],
+            "patch": patch,
+            "reason": patch.reason,
             "auth": request.auth,
             "keys": patch_keys,
             "diff": diff,
