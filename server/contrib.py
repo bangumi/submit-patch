@@ -158,7 +158,7 @@ async def suggest_api(
             await pg.execute(
                 """
                 insert into edit_suggestion (id, patch_id, patch_type, text, from_user)
-                VALUES (%s, %s, %s, %s, %s)
+                VALUES ($1, $2, $3, $4, %5)
             """,
                 uuid7(),
                 pk,
