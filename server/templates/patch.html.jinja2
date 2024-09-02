@@ -26,6 +26,9 @@
           }
       }
   </style>
+  <script>
+    const isMobile = (window.innerWidth <= 800);
+  </script>
 {% endblock %}
 
 {% block content %}
@@ -218,7 +221,7 @@
           fileContentToggle: false,
           matching: 'lines',
           maxLineSizeInBlockForComparison: 80,
-          outputFormat: 'side-by-side',
+          outputFormat: isMobile ? 'line-by-line' : 'side-by-side',
           synchronisedScroll: true,
           renderNothingWhenEmpty: false,
         };
@@ -240,7 +243,7 @@
           maxLineSizeInBlockForComparison: 80,
           fileContentToggle: false,
           matching: 'words',
-          outputFormat: 'side-by-side',
+          outputFormat: isMobile ? 'line-by-line' : 'side-by-side',
           synchronisedScroll: true,
           renderNothingWhenEmpty: false,
         };
