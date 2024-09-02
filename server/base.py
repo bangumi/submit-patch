@@ -60,7 +60,7 @@ redis_client = Redis.from_url(REDIS_DSN)
 http_client = httpx.AsyncClient(
     follow_redirects=False, headers={"user-agent": "trim21/submit-patch"}
 )
-pg = asyncpg.create_pool(dsn=PG_DSN)
+pg = asyncpg.create_pool(dsn=PG_DSN, server_settings={"application_name": "patch"})
 
 
 async def pg_pool_startup(*args: Any, **kwargs: Any) -> None:
