@@ -176,6 +176,9 @@ async def delete_patch(patch_id: str, request: AuthorizedRequest) -> Redirect:
             if patch.from_user_id != request.auth.user_id:
                 raise NotAuthorizedException("you are not owner of this patch")
 
+            if patch.state != PatchState.Pending:
+                raise NotAuthorizedException("patch 已经被审核")
+
             await conn.execute(
                 "update subject_patch set deleted_at = $1 where id = $2",
                 datetime.now(tz=UTC),
