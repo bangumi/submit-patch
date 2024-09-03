@@ -39,6 +39,18 @@ async def on_app_start_queue(app: Litestar) -> None:
                         "infobox 包含语法错误，请检查\n" + msg,
                         287622,
                     )
+                    await pg.execute(
+                        """
+                    update subject_patch
+                        set comments_count = (
+                            select count(1)
+                            from edit_suggestion
+                            where patch_type = 'subject' and patch_id = $1
+                        )
+                    where id = $1
+                    """,
+                        item.patch_id,
+                    )
 
     # keep a ref so task won't be GC-ed.
     app.state["background_queue_handler"] = asyncio.create_task(queue_handler())
