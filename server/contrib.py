@@ -211,7 +211,7 @@ async def _(request: AuthorizedRequest, patch_id: UUID) -> Response[Any]:
     return Template(
         "suggest.html.jinja2",
         context={
-            "data": {key: value for key, value in p.items() if value is not None} | wiki,
+            "data": wiki | {key: value for key, value in p.items() if value is not None},
             "patch_id": patch_id,
         },
     )
