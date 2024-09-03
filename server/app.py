@@ -171,7 +171,7 @@ async def startup_fetch_missing_users() -> None:
 
 
 async def refresh_db(application: litestar.Litestar) -> None:
-    async def refresh():
+    async def refresh() -> None:
         last_patch_id = uuid.UUID(int=0)
         while True:
             rows = await pg.fetch(
