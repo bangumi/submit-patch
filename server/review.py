@@ -354,4 +354,18 @@ async def add_comment(
         from_user_id,
     )
 
+    await conn.execute(
+        f"""
+        update {patch_type}_patch
+            set comments_count = (
+                select count(1)
+                from edit_suggestion
+                where patch_type = $1 and patch_id = $2
+            )
+        where id = $2
+        """,
+        patch_type,
+        patch_id,
+    )
+
     return Redirect(f"/{patch_type}/{patch_id}")

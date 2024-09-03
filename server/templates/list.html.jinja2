@@ -93,25 +93,23 @@
         >
           <div class="d-flex w-100 justify-content-between">
             <div>
-              {% if patch.state == 0 %}
-                <h5 class="mb-1">
+              <h5 class="mb-1">
+                {% if patch.state == 0 %}
                   <span class="badge bg-primary">待审核</span>
-                </h5>
-              {% elif patch.state == 1 %}
-                <!-- accept -->
-                <h5 class="mb-1">
+                {% elif patch.state == 1 %}
+                  <!-- accept -->
                   <span class="badge bg-success">Accept</span>
-                </h5>
-              {% elif patch.state == 2 %}
-                <!-- rejected -->
-                <h5 class="mb-1">
+                {% elif patch.state == 2 %}
+                  <!-- rejected -->
                   <span class="badge bg-danger">Rejected</span>
-                </h5>
-              {% elif patch.state == 3 %}
-                <h5 class="mb-1">
+                {% elif patch.state == 3 %}
                   <span class="badge bg-secondary">Outdated</span>
-                </h5>
-              {% endif %}
+                {% endif %}
+
+                {% if patch.comments_count %}
+                  <span class="badge bg-warning text-dark">{{ patch.comments_count }} comments</span>
+                {% endif %}
+              </h5>
             </div>
 
             {% if user_id is defined %}

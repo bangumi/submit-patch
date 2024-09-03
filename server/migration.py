@@ -20,18 +20,20 @@ async def run_migration() -> None:
 
     key_migration_version = "version"
 
-    fresh_view_sql = sql_dir.joinpath("004-deleted-view.sql").read_text(encoding="utf-8")
+    refresh_view_sql = sql_dir.joinpath("004-deleted-view.sql").read_text(encoding="utf-8")
 
     migrations: list[Migrate] = [
         Migrate(1, sql_dir.joinpath("001-init.sql").read_text(encoding="utf8")),
-        Migrate(4, fresh_view_sql),
+        Migrate(4, refresh_view_sql),
         Migrate(5, sql_dir.joinpath("005-edit-suggestion.sql").read_text(encoding="utf-8")),
         Migrate(
             6,
             "alter table episode_patch add column subject_id int not null default 0;",
         ),
-        Migrate(7, fresh_view_sql),
+        Migrate(7, refresh_view_sql),
         Migrate(8, sql_dir.joinpath("008-create-index.sql").read_bytes().decode()),
+        Migrate(9, sql_dir.joinpath("009-show-suggestion-count.sql").read_bytes().decode()),
+        Migrate(10, refresh_view_sql),
     ]
 
     if not all(x <= y for x, y in itertools.pairwise(migrations)):
