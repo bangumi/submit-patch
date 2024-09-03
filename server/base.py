@@ -13,7 +13,7 @@ from litestar.status_codes import HTTP_400_BAD_REQUEST
 from loguru import logger
 from redis.asyncio import Redis
 
-from config import PG_DSN, REDIS_DSN
+from server.config import PG_DSN, REDIS_DSN
 
 
 session_key_back_to = "backTo"

@@ -12,7 +12,7 @@ from jinja2.runtime import Context
 from litestar import Request
 from markupsafe import Markup
 
-from config import DEV, PROJECT_PATH, TURNSTILE_SITE_KEY, UTC
+from server.config import DEV, PROJECT_PATH, TURNSTILE_SITE_KEY, UTC
 
 
 engine = jinja2.Environment(

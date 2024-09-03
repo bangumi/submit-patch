@@ -3,13 +3,12 @@ from __future__ import annotations
 import enum
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any
 from uuid import UUID
 
 import litestar
 import pydash
 from asyncpg import Record
-from asyncpg.pool import PoolConnectionProxy
 from litestar import Controller, Response
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import InternalServerException, NotAuthorizedException, NotFoundException
@@ -18,7 +17,6 @@ from litestar.response import Redirect
 from loguru import logger
 from uuid_utils import uuid7
 
-from config import UTC
 from server.auth import require_user_editor
 from server.base import (
     AuthorizedRequest,
@@ -28,10 +26,14 @@ from server.base import (
     pg,
     session_key_back_to,
 )
+from server.config import UTC
 from server.model import EpisodePatch, PatchState, PatchType, SubjectPatch
 from server.router import Router
 from server.strings import check_invalid_input_str
 
+
+if TYPE_CHECKING:
+    from asyncpg.pool import PoolConnectionProxy
 
 router = Router()
 

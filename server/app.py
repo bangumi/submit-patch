@@ -24,12 +24,6 @@ from litestar.stores.redis import RedisStore
 from litestar.template import TemplateConfig
 from loguru import logger
 
-from config import (
-    CSRF_SECRET_TOKEN,
-    DEV,
-    PROJECT_PATH,
-    UTC,
-)
 from server import auth, badge, contrib, index, patch, review, tmpl
 from server.auth import session_auth_config
 from server.base import (
@@ -38,6 +32,12 @@ from server.base import (
     pg,
     pg_pool_startup,
     redis_client,
+)
+from server.config import (
+    CSRF_SECRET_TOKEN,
+    DEV,
+    PROJECT_PATH,
+    UTC,
 )
 from server.migration import run_migration
 from server.queue import on_app_start_queue

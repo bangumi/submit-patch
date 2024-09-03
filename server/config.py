@@ -1,19 +1,19 @@
 import os
 import sys
-from datetime import timezone
 from pathlib import Path
+
+from dateutil import tz
 
 
 DEV = sys.platform == "win32"
 
-UTC = timezone.utc
+UTC = tz.UTC
 
-PROJECT_PATH = Path(__file__, "..").resolve()
-
-
-CSRF_SECRET_TOKEN = os.environ["CSRF_SECRET_TOKEN"]
+PROJECT_PATH = Path(__file__, "../..").resolve()
 
 SERVER_BASE_URL = os.environ["SERVER_BASE_URL"]
+
+CSRF_SECRET_TOKEN = os.environ["CSRF_SECRET_TOKEN"]
 
 BGM_TV_APP_ID = os.environ["BGM_TV_APP_ID"]
 BGM_TV_APP_SECRET = os.environ["BGM_TV_APP_SECRET"]
