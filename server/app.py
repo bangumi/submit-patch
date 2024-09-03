@@ -1,7 +1,9 @@
+import asyncio
 import html
 import mimetypes
 import os
 import re
+import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, NamedTuple
@@ -168,6 +170,34 @@ async def startup_fetch_missing_users() -> None:
         )
 
 
+async def refresh_db(application: litestar.Litestar) -> None:
+    async def refresh():
+        last_patch_id = uuid.UUID(int=0)
+        while True:
+            rows = await pg.fetch(
+                "select id from subject_patch where id > $1 order by id limit 2", last_patch_id
+            )
+            if not rows:
+                break
+            for (patch_id,) in rows:
+                last_patch_id = patch_id
+                await pg.execute(
+                    """
+                update subject_patch
+                    set comments_count = (
+                        select count(1)
+                        from edit_suggestion
+                        where patch_type = 'subject' and patch_id = $1
+                    )
+                where id = $1
+                """,
+                    patch_id,
+                )
+
+    # keep a ref so task won't be GC-ed.
+    application.state["background_refresh-db"] = asyncio.create_task(refresh())
+
+
 app = litestar.Litestar(
     [
         *index.router,
@@ -182,7 +212,13 @@ app = litestar.Litestar(
         engine=JinjaTemplateEngine.from_environment(tmpl.engine),
     ),
     stores={"sessions": RedisStore(redis_client, handle_client_shutdown=False)},
-    on_startup=[pg_pool_startup, run_migration, startup_fetch_missing_users, on_app_start_queue],
+    on_startup=[
+        pg_pool_startup,
+        run_migration,
+        startup_fetch_missing_users,
+        on_app_start_queue,
+        refresh_db,
+    ],
     csrf_config=CSRFConfig(secret=CSRF_SECRET_TOKEN, cookie_name="s-csrf-token"),
     before_request=before_req,
     middleware=[session_auth_config.middleware],
