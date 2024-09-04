@@ -281,3 +281,26 @@ async def show_user_review(
             "patch_type": patch_type,
         },
     )
+
+
+@router
+@litestar.get("/api/count")
+async def count_handler(
+    patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
+    patch_state_filter: Annotated[
+        StateFilter, params.Parameter(query="state")
+    ] = StateFilter.Pending,
+    subject_id: int | None = None,
+) -> dict[str, Any]:
+    table = f"view_{patch_type}_patch"
+
+    where, arg = patch_state_filter.to_sql(index=1)
+    args = [arg]
+
+    if subject_id is not None:
+        where += " AND subject_id = $2"
+        args.append(subject_id)
+
+    total: int = await pg.fetchval(f"select count(1) from {table} where {where}", *args)
+
+    return {"count": total}
