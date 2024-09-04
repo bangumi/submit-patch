@@ -4,6 +4,7 @@ import litestar
 from litestar import Response
 
 from server.base import (
+    disable_cookies_opt,
     http_client,
     pg,
     redis_client,
@@ -16,14 +17,12 @@ router = Router()
 
 __cache_headers = {"Cache-Control": "public, max-age=5"}
 
-__disable_cookies_opt = {"skip_session": True, "exclude_from_auth": True, "exclude_from_csrf": True}
-
 
 @router
 @litestar.get(
     "/badge/subject/{subject_id:int}",
     response_headers=__cache_headers,
-    opt=__disable_cookies_opt,
+    opt=disable_cookies_opt,
 )
 async def badge_handle_subject(subject_id: int) -> Response[bytes]:
     count = sum(
@@ -49,7 +48,7 @@ async def badge_handle_subject(subject_id: int) -> Response[bytes]:
 @litestar.get(
     "/badge/episode/{episode_id:int}",
     response_headers=__cache_headers,
-    opt=__disable_cookies_opt,
+    opt=disable_cookies_opt,
 )
 async def badge_handle_episode(episode_id: int) -> Response[bytes]:
     count = await pg.fetchval(
@@ -63,7 +62,7 @@ async def badge_handle_episode(episode_id: int) -> Response[bytes]:
 
 
 @router
-@litestar.get("/badge.svg", response_headers=__cache_headers, opt=__disable_cookies_opt)
+@litestar.get("/badge.svg", response_headers=__cache_headers, opt=disable_cookies_opt)
 async def badge_handle() -> Response[bytes]:
     key = "patch:rest:pending"
     pending = await redis_client.get(key)
@@ -95,7 +94,7 @@ async def __get_badge(count: int) -> bytes:
     key = "badge:count"
 
     if count >= 100:
-        val_key = f"{key}:{count//100*100}"
+        val_key = f"{key}:{count // 100 * 100}"
     else:
         val_key = f"{key}:{count}"
 

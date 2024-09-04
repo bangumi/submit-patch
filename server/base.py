@@ -88,3 +88,4 @@ patch_keys: frozendict[str, str] = frozendict(
         "description": "简介",
     }
 )
+disable_cookies_opt = {"skip_session": True, "exclude_from_auth": True, "exclude_from_csrf": True}

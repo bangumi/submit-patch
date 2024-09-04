@@ -7,7 +7,7 @@ from litestar.exceptions import NotFoundException
 from litestar.response import Redirect, Template
 
 from server.auth import require_user_login
-from server.base import BadRequestException, Request, pg
+from server.base import BadRequestException, Request, disable_cookies_opt, pg
 from server.db import fetch_users
 from server.model import PatchState, PatchType
 from server.router import Router
@@ -284,7 +284,7 @@ async def show_user_review(
 
 
 @router
-@litestar.get("/api/count")
+@litestar.get("/api/count", opt=disable_cookies_opt)
 async def count_handler(
     patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
     patch_state_filter: Annotated[
