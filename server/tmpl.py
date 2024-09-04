@@ -146,7 +146,7 @@ def replace_url_query(ctx: Context, **kwargs: Any) -> str:
 __url_pattern = re.compile(
     r"(https?://"  # http:// or https://
     r"[^/]+"  # netloc
-    r"(?:/[^（），。() \s]+)?)",  # path#hash
+    r"(?:/[^（），。() \r\n\s]*)?)",  # path#hash
     re.IGNORECASE,
 )
 
