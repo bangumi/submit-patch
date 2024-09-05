@@ -313,6 +313,11 @@ class EpisodeReviewController(Controller):
         )
         if res.status_code >= 300:
             data = res.json()
+            err_code = data.get("code")
+            if err_code == "TOKEN_INVALID":
+                request.set_session({session_key_back_to: f"/episode/{patch.id}"})
+                return Redirect("/login")
+
             logger.error("failed to apply patch {!r}", data)
             raise InternalServerException()
 
