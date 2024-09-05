@@ -20,25 +20,25 @@ async def run_migration() -> None:
 
     key_migration_version = "version"
 
-    refresh_view_sql = sql_dir.joinpath("004-deleted-view.sql").read_text(encoding="utf-8")
-
     def load_sql(fn: str) -> str:
-        return sql_dir.joinpath("001-init.sql").read_text(encoding="utf8")
+        return sql_dir.joinpath(fn).read_text(encoding="utf8")
+
+    drop_view_sql = load_sql("000-drop-view.sql")
+    create_or_update_view_sql = load_sql("004-deleted-view.sql")
 
     migrations: list[Migrate] = [
         Migrate(1, load_sql("001-init.sql")),
-        Migrate(4, refresh_view_sql),
+        Migrate(4, create_or_update_view_sql),
         Migrate(5, load_sql("005-edit-suggestion.sql")),
         Migrate(
             6,
             "alter table episode_patch add column subject_id int not null default 0;",
         ),
-        Migrate(7, refresh_view_sql),
+        Migrate(7, create_or_update_view_sql),
         Migrate(8, load_sql("008-create-index.sql")),
         Migrate(9, load_sql("009-show-suggestion-count.sql")),
-        Migrate(10, refresh_view_sql),
-        Migrate(11, load_sql("010-extra-description.sql")),
-        Migrate(12, refresh_view_sql),
+        Migrate(10, create_or_update_view_sql),
+        Migrate(11, load_sql("011-extra-description.sql")),
     ]
 
     if not all(x <= y for x, y in itertools.pairwise(migrations)):
@@ -72,7 +72,9 @@ async def run_migration() -> None:
     for migrate in migrations:
         if migrate.version <= current_version:
             continue
+        await pg.execute(drop_view_sql)
         await pg.execute(migrate.sql)
+        await pg.execute(create_or_update_view_sql)
         await pg.execute(
             "update patch_db_migration set value = $1 where key = $2",
             str(migrate.version),
