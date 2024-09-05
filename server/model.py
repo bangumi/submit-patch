@@ -28,6 +28,7 @@ class PatchBase:
     updated_at: datetime
     deleted_at: datetime | None
     reject_reason: str
+    patch_desc: str  # extra description from user will not be included in commit message
 
     @classmethod
     def from_dict(cls: type[T], d: Any) -> T:

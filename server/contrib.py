@@ -76,6 +76,7 @@ class CreateSubjectPatch:
     infobox: str
     summary: str
     reason: str
+    patch_desc: str
     cf_turnstile_response: str
     # HTML form will only include checkbox when it's checked,
     # so any input is true, default value is false.
@@ -96,7 +97,7 @@ async def suggest_api(
     if not data.reason:
         raise ValidationException("missing suggestion description")
 
-    check_invalid_input_str(data.reason)
+    check_invalid_input_str(data.reason, data.patch_desc)
 
     if not request.auth.allow_bypass_captcha():
         await _validate_captcha(data.cf_turnstile_response)
@@ -133,8 +134,8 @@ async def suggest_api(
     await pg.execute(
         """
         insert into subject_patch (id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
-                           original_name, original_infobox, original_summary, subject_type)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                           original_name, original_infobox, original_summary, subject_type, patch_desc)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12. $13)
     """,
         pk,
         subject_id,
@@ -148,6 +149,7 @@ async def suggest_api(
         original.get("infobox"),
         original.get("summary"),
         original_wiki["typeID"],
+        data.patch_desc,
     )
 
     if "infobox" in changed:

@@ -100,6 +100,18 @@
     </blockquote>
   </div>
 
+  {% if patch.patch_desc %}
+    <div class="row mb-2">
+      <h2>说明</h2>
+      <blockquote class="blockquote" style="background-color: #f7f7f9">
+        <p class="mb-0"
+           style="overflow: visible; overflow-wrap: anywhere; white-space: pre-wrap">
+          {{- patch.patch_desc | auto_url -}}
+        </p>
+      </blockquote>
+    </div>
+  {% endif %}
+
   <h2>具体变动</h2>
 
   {% if name_patch %}
