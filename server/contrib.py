@@ -135,7 +135,7 @@ async def suggest_api(
         """
         insert into subject_patch (id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
                            original_name, original_infobox, original_summary, subject_type, patch_desc)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12. $13)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
     """,
         pk,
         subject_id,
