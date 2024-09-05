@@ -34,10 +34,13 @@ class User:
         if not self.access_token:
             return False
 
-        if self.access_token_created_at + self.access_token_expires_in <= time.time() + 120:
+        if not self.access_token_created_at:
             return False
 
-        return True
+        if not self.access_token_expires_in:
+            return False
+
+        return self.access_token_created_at + self.access_token_expires_in > time.time() + 120
 
     @property
     def allow_edit(self) -> bool:
