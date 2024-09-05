@@ -98,14 +98,6 @@ def login() -> Redirect:
 
 
 @router
-@litestar.get("/debug")
-async def debug_handler(request: Request) -> dict[str, Any]:
-    if not request.session:
-        return {}
-    return request.session
-
-
-@router
 @litestar.get("/oauth_callback")
 async def callback(code: str, request: Request) -> Redirect:
     res = await http_client.post(

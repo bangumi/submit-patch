@@ -194,6 +194,10 @@ class SubjectReviewController(Controller):
                 )
                 return Redirect(f"/subject/{patch.id}")
 
+            if err_code == "TOKEN_INVALID":
+                request.set_session({session_key_back_to: f"/subject/{patch.id}"})
+                return Redirect("/login")
+
             logger.error("failed to apply patch {!r}", data)
             raise InternalServerException()
 
