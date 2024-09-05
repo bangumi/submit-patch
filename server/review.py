@@ -120,7 +120,7 @@ class SubjectReviewController(Controller):
             reason,
             patch.id,
         )
-        return Redirect("/?type=subject")
+        return Redirect(f"/subject/{patch.id}")
 
     async def __accept_patch(
         self,
@@ -174,7 +174,7 @@ class SubjectReviewController(Controller):
                     datetime.now(tz=UTC),
                     patch.id,
                 )
-                return Redirect("/")
+                return Redirect(f"/subject/{patch.id}")
 
             if err_code == "INVALID_SYNTAX_ERROR":
                 await conn.execute(
@@ -276,7 +276,7 @@ class EpisodeReviewController(Controller):
             reason,
             patch_id,
         )
-        return Redirect("/?type=episode")
+        return Redirect(f"/episode/{patch_id}")
 
     async def __accept_episode_patch(
         self,
