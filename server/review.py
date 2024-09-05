@@ -129,7 +129,7 @@ class SubjectReviewController(Controller):
         request: AuthorizedRequest,
     ) -> Redirect:
         if not request.auth.is_access_token_fresh():
-            request.set_session({session_key_back_to: request.url.path})
+            request.set_session({session_key_back_to: f"/subject/{patch.id}"})
             return Redirect("/login")
 
         subject = _strip_none(
@@ -254,7 +254,7 @@ class EpisodeReviewController(Controller):
 
                 if data.react == React.Accept:
                     patch = EpisodePatch.from_dict(p)
-                    return await self.__accept_episode_patch(patch, conn, request.auth)
+                    return await self.__accept_episode_patch(patch, conn, request, request.auth)
 
         raise NotAuthorizedException("暂不支持")
 
@@ -279,9 +279,14 @@ class EpisodeReviewController(Controller):
         return Redirect("/?type=episode")
 
     async def __accept_episode_patch(
-        self, patch: EpisodePatch, conn: PoolConnectionProxy[Record], auth: User
+        self,
+        patch: EpisodePatch,
+        conn: PoolConnectionProxy[Record],
+        request: AuthorizedRequest,
+        auth: User,
     ) -> Redirect:
         if not auth.is_access_token_fresh():
+            request.set_session({session_key_back_to: f"/episode/{patch.id}"})
             return Redirect("/login")
 
         episode = _strip_none(
