@@ -23,46 +23,45 @@
 {% block content %}
   {% include 'component/header.html.jinja2' %}
 
-  <div class="row pt-2 pb-2 d-flex flex-row">
-    <nav class="col" style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
-      <nav aria-label="...">
-        <ul class="pagination">
-          <li class="page-item">
-            <a class="page-link {% if patch_type == 'subject' %}active{% endif %}"
-               href="{{ replace_url_query(type='subject') }}">
-              条目
-              {% if pending_subject %}
-                <span class="badge rounded-pill bg-danger">{{ pending_subject }}</span>
-              {% endif %}
+  <div class="row pt-2 pb-2 d-flex justify-content-between">
+    <div class="col">
+      <div class="btn-group" role="group">
+        <button type="button"
+                class="btn {% if patch_type == 'subject' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+          <a class="page-link"
+             href="{{ replace_url_query(type='subject') }}">
+            条目
+            {% if pending_subject %}
+              <span class="badge rounded-pill bg-danger">{{ pending_subject }}</span>
+            {% endif %}
+          </a>
+        </button>
+        <button type="button"
+                class="btn {% if patch_type == 'episode' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+          <a class="page-link"
+             href="{{ replace_url_query(type='episode') }}">
+            章节
+            {% if pending_episode %}
+              <span class="badge rounded-pill bg-danger">{{ pending_episode }}</span>
+            {% endif %}
+          </a>
+        </button>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="btn-group" role="group">
+        {% for state, cn in patch_state_filter %}
+          <button type="button"
+                  class="btn {% if current_state == state %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            <a class="page-link"
+               href="{{ replace_url_query(state=state) }}">
+              {{ cn }}
             </a>
-          </li>
-          <li class="page-item">
-            <a class="page-link {% if patch_type == 'episode' %}active{% endif %}"
-               href="{{ replace_url_query(type='episode') }}">
-              章节
-              {% if pending_episode %}
-                <span class="badge rounded-pill bg-danger">{{ pending_episode }}</span>
-              {% endif %}
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </nav>
-    <nav class="col" style="--bs-breadcrumb-divider: '';"
-         aria-label="breadcrumb">
-      <nav aria-label="...">
-        <ul class="pagination">
-          {% for state, cn in patch_state_filter %}
-            <li class="page-item">
-              <a class="page-link {% if current_state == state %}active{% endif %}"
-                 href="{{ replace_url_query(state=state) }}">
-                {{ cn }}
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-      </nav>
-    </nav>
+          </button>
+        {% endfor %}
+      </div>
+    </div>
   </div>
 
   {% if user_id is defined %}
