@@ -91,8 +91,8 @@
           rel="noopener"
           class="list-group-item list-group-item-action flex-column align-items-start"
         >
-          <div class="d-flex w-100 justify-content-between mb-2">
-            <h5 class="oneline-hide-overflow m-0 p-0">
+          <div class="d-flex w-100 justify-content-between mb-3">
+            <h4 class="oneline-hide-overflow m-0 p-0">
               {% if patch.state == 0 %}
                 <span class="badge bg-primary">待审核</span>
               {% elif patch.state == 1 %}
@@ -108,7 +108,7 @@
                 <span class="badge bg-warning text-dark">{{ patch.comments_count }} comments</span>
               {% endif %}
               修改原因：{{ patch.reason }}
-            </h5>
+            </h4>
             <div>
               {% if user_id is defined %}
                 <small style="text-wrap: nowrap;"
