@@ -26,39 +26,33 @@
   <div class="row pt-2 pb-2 d-flex justify-content-between">
     <div class="col">
       <div class="btn-group" role="group">
-        <button type="button"
-                class="btn {% if patch_type == 'subject' %}btn-primary{% else %}btn-outline-primary{% endif %}">
-          <a class="page-link"
-             href="{{ replace_url_query(type='subject') }}">
-            条目
-            {% if pending_subject %}
-              <span class="badge rounded-pill bg-danger">{{ pending_subject }}</span>
-            {% endif %}
-          </a>
-        </button>
-        <button type="button"
-                class="btn {% if patch_type == 'episode' %}btn-primary{% else %}btn-outline-primary{% endif %}">
-          <a class="page-link"
-             href="{{ replace_url_query(type='episode') }}">
-            章节
-            {% if pending_episode %}
-              <span class="badge rounded-pill bg-danger">{{ pending_episode }}</span>
-            {% endif %}
-          </a>
-        </button>
+        <a type="button"
+           class="btn {% if patch_type == 'subject' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+           href="{{ replace_url_query(type='subject') }}">
+          条目
+          {% if pending_subject %}
+            <span class="badge rounded-pill bg-danger">{{ pending_subject }}</span>
+          {% endif %}
+        </a>
+        <a type="button"
+           class="btn {% if patch_type == 'episode' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+           href="{{ replace_url_query(type='episode') }}">
+          章节
+          {% if pending_episode %}
+            <span class="badge rounded-pill bg-danger">{{ pending_episode }}</span>
+          {% endif %}
+        </a>
       </div>
     </div>
 
     <div class="col">
       <div class="btn-group" role="group">
         {% for state, cn in patch_state_filter %}
-          <button type="button"
-                  class="btn {% if current_state == state %}btn-primary{% else %}btn-outline-primary{% endif %}">
-            <a class="page-link"
-               href="{{ replace_url_query(state=state) }}">
-              {{ cn }}
-            </a>
-          </button>
+          <a type="button"
+             href="{{ replace_url_query(state=state) }}"
+             class="btn {% if current_state == state %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            {{ cn }}
+          </a>
         {% endfor %}
       </div>
     </div>
