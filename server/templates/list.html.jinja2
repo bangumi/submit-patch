@@ -3,9 +3,13 @@
 {% block head %}
   <style>
       .oneline-hide-overflow {
+          white-space: nowrap;
+          order: 1;
+          flex: 0 1 auto;
           text-wrap: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          min-width: 0;
       }
 
       @media screen and (min-device-width: 480px) {
@@ -91,24 +95,24 @@
           rel="noopener"
           class="list-group-item list-group-item-action flex-column align-items-start"
         >
-          <div class="d-flex w-100 justify-content-between mb-3">
-            <div class="d-flex align-items-start">
-              <h5 class="me-2">
-                {% if patch.state == 0 %}
-                  <span class="badge bg-primary">待审核</span>
-                {% elif patch.state == 1 %}
-                  <!-- accept -->
-                  <span class="badge bg-success">Accept</span>
-                {% elif patch.state == 2 %}
-                  <!-- rejected -->
-                  <span class="badge bg-danger">Rejected</span>
-                {% elif patch.state == 3 %}
-                  <span class="badge bg-secondary">Outdated</span>
-                {% endif %}
-                {% if patch.comments_count %}
+          <div class="w-100 d-flex justify-content-between mb-3">
+            <div class="d-flex align-items-start" style="min-width: 0;">
+              {% if patch.state == 0 %}
+                <h5 class="me-2"><span class="badge bg-primary">待审核</span></h5>
+              {% elif patch.state == 1 %}
+                <!-- accept -->
+                <h5 class="me-2"><span class="badge bg-success">Accept</span></h5>
+              {% elif patch.state == 2 %}
+                <!-- rejected -->
+                <h5 class="me-2"><span class="badge bg-danger">Rejected</span></h5>
+              {% elif patch.state == 3 %}
+                <h5 class="me-2"><span class="badge bg-secondary">Outdated</span></h5>
+              {% endif %}
+              {% if patch.comments_count %}
+                <h5 class="me-2">
                   <span class="badge bg-warning text-dark">{{ patch.comments_count }} comments</span>
-                {% endif %}
-              </h5>
+                </h5>
+              {% endif %}
               <h4 class="oneline-hide-overflow">修改原因：{{ patch.reason }}</h4>
             </div>
             <div>
