@@ -76,7 +76,7 @@ class CreateSubjectPatch:
     infobox: str
     summary: str
     reason: str
-    patch_desc: str
+    patch_desc: str = ""
     cf_turnstile_response: str
     # HTML form will only include checkbox when it's checked,
     # so any input is true, default value is false.
