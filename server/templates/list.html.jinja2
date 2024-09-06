@@ -92,23 +92,25 @@
           class="list-group-item list-group-item-action flex-column align-items-start"
         >
           <div class="d-flex w-100 justify-content-between mb-3">
-            <h4 class="oneline-hide-overflow m-0 p-0">
-              {% if patch.state == 0 %}
-                <span class="badge bg-primary">待审核</span>
-              {% elif patch.state == 1 %}
-                <!-- accept -->
-                <span class="badge bg-success">Accept</span>
-              {% elif patch.state == 2 %}
-                <!-- rejected -->
-                <span class="badge bg-danger">Rejected</span>
-              {% elif patch.state == 3 %}
-                <span class="badge bg-secondary">Outdated</span>
-              {% endif %}
-              {% if patch.comments_count %}
-                <span class="badge bg-warning text-dark">{{ patch.comments_count }} comments</span>
-              {% endif %}
-              修改原因：{{ patch.reason }}
-            </h4>
+            <div class="d-flex align-items-start">
+              <h5 class="me-2">
+                {% if patch.state == 0 %}
+                  <span class="badge bg-primary">待审核</span>
+                {% elif patch.state == 1 %}
+                  <!-- accept -->
+                  <span class="badge bg-success">Accept</span>
+                {% elif patch.state == 2 %}
+                  <!-- rejected -->
+                  <span class="badge bg-danger">Rejected</span>
+                {% elif patch.state == 3 %}
+                  <span class="badge bg-secondary">Outdated</span>
+                {% endif %}
+                {% if patch.comments_count %}
+                  <span class="badge bg-warning text-dark">{{ patch.comments_count }} comments</span>
+                {% endif %}
+              </h5>
+              <h4 class="oneline-hide-overflow">修改原因：{{ patch.reason }}</h4>
+            </div>
             <div>
               {% if user_id is defined %}
                 <small style="text-wrap: nowrap;"
