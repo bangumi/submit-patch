@@ -138,33 +138,36 @@
             <p class="oneline-hide-overflow m-0 p-0">
               修改原因：{{ patch.reason }}
             </p>
-            <p class="oneline-hide-overflow m-0 p-0">
-              {% if patch.subject_type %}
-                分类：
-                <span class="badge bg-light text-dark border border-info">
-                                  {{ patch.subject_type | subject_type_readable }}
-                              </span>
-              {% endif %}
-              {% if patch.original_name %}
-                {% if patch_type == 'subject' %}
-                  条目名:
-                {% elif patch_type == 'episode' %}
-                  章节名:
+            <div class="d-flex w-100 justify-content-between">
+              <p class="oneline-hide-overflow m-0 p-0">
+                {% if patch.subject_type %}
+                  分类：<span class="badge bg-light text-dark border border-info">
+                    {{- patch.subject_type | subject_type_readable -}}
+                  </span>
                 {% endif %}
+                {% if patch.original_name %}
+                  {% if patch_type == 'subject' %}
+                    条目名:
+                  {% elif patch_type == 'episode' %}
+                    章节名:
+                  {% endif %}
 
-                <span class="badge bg-light text-dark border border-info">{{ patch.original_name }}</span>
-              {% endif %}
-            </p>
+                  <span class="badge bg-light text-dark border border-info">{{ patch.original_name }}</span>
+                {% endif %}
+              </p>
+              <div>
+                <small>from:
+                  <span class="badge bg-light text-dark border border-info">{{ users.get(patch.from_user_id).nickname | default(patch.from_user_id) }}</span>
+                </small>
+                {% if patch.state != 0 %}
+                  <small>reviewed by:
+                    <span class="badge bg-light text-dark border border-info">{{ users.get(patch.wiki_user_id).nickname | default(patch.wiki_user_id) }}</span>
+                  </small>
+                {% endif %}
+              </div>
+
+            </div>
           </div>
-
-          <small>from:
-            <span class="badge bg-light text-dark border border-info">{{ users.get(patch.from_user_id).nickname | default(patch.from_user_id) }}</span>
-          </small>
-          {% if patch.state != 0 %}
-            <small>reviewed by:
-              <span class="badge bg-light text-dark border border-info">{{ users.get(patch.wiki_user_id).nickname | default(patch.wiki_user_id) }}</span>
-            </small>
-          {% endif %}
         </a>
       {% endfor %}
     </ul>
