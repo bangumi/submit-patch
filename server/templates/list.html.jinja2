@@ -91,53 +91,49 @@
           rel="noopener"
           class="list-group-item list-group-item-action flex-column align-items-start"
         >
-          <div class="d-flex w-100 justify-content-between">
+          <div class="d-flex w-100 justify-content-between mb-2">
+            <h5 class="oneline-hide-overflow m-0 p-0">
+              {% if patch.state == 0 %}
+                <span class="badge bg-primary">待审核</span>
+              {% elif patch.state == 1 %}
+                <!-- accept -->
+                <span class="badge bg-success">Accept</span>
+              {% elif patch.state == 2 %}
+                <!-- rejected -->
+                <span class="badge bg-danger">Rejected</span>
+              {% elif patch.state == 3 %}
+                <span class="badge bg-secondary">Outdated</span>
+              {% endif %}
+              {% if patch.comments_count %}
+                <span class="badge bg-warning text-dark">{{ patch.comments_count }} comments</span>
+              {% endif %}
+              修改原因：{{ patch.reason }}
+            </h5>
             <div>
-              <h5 class="mb-1">
-                {% if patch.state == 0 %}
-                  <span class="badge bg-primary">待审核</span>
-                {% elif patch.state == 1 %}
-                  <!-- accept -->
-                  <span class="badge bg-success">Accept</span>
-                {% elif patch.state == 2 %}
-                  <!-- rejected -->
-                  <span class="badge bg-danger">Rejected</span>
-                {% elif patch.state == 3 %}
-                  <span class="badge bg-secondary">Outdated</span>
-                {% endif %}
-
-                {% if patch.comments_count %}
-                  <span class="badge bg-warning text-dark">{{ patch.comments_count }} comments</span>
-                {% endif %}
-              </h5>
-            </div>
-
-            {% if user_id is defined %}
-              <small style="text-wrap: nowrap;"
-                     title="{{ patch.created_at }}">
-                created at {{ patch.created_at | rel_time }}
-              </small>
-            {% else %}
-              {% if patch.state %}
+              {% if user_id is defined %}
                 <small style="text-wrap: nowrap;"
-                       class="font-monospace"
-                       title="{{ patch.updated_at }}">
-                  reviewed at {{ patch.updated_at | rel_time }}
+                       title="{{ patch.created_at }}">
+                  created {{ patch.created_at | rel_time }}
                 </small>
               {% else %}
-                <small style="text-wrap: nowrap;"
-                       class="font-monospace"
-                       title="{{ patch.created_at }}">
-                  created at {{ patch.created_at | rel_time }}
-                </small>
+                {% if patch.state %}
+                  <small style="text-wrap: nowrap;"
+                         class="font-monospace"
+                         title="{{ patch.updated_at }}">
+                    reviewed {{ patch.updated_at | rel_time }}
+                  </small>
+                {% else %}
+                  <small style="text-wrap: nowrap;"
+                         class="font-monospace"
+                         title="{{ patch.created_at }}">
+                    created {{ patch.created_at | rel_time }}
+                  </small>
+                {% endif %}
               {% endif %}
-            {% endif %}
+            </div>
           </div>
 
           <div>
-            <p class="oneline-hide-overflow m-0 p-0">
-              修改原因：{{ patch.reason }}
-            </p>
             <div class="d-flex w-100 justify-content-between">
               <p class="oneline-hide-overflow m-0 p-0">
                 {% if patch.subject_type %}
