@@ -54,7 +54,7 @@ async def get_patch(patch_id: UUID, request: Request) -> Template:
                 (escape_invisible(patch.infobox) + "\n").splitlines(True),
                 "infobox",
                 "infobox",
-                n=5,
+                n=10,
             )
         )
 
