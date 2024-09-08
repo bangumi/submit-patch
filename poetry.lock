@@ -107,13 +107,13 @@ typing-extensions = ">=4.7.0,<5.0.0"
 
 [[package]]
 name = "bgm-tv-wiki"
-version = "0.0.11"
+version = "0.0.12"
 description = "bgm.tv wiki syntax parser"
 optional = false
 python-versions = "~=3.10"
 files = [
-    {file = "bgm_tv_wiki-0.0.11-py3-none-any.whl", hash = "sha256:0328522d6f65acc8388ff5a0b065f6caea4bb8c25056b9dd3701d3b3ba7c84c5"},
-    {file = "bgm_tv_wiki-0.0.11.tar.gz", hash = "sha256:8631a61c86d5c3fc06020b5e1ee7acaac6e032a94b0835d8ced587d712acb9c4"},
+    {file = "bgm_tv_wiki-0.0.12-py3-none-any.whl", hash = "sha256:7a807d0801b9b8be791c07e79999b67385a96e0b1260c15c4fbc581f7290ce9c"},
+    {file = "bgm_tv_wiki-0.0.12.tar.gz", hash = "sha256:7d94b950f7f260f0df4ba8d5fe54978187c5352434e05ea775c5826d0c8bb1c9"},
 ]
 
 [package.extras]
@@ -2041,4 +2041,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ccbd97c33e103b375600d15555603a26ff249e2bd5fb62a1bdff66f7a4225b61"
+content-hash = "42f48a887cd323f0d5e56d517dcc586f613afbe95f1da2aa25eba3890303d087"
