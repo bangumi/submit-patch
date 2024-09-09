@@ -136,8 +136,7 @@ def to_user_local_time(ctx: Context, dt: datetime) -> str:
 def replace_url_query(ctx: Context, **kwargs: Any) -> str:
     req: Request[None, None, Any] = ctx["request"]
     q = req.url.query_params.copy()
-    for key, value in kwargs.items():
-        q[key] = str(value)
+    q.update(kwargs)
     return req.url.path + "?" + urlencode(q)
 
 
