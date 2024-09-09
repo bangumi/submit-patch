@@ -320,4 +320,4 @@ async def current_pending_list() -> dict[str, Any]:
         PatchState.Pending,
     )
 
-    return {"date": [PatchListItem(id=row[0], subject_id=row[1]) for row in rows]}
+    return {"data": [PatchListItem(id=row[0], subject_id=row[1]) for row in rows]}
