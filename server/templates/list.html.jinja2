@@ -116,14 +116,14 @@
                   </span>
               {% endif %}
               {% if patch.original_name %}
+                <br class="d-block d-sm-none">
                 {% if patch_type == 'subject' %}
                   条目名
                 {% elif patch_type == 'episode' %}
                   章节名
                 {% endif %}
-                <br class="d-block d-sm-none">
-                <span class="badge bg-light text-dark border border-info overflow-hidden"
-                      style="max-width: 100%; text-overflow: ellipsis">{{ patch.original_name }}</span>
+                <span class="badge bg-light text-dark border border-info"
+                      style="max-width: 400px; text-overflow: ellipsis; overflow: hidden; vertical-align: bottom">{{ patch.original_name }}</span>
               {% endif %}
             </div>
 
