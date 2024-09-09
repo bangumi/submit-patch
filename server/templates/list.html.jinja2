@@ -2,7 +2,7 @@
 
 {% block head %}
   <style>
-      .oneline-hide-overflow {
+      .patch_reason {
           white-space: nowrap;
           order: 1;
           flex: 0 1 auto;
@@ -88,7 +88,7 @@
           rel="noopener"
           class="list-group-item list-group-item-action flex-column align-items-start"
         >
-          <div class="w-100 d-flex justify-content-between mb-3">
+          <div class="w-100 d-flex justify-content-between mb-1">
             <div class="d-flex align-items-start" style="min-width: 0;">
               {% if patch.state == 0 %}
                 <h5 class="me-2"><span class="badge bg-primary">待审核</span></h5>
@@ -101,62 +101,69 @@
               {% elif patch.state == 3 %}
                 <h5 class="me-2"><span class="badge bg-secondary">Outdated</span></h5>
               {% endif %}
+              <p class="patch_reason">{{ patch.reason }}</p>
               {% if patch.comments_count %}
                 <h5 class="me-2">
-                  <span class="badge bg-warning text-dark">{{ patch.comments_count }} comments</span>
+                  <span class="badge bg-warning text-dark d-none d-sm-block">{{ patch.comments_count }} comments</span>
                 </h5>
               {% endif %}
-              <h4 class="oneline-hide-overflow">{{ patch.reason }}</h4>
             </div>
-            <div>
+          </div>
+
+          <div class="d-block d-sm-flex w-100 flex-row">
+            <div class="pe-2">
+              {% if patch.subject_type %}
+                分类 <span class="badge bg-light text-dark border border-info">
+                    {{- patch.subject_type | subject_type_readable -}}
+                  </span>
+              {% endif %}
+              {% if patch.original_name %}
+                {% if patch_type == 'subject' %}
+                  条目名
+                {% elif patch_type == 'episode' %}
+                  章节名
+                {% endif %}
+                <br class="d-block d-sm-none">
+                <span class="badge bg-light text-dark border border-info">{{ patch.original_name }}</span>
+              {% endif %}
+            </div>
+
+            <div class="d-none d-sm-block pe-2">
+              <small>from
+                <span class="badge bg-light text-dark border border-info">{{ users.get(patch.from_user_id).nickname | default(patch.from_user_id) }}</span>
+              </small>
+
+              {% if patch.state != 0 %}
+                <small>reviewed by
+                  <span class="badge bg-light text-dark border border-info">{{ users.get(patch.wiki_user_id).nickname | default(patch.wiki_user_id) }}</span>
+                </small>
+              {% endif %}
+            </div>
+
+            <div class="d-none d-sm-block">
               {% if user_id is defined %}
                 <small style="text-wrap: nowrap;"
                        title="{{ patch.created_at }}">
-                  created {{ patch.created_at | rel_time }}
+                  created
+                  <span class="badge bg-light text-dark border border-info">{{ patch.created_at | rel_time }}</span>
                 </small>
               {% else %}
                 {% if patch.state %}
                   <small style="text-wrap: nowrap;"
-                         class="font-monospace"
                          title="{{ patch.updated_at }}">
-                    reviewed {{ patch.updated_at | rel_time }}
+                    reviewed
+                    <span class="badge bg-light text-dark border border-info">{{ patch.updated_at | rel_time }}</span>
                   </small>
                 {% else %}
                   <small style="text-wrap: nowrap;"
-                         class="font-monospace"
                          title="{{ patch.created_at }}">
-                    created {{ patch.created_at | rel_time }}
+                    created
+                    <span class="badge bg-light text-dark border border-info">{{ patch.created_at | rel_time }}</span>
                   </small>
                 {% endif %}
               {% endif %}
             </div>
           </div>
-
-          {% if patch.subject_type %}
-            分类 <span class="badge bg-light text-dark border border-info">
-                    {{- patch.subject_type | subject_type_readable -}}
-                  </span>
-            <br class="d-block d-sm-none">
-          {% endif %}
-          {% if patch.original_name %}
-            {% if patch_type == 'subject' %}
-              条目名
-            {% elif patch_type == 'episode' %}
-              章节名
-            {% endif %}
-            <span class="badge bg-light text-dark border border-info">{{ patch.original_name }}</span>
-          {% endif %}
-          <br class="d-block d-sm-none">
-          <small>from
-            <span class="badge bg-light text-dark border border-info">{{ users.get(patch.from_user_id).nickname | default(patch.from_user_id) }}</span>
-          </small>
-
-          {% if patch.state != 0 %}
-            <br class="d-block d-sm-none">
-            <small>reviewed by
-              <span class="badge bg-light text-dark border border-info">{{ users.get(patch.wiki_user_id).nickname | default(patch.wiki_user_id) }}</span>
-            </small>
-          {% endif %}
         </a>
       {% endfor %}
     </ul>
