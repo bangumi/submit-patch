@@ -88,7 +88,7 @@
           rel="noopener"
           class="list-group-item list-group-item-action flex-column align-items-start"
         >
-          <div class="w-100 d-flex align-items-start mb-1">
+          <div class="d-flex align-items-start mb-1 flex-wrap">
             {% if patch.state == 0 %}
               <h5 class="me-2"><span class="badge bg-primary">待审核</span></h5>
             {% elif patch.state == 1 %}
@@ -109,25 +109,28 @@
           </div>
 
           <div class="d-block d-sm-flex w-100 flex-row">
-            <div class="pe-2">
-              {% if patch.subject_type %}
-                分类 <span class="badge bg-light text-dark border border-info">
+            {% if patch.subject_type %}
+              <div class="me-2 d-flex">
+                <p class="mb-0" style="white-space: nowrap">分类</p>
+                <span class="badge bg-light text-dark border border-info">
                     {{- patch.subject_type | subject_type_readable -}}
                   </span>
-              {% endif %}
-              {% if patch.original_name %}
-                <br class="d-block d-sm-none">
-                {% if patch_type == 'subject' %}
-                  条目名
-                {% elif patch_type == 'episode' %}
-                  章节名
-                {% endif %}
-                <span class="badge bg-light text-dark border border-info"
-                      style="max-width: 400px; text-overflow: ellipsis; overflow: hidden; vertical-align: bottom">{{ patch.original_name }}</span>
-              {% endif %}
-            </div>
+              </div>
+            {% endif %}
 
-            <div class="d-none d-sm-block pe-2">
+            {% if patch.original_name %}
+              <div class="d-flex">
+                {% if patch_type == 'subject' %}
+                  <p class="mb-0" style="white-space: nowrap">条目名</p>
+                {% elif patch_type == 'episode' %}
+                  <p class="mb-0" style="white-space: nowrap">章节名</p>
+                {% endif %}
+                <span class="ms-1 badge bg-light text-dark border border-info"
+                      style="max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ patch.original_name }}</span>
+              </div>
+            {% endif %}
+
+            <div class="d-none d-sm-block me-2">
               <small>from
                 <span class="badge bg-light text-dark border border-info">{{ users.get(patch.from_user_id).nickname | default(patch.from_user_id) }}</span>
               </small>
