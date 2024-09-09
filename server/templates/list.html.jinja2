@@ -122,7 +122,8 @@
                   章节名
                 {% endif %}
                 <br class="d-block d-sm-none">
-                <span class="badge bg-light text-dark border border-info">{{ patch.original_name }}</span>
+                <span class="badge bg-light text-dark border border-info overflow-hidden"
+                      style="max-width: 100%; text-overflow: ellipsis">{{ patch.original_name }}</span>
               {% endif %}
             </div>
 
