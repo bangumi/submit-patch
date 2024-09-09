@@ -66,7 +66,7 @@ http_client = httpx.AsyncClient(
 pg = asyncpg.create_pool(dsn=PG_DSN, server_settings={"application_name": "patch"})
 
 
-async def pg_pool_startup(*args: Any, **kwargs: Any) -> None:
+async def pg_pool_startup() -> None:
     logger.info("init")
     await pg
 
