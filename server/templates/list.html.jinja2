@@ -88,26 +88,24 @@
           rel="noopener"
           class="list-group-item list-group-item-action flex-column align-items-start"
         >
-          <div class="w-100 d-flex justify-content-between mb-1">
-            <div class="d-flex align-items-start" style="min-width: 0;">
-              {% if patch.state == 0 %}
-                <h5 class="me-2"><span class="badge bg-primary">待审核</span></h5>
-              {% elif patch.state == 1 %}
-                <!-- accept -->
-                <h5 class="me-2"><span class="badge bg-success">Accept</span></h5>
-              {% elif patch.state == 2 %}
-                <!-- rejected -->
-                <h5 class="me-2"><span class="badge bg-danger">Rejected</span></h5>
-              {% elif patch.state == 3 %}
-                <h5 class="me-2"><span class="badge bg-secondary">Outdated</span></h5>
-              {% endif %}
-              <p class="patch_reason">{{ patch.reason }}</p>
-              {% if patch.comments_count %}
-                <h5 class="me-2">
-                  <span class="badge bg-warning text-dark d-none d-sm-block">{{ patch.comments_count }} comments</span>
-                </h5>
-              {% endif %}
-            </div>
+          <div class="w-100 d-flex align-items-start mb-1">
+            {% if patch.state == 0 %}
+              <h5 class="me-2"><span class="badge bg-primary">待审核</span></h5>
+            {% elif patch.state == 1 %}
+              <!-- accept -->
+              <h5 class="me-2"><span class="badge bg-success">Accept</span></h5>
+            {% elif patch.state == 2 %}
+              <!-- rejected -->
+              <h5 class="me-2"><span class="badge bg-danger">Rejected</span></h5>
+            {% elif patch.state == 3 %}
+              <h5 class="me-2"><span class="badge bg-secondary">Outdated</span></h5>
+            {% endif %}
+            <p class="patch_reason">{{ patch.reason }}</p>
+            {% if patch.comments_count %}
+              <h5 class="me-2">
+                <span class="badge bg-warning text-dark d-none d-sm-block">{{ patch.comments_count }} comments</span>
+              </h5>
+            {% endif %}
           </div>
 
           <div class="d-block d-sm-flex w-100 flex-row">
