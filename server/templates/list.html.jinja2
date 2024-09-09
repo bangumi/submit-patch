@@ -88,7 +88,7 @@
           rel="noopener"
           class="list-group-item list-group-item-action flex-column align-items-start"
         >
-          <div class="d-flex align-items-start mb-1 flex-wrap">
+          <div class="d-flex align-content-start mb-1 flex-wrap">
             {% if patch.state == 0 %}
               <h5 class="me-2"><span class="badge bg-primary">待审核</span></h5>
             {% elif patch.state == 1 %}
@@ -108,7 +108,7 @@
             {% endif %}
           </div>
 
-          <div class="d-block d-sm-flex w-100 flex-row">
+          <div class="d-block d-sm-flex w-100 flex-wrap">
             {% if patch.subject_type %}
               <div class="me-2 d-flex">
                 <p class="mb-0" style="white-space: nowrap">分类</p>
