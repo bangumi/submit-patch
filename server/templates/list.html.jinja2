@@ -109,9 +109,27 @@
           </div>
 
           <div class="d-block d-sm-flex w-100 flex-wrap">
+            <div class="d-none d-sm-flex pe-2 flex-row">
+              {% if user_id is defined %}
+                <p class="mb-0 pe-2" style="white-space: nowrap">created</p>
+                <small style="text-wrap: nowrap;"
+                       title="{{ patch.created_at }}">
+                  <span class="badge bg-light text-dark border border-info">{{ patch.created_at | rel_time }}</span>
+                </small>
+              {% else %}
+                {% if patch.state %}
+                  <p class="mb-0 pe-2" style="white-space: nowrap">reviewed</p>
+                  <span class="badge bg-light text-dark border border-info">{{ patch.updated_at | rel_time }}</span>
+                {% else %}
+                  <p class="mb-0 pe-2" style="white-space: nowrap">created</p>
+                  <span class="badge bg-light text-dark border border-info">{{ patch.created_at | rel_time }}</span>
+                {% endif %}
+              {% endif %}
+            </div>
+
             {% if patch.subject_type %}
               <div class="me-2 d-flex">
-                <p class="mb-0" style="white-space: nowrap">分类</p>
+                <p class="mb-0 pe-2" style="white-space: nowrap">分类</p>
                 <span class="badge bg-light text-dark border border-info">
                     {{- patch.subject_type | subject_type_readable -}}
                   </span>
@@ -119,13 +137,13 @@
             {% endif %}
 
             {% if patch.original_name %}
-              <div class="d-flex">
+              <div class="d-flex pe-2">
                 {% if patch_type == 'subject' %}
-                  <p class="mb-0" style="white-space: nowrap">条目名</p>
+                  <p class="mb-0 pe-2" style="white-space: nowrap">条目名</p>
                 {% elif patch_type == 'episode' %}
-                  <p class="mb-0" style="white-space: nowrap">章节名</p>
+                  <p class="mb-0 pe-2" style="white-space: nowrap">章节名</p>
                 {% endif %}
-                <span class="ms-1 badge bg-light text-dark border border-info"
+                <span class="badge bg-light text-dark border border-info"
                       style="max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ patch.original_name }}</span>
               </div>
             {% endif %}
@@ -139,30 +157,6 @@
                 <small>reviewed by
                   <span class="badge bg-light text-dark border border-info">{{ users.get(patch.wiki_user_id).nickname | default(patch.wiki_user_id) }}</span>
                 </small>
-              {% endif %}
-            </div>
-
-            <div class="d-none d-sm-block">
-              {% if user_id is defined %}
-                <small style="text-wrap: nowrap;"
-                       title="{{ patch.created_at }}">
-                  created
-                  <span class="badge bg-light text-dark border border-info">{{ patch.created_at | rel_time }}</span>
-                </small>
-              {% else %}
-                {% if patch.state %}
-                  <small style="text-wrap: nowrap;"
-                         title="{{ patch.updated_at }}">
-                    reviewed
-                    <span class="badge bg-light text-dark border border-info">{{ patch.updated_at | rel_time }}</span>
-                  </small>
-                {% else %}
-                  <small style="text-wrap: nowrap;"
-                         title="{{ patch.created_at }}">
-                    created
-                    <span class="badge bg-light text-dark border border-info">{{ patch.created_at | rel_time }}</span>
-                  </small>
-                {% endif %}
               {% endif %}
             </div>
           </div>
