@@ -107,9 +107,7 @@ async def _(
         raise BadRequestException(f"{patch_type} is not valid")
 
     where, arg = patch_state_filter.to_sql(index=1)
-    if patch_state_filter == StateFilter.Pending:
-        order_by = "created_at asc"
-    elif patch_state_filter == StateFilter.All:
+    if patch_state_filter in {StateFilter.Pending, StateFilter.All}:
         order_by = "created_at desc"
     else:
         order_by = "updated_at desc"
