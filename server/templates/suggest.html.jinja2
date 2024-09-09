@@ -51,13 +51,21 @@
              id="exampleCheck1">
     </div>
 
+    <hr>
+
     <div class="form-group">
-      <label for="reason">原因</label>
-      <textarea cols="3"
-                class="form-control"
-                id="reason"
-                required
-                name="reason">{{ data.reason }}</textarea>
+      <label for="reason" class="mb-2">原因</label>
+      <input class="form-control mb-2"
+             id="reason"
+             required
+             placeholder="原因"
+             name="reason" value="{{ data.reason }}">
+
+      <textarea rows="5"
+                class="form-control mb-2"
+                id="patch_desc"
+                placeholder="详细说明"
+                name="patch_desc">{{ data.patch_desc }}</textarea>
     </div>
 
     <div class="cf-turnstile m-1" data-theme="light"

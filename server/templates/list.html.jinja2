@@ -132,36 +132,31 @@
             </div>
           </div>
 
-          <div>
-            <div class="d-flex w-100 justify-content-between">
-              <p class="oneline-hide-overflow m-0 p-0">
-                <small>from:
-                  <span class="badge bg-light text-dark border border-info">{{ users.get(patch.from_user_id).nickname | default(patch.from_user_id) }}</span>
-                </small>
-                {% if patch.state != 0 %}
-                  <small>reviewed by:
-                    <span class="badge bg-light text-dark border border-info">{{ users.get(patch.wiki_user_id).nickname | default(patch.wiki_user_id) }}</span>
-                  </small>
-                {% endif %}
-              </p>
-              <div>
-                {% if patch.subject_type %}
-                  分类：<span class="badge bg-light text-dark border border-info">
+          {% if patch.subject_type %}
+            分类 <span class="badge bg-light text-dark border border-info">
                     {{- patch.subject_type | subject_type_readable -}}
                   </span>
-                {% endif %}
-                {% if patch.original_name %}
-                  {% if patch_type == 'subject' %}
-                    条目名:
-                  {% elif patch_type == 'episode' %}
-                    章节名:
-                  {% endif %}
+            <br class="d-block d-sm-none">
+          {% endif %}
+          {% if patch.original_name %}
+            {% if patch_type == 'subject' %}
+              条目名
+            {% elif patch_type == 'episode' %}
+              章节名
+            {% endif %}
+            <span class="badge bg-light text-dark border border-info">{{ patch.original_name }}</span>
+          {% endif %}
+          <br class="d-block d-sm-none">
+          <small>from
+            <span class="badge bg-light text-dark border border-info">{{ users.get(patch.from_user_id).nickname | default(patch.from_user_id) }}</span>
+          </small>
 
-                  <span class="badge bg-light text-dark border border-info">{{ patch.original_name }}</span>
-                {% endif %}
-              </div>
-            </div>
-          </div>
+          {% if patch.state != 0 %}
+            <br class="d-block d-sm-none">
+            <small>reviewed by
+              <span class="badge bg-light text-dark border border-info">{{ users.get(patch.wiki_user_id).nickname | default(patch.wiki_user_id) }}</span>
+            </small>
+          {% endif %}
         </a>
       {% endfor %}
     </ul>
