@@ -1,4 +1,6 @@
 import enum
+import uuid
+from dataclasses import dataclass
 from typing import Annotated, Any
 
 import litestar
@@ -302,3 +304,20 @@ async def count_handler(
     total: int = await pg.fetchval(f"select count(1) from {table} where {where}", *args)
 
     return {"count": total}
+
+
+@dataclass(slots=True, kw_only=True, frozen=True)
+class PatchListItem:
+    id: uuid.UUID
+    subject_id: int
+
+
+@router
+@litestar.get("/api/subject/pending", opt=disable_cookies_opt)
+async def current_pending_list() -> dict[str, Any]:
+    rows = await pg.fetch(
+        "select id,subject_id from view_subject_patch where state = $1",
+        PatchState.Pending,
+    )
+
+    return {"date": [PatchListItem(id=row[0], subject_id=row[1]) for row in rows]}
