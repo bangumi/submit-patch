@@ -23,3 +23,10 @@ REDIS_DSN = os.environ["REDIS_DSN"]
 
 TURNSTILE_SITE_KEY = os.environ["TURNSTILE_SITE_KEY"]
 TURNSTILE_SECRET_KEY = os.environ["TURNSTILE_SECRET_KEY"]
+
+SUPER_USERS = {}
+
+if __token := os.environ.get("SUPER_USER_427613_TOKEN"):
+    SUPER_USERS[__token] = {"user_id": 427613}
+
+HEADER_KEY_API = "x-api-token"

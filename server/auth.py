@@ -1,5 +1,6 @@
 import html
 import time
+from dataclasses import dataclass
 from typing import Any, TypedDict
 from urllib.parse import urlencode
 
@@ -16,13 +17,32 @@ from litestar.security.session_auth import SessionAuth, SessionAuthMiddleware
 from litestar.types import Empty
 
 from server.base import Request, User, http_client, pg, session_key_back_to
-from server.config import BGM_TV_APP_ID, BGM_TV_APP_SECRET, SERVER_BASE_URL
+from server.config import (
+    BGM_TV_APP_ID,
+    BGM_TV_APP_SECRET,
+    HEADER_KEY_API,
+    SERVER_BASE_URL,
+    SUPER_USERS,
+)
 from server.router import Router
 
 
 CALLBACK_URL = f"{SERVER_BASE_URL}/oauth_callback"
 
 router = Router()
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class SuperUser(User):
+    def is_access_token_fresh(self) -> bool:
+        return True
+
+    @property
+    def allow_edit(self) -> bool:
+        return True
+
+    def allow_bypass_captcha(self) -> bool:
+        return True
 
 
 class SessionDict(TypedDict):
@@ -66,6 +86,20 @@ class MyAuthenticationMiddleware(SessionAuthMiddleware):
     async def authenticate_request(
         self, connection: ASGIConnection[Any, Any, Any, Any]
     ) -> AuthenticationResult:
+        api_token = connection.headers.get(HEADER_KEY_API)
+        if su := SUPER_USERS.get(api_token):
+            return AuthenticationResult(
+                user=None,
+                auth=SuperUser(
+                    user_id=su["user_id"],
+                    group_id=su["user_id"],
+                    access_token="",
+                    refresh_token="",
+                    access_token_created_at=0,
+                    access_token_expires_in=0,
+                ),
+            )
+
         if not connection.session or connection.scope["session"] is Empty:
             # the assignment of 'Empty' forces the session middleware to clear session data.
             return AuthenticationResult(user=None, auth=None)

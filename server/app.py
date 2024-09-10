@@ -175,7 +175,7 @@ async def refresh_db(application: litestar.Litestar) -> None:
         last_patch_id = uuid.UUID(int=0)
         while True:
             rows = await pg.fetch(
-                "select id from subject_patch where id > $1 order by id limit 2", last_patch_id
+                "select id from subject_patch where id > $1 order by id limit 20", last_patch_id
             )
             if not rows:
                 break
