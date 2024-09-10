@@ -107,17 +107,17 @@ typing-extensions = ">=4.7.0,<5.0.0"
 
 [[package]]
 name = "bgm-tv-wiki"
-version = "0.0.12"
+version = "0.0.17"
 description = "bgm.tv wiki syntax parser"
 optional = false
 python-versions = "~=3.10"
 files = [
-    {file = "bgm_tv_wiki-0.0.12-py3-none-any.whl", hash = "sha256:7a807d0801b9b8be791c07e79999b67385a96e0b1260c15c4fbc581f7290ce9c"},
-    {file = "bgm_tv_wiki-0.0.12.tar.gz", hash = "sha256:7d94b950f7f260f0df4ba8d5fe54978187c5352434e05ea775c5826d0c8bb1c9"},
+    {file = "bgm_tv_wiki-0.0.17-py3-none-any.whl", hash = "sha256:85e02a0c9d193df612b105583f3d3ecb87e49e425ce190be4ed948c836da99be"},
+    {file = "bgm_tv_wiki-0.0.17.tar.gz", hash = "sha256:e0c2cb2eecdc1eea2fb7e21c904beaab63e7c6afb21fe644b39da73c178c2365"},
 ]
 
 [package.extras]
-dev = ["coverage (==7.6.1)", "mypy (==1.11.2)", "pre-commit (==3.8.0)", "pytest (==8.3.2)", "pytest-github-actions-annotate-failures (==0.2.0)", "pyyaml (>=6,<7)", "types-PyYAML"]
+dev = ["coverage (==7.6.1)", "mypy (==1.11.2)", "pre-commit (==3.8.0)", "pytest (==8.3.3)", "pytest-github-actions-annotate-failures (==0.2.0)", "pyyaml (>=6,<7)", "types-PyYAML"]
 
 [[package]]
 name = "certifi"
@@ -2041,4 +2041,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "42f48a887cd323f0d5e56d517dcc586f613afbe95f1da2aa25eba3890303d087"
+content-hash = "f87d030711dab9b6c6b41ee809ac360acd704cadecf84be4833d4dc9efa3e84c"
