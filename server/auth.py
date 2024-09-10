@@ -87,18 +87,19 @@ class MyAuthenticationMiddleware(SessionAuthMiddleware):
         self, connection: ASGIConnection[Any, Any, Any, Any]
     ) -> AuthenticationResult:
         api_token = connection.headers.get(HEADER_KEY_API)
-        if su := SUPER_USERS.get(api_token):
-            return AuthenticationResult(
-                user=None,
-                auth=SuperUser(
-                    user_id=su["user_id"],
-                    group_id=su["user_id"],
-                    access_token="",
-                    refresh_token="",
-                    access_token_created_at=0,
-                    access_token_expires_in=0,
-                ),
-            )
+        if api_token:
+            if su := SUPER_USERS.get(api_token):
+                return AuthenticationResult(
+                    user=None,
+                    auth=SuperUser(
+                        user_id=su["user_id"],
+                        group_id=su["user_id"],
+                        access_token="",
+                        refresh_token="",
+                        access_token_created_at=0,
+                        access_token_expires_in=0,
+                    ),
+                )
 
         if not connection.session or connection.scope["session"] is Empty:
             # the assignment of 'Empty' forces the session middleware to clear session data.
