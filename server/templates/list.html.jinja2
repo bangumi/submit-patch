@@ -145,6 +145,10 @@
                 {% endif %}
                 <span class="badge bg-light text-dark border border-info"
                       style="max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ patch.original_name }}</span>
+                {% if patch.ep is defined and patch.ep is not none %}
+                  <span class="badge ms-2 bg-light text-dark border border-info"
+                        style="max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">ep. {{ patch.ep }}</span>
+                {% endif %}
               </div>
             {% endif %}
 

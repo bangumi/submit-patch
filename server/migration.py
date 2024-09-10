@@ -39,6 +39,7 @@ async def run_migration() -> None:
         Migrate(9, load_sql("009-show-suggestion-count.sql")),
         Migrate(10, create_or_update_view_sql),
         Migrate(11, load_sql("011-extra-description.sql")),
+        Migrate(12, load_sql("012-show-ep-num.sql")),
     ]
 
     if not all(x <= y for x, y in itertools.pairwise(migrations)):

@@ -104,7 +104,7 @@ async def _(
         column = "id,created_at,updated_at,reason,from_user_id,wiki_user_id,state,original_name,subject_type,comments_count"
     elif patch_type == PatchType.Episode:
         table = "view_episode_patch"
-        column = "id,created_at,updated_at,reason,from_user_id,wiki_user_id,state,original_name,comments_count"
+        column = "id,created_at,updated_at,reason,from_user_id,wiki_user_id,state,original_name,comments_count,ep"
     else:
         raise BadRequestException(f"{patch_type} is not valid")
 

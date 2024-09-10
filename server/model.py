@@ -56,6 +56,7 @@ class SubjectPatch(PatchBase):
 @dataclass(frozen=True, kw_only=True, slots=True)
 class EpisodePatch(PatchBase):
     episode_id: int
+    ep: int | None = None
 
     original_name: str
     name: str | None
