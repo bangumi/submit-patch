@@ -47,7 +47,7 @@ class User:
         return self.group_id in {1, 2, 9, 11}
 
     def allow_bypass_captcha(self) -> bool:
-        return self.user_id == 287622
+        return self.user_id in {287622, 427613}
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
