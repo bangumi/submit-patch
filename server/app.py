@@ -102,8 +102,26 @@ def before_req(req: litestar.Request[None, None, State]) -> None:
             req.state["tz"] = timezone(timedelta(minutes=-int(tz)))
 
 
-def plain_text_exception_handler(req: Request, exc: HTTPException) -> Template:
+class MediaType:
+    html = "text/html"
+    json = "application/json"
+
+
+def plain_text_exception_handler(req: Request, exc: HTTPException) -> Response[Any]:
     """Default handler for exceptions subclassed from HTTPException."""
+    accept = req.accept.best_match([MediaType.html, MediaType.json])
+    if accept == MediaType.json:
+        return Response(
+            content={
+                "error": type(exc).__name__,
+                "method": req.method,
+                "url": str(req.url),
+                "extra": exc.extra,
+                "detail": exc.detail,
+            },
+            status_code=exc.status_code,
+        )
+
     return Template(
         "error.html.jinja2",
         status_code=exc.status_code,
@@ -222,13 +240,9 @@ app = litestar.Litestar(
     csrf_config=CSRFConfig(secret=CSRF_SECRET_TOKEN, cookie_name="s-csrf-token"),
     before_request=before_req,
     middleware=[session_auth_config.middleware],
-    exception_handlers=(
-        {
-            HTTPException: plain_text_exception_handler,
-            Exception: internal_error_handler,
-        }
-        if not DEV
-        else {}
-    ),
+    exception_handlers={
+        HTTPException: plain_text_exception_handler,
+        Exception: internal_error_handler,
+    },
     debug=DEV,
 )
