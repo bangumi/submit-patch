@@ -18,7 +18,7 @@ tasks:
       - uvicorn server.app:app --env-file .env --no-access-log
 
   run:
-    dotenv: [.env]
+    dotenv: [ .env ]
     cmds:
       - python {{.CLI_ARGS}}
 
