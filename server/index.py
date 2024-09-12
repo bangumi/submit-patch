@@ -321,3 +321,20 @@ async def current_pending_list() -> dict[str, Any]:
     )
 
     return {"data": [PatchListItem(id=row[0], subject_id=row[1]) for row in rows]}
+
+
+@dataclass(slots=True, kw_only=True, frozen=True)
+class PendingEpisodeListItem:
+    id: uuid.UUID
+    episode_id: int
+
+
+@router
+@litestar.get("/api/episode/pending", opt=disable_cookies_opt)
+async def current_pending_episode_list() -> dict[str, Any]:
+    rows = await pg.fetch(
+        "select id,episode_id from view_episode_patch where state = $1",
+        PatchState.Pending,
+    )
+
+    return {"data": [PendingEpisodeListItem(id=row[0], episode_id=row[1]) for row in rows]}
