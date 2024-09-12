@@ -15,7 +15,7 @@ pydash = "^8.0.3"
 dacite = "^1.8.1"
 uuid-utils = "^0.9.0"
 frozendict = "^2.4.4"
-regex = "^2024.7.24"
+regex = "^2024.9.11"
 bgm-tv-wiki = "^0.0.17"
 
 [tool.poetry.group.dev.dependencies]
