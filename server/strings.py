@@ -11,7 +11,7 @@ class BadRequestException(ClientException):
 
 # stdlib re doesn't support `\p`
 # re2 doesn't support negative lookahead
-__invisible_pattern = regex.compile(r"(?![\t\r\n])(\p{Cf}|\p{Cc})")
+__invisible_pattern = regex.compile(r"(?![\t\r\n])(\p{Cf}|\p{Cc}|\p{Co})")
 
 
 def check_invalid_input_str(*ss: str) -> None:
