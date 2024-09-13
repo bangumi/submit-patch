@@ -158,7 +158,7 @@ async def suggest_api(
     return Redirect(f"/subject/{pk}")
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
+@dataclass(slots=True, kw_only=True)
 class PartialCreateSubjectPatch:
     name: str | None = None
     infobox: str | None = None
@@ -174,12 +174,16 @@ class PartialCreateSubjectPatch:
     "/suggest-subject",
     guards=[require_user_login],
     status_code=200,
+    # opt={"exclude_from_csrf": True},
 )
 async def suggest_api_from_partial(
     subject_id: int,
     data: PartialCreateSubjectPatch,
     request: AuthorizedRequest,
 ) -> Redirect:
+    data.reason = data.reason.strip()
+    data.patch_desc = data.patch_desc.strip()
+
     if not data.reason:
         raise ValidationException("missing suggestion description")
 

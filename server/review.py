@@ -82,13 +82,13 @@ class SubjectReviewController(Controller):
                     raise BadRequestException("patch already reviewed")
 
                 if data.react == React.Reject:
-                    return await self.__reject_patch(patch, conn, request.auth, data.text)
+                    return await self.__reject_patch(patch, conn, request.auth, data.text.strip())
 
                 if data.react == React.Comment:
                     return await add_comment(
                         conn,
                         patch_id,
-                        data.text,
+                        data.text.strip(),
                         request.auth.user_id,
                         patch_type=PatchType.Subject,
                     )
