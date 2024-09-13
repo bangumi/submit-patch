@@ -41,7 +41,7 @@ class SuperUser(User):
     def allow_edit(self) -> bool:
         return True
 
-    def allow_bypass_captcha(self) -> bool:
+    def super_user(self) -> bool:
         return True
 
 

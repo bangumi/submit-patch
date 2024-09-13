@@ -46,7 +46,7 @@ class User:
     def allow_edit(self) -> bool:
         return self.group_id in {1, 2, 9, 11}
 
-    def allow_bypass_captcha(self) -> bool:
+    def super_user(self) -> bool:
         return self.user_id in {287622, 427613}
 
 

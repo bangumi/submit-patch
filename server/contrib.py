@@ -99,7 +99,7 @@ async def suggest_api(
 
     check_invalid_input_str(data.reason, data.patch_desc)
 
-    if not request.auth.allow_bypass_captcha():
+    if not request.auth.super_user():
         await _validate_captcha(data.cf_turnstile_response)
 
     res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{subject_id}")
@@ -145,6 +145,91 @@ async def suggest_api(
         changed.get("infobox"),
         changed.get("summary"),
         nsfw,
+        original_wiki["name"],
+        original.get("infobox"),
+        original.get("summary"),
+        original_wiki["typeID"],
+        data.patch_desc,
+    )
+
+    if "infobox" in changed:
+        await subject_infobox_queue.put(QueueItem(infobox=changed["infobox"], patch_id=pk))
+
+    return Redirect(f"/subject/{pk}")
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class PartialCreateSubjectPatch:
+    name: str | None = None
+    infobox: str | None = None
+    summary: str | None = None
+    nsfw: bool | None = None
+
+    reason: str
+    patch_desc: str = ""
+
+
+@router
+@litestar.patch(
+    "/suggest-subject",
+    guards=[require_user_login],
+    status_code=200,
+)
+async def suggest_api_from_partial(
+    subject_id: int,
+    data: PartialCreateSubjectPatch,
+    request: AuthorizedRequest,
+) -> Redirect:
+    if not data.reason:
+        raise ValidationException("missing suggestion description")
+
+    check_invalid_input_str(data.reason, data.patch_desc)
+
+    if not request.auth.super_user():
+        raise ValidationException(
+            "normal users are not allowed to use this api, please contact admin if you need"
+        )
+
+    res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{subject_id}")
+    res.raise_for_status()
+    original_wiki = res.json()
+
+    original = {}
+
+    changed = {}
+
+    for key in ["name", "infobox", "summary", "nsfw"]:
+        before = original_wiki[key]
+        after = getattr(data, key)
+        if after is None:
+            continue
+        if before != after:
+            changed[key] = after
+            original[key] = before
+
+    if not changed:
+        raise HTTPException("no changes found", status_code=400)
+
+    for key in ["name", "infobox", "summary"]:
+        if key in changed:
+            check_invalid_input_str(changed[key])
+
+    pk = uuid7()
+
+    await pg.execute(
+        """
+        insert into subject_patch (id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
+                           original_name, original_infobox, original_summary, subject_type, patch_desc)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+    """,
+        pk,
+        subject_id,
+        request.auth.user_id,
+        data.reason,
+        changed.get("name"),
+        changed.get("infobox"),
+        changed.get("summary"),
+        changed.get("nsfw"),
         original_wiki["name"],
         original.get("infobox"),
         original.get("summary"),
@@ -347,7 +432,7 @@ async def creat_episode_patch(
 ) -> Response[Any]:
     check_invalid_input_str(data.reason)
 
-    if not request.auth.allow_bypass_captcha():
+    if not request.auth.super_user():
         await _validate_captcha(data.cf_turnstile_response)
 
     res = await http_client.get(f"https://next.bgm.tv/p1/wiki/ep/{episode_id}")
