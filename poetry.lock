@@ -107,25 +107,21 @@ typing-extensions = ">=4.7.0,<5.0.0"
 
 [[package]]
 name = "bgm-tv-wiki"
-version = "0.0.21"
+version = "0.0.22"
 description = "bgm.tv wiki syntax parser"
 optional = false
 python-versions = "~=3.10"
 files = [
-    {file = "bgm_tv_wiki-0.0.21-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3e5a99d02fc070e9d184f0ffbd934a6a3ff3b5d9fc1087cfc3bafb45f11e5b0c"},
-    {file = "bgm_tv_wiki-0.0.21-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:16243f3d8ee3051bedd16f22b51df12f856681496296140260af9966280aa89a"},
-    {file = "bgm_tv_wiki-0.0.21-cp310-cp310-win_amd64.whl", hash = "sha256:5d97225b99e90febb41f747b4f3118980b02b60829c81f621d561ab6cbc0d40c"},
-    {file = "bgm_tv_wiki-0.0.21-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a266f7bab09c0b227d20f00243d647064778de745f7e8d83ea41d402b60bec6c"},
-    {file = "bgm_tv_wiki-0.0.21-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:92088cfb9126483b864e1c77601e7a031abb5e89c470d989160a042cbdc9f733"},
-    {file = "bgm_tv_wiki-0.0.21-cp311-cp311-win_amd64.whl", hash = "sha256:9397910e98b0a2cf15d5df89f4814eb73ad751de1d4c6e96c7245cc6beae3305"},
-    {file = "bgm_tv_wiki-0.0.21-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:400794a5b024b0cf568890a3569e2dd2a9b59212750d7f270947e29e1337c09d"},
-    {file = "bgm_tv_wiki-0.0.21-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:04333021bd4f8cb0c50d1f764c75023a9c04a064b98d36db746b8293b6c29963"},
-    {file = "bgm_tv_wiki-0.0.21-cp312-cp312-win_amd64.whl", hash = "sha256:fbcca05ff513423d379edb67b303fc28d1ae5f4a6a6985bd5e1990460e9cbcb3"},
-    {file = "bgm_tv_wiki-0.0.21-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c019e182796b7ad63749d5e944b6f13fc80eb9e569a2e1d43bfce9f4b9bf3dfd"},
-    {file = "bgm_tv_wiki-0.0.21-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:ad648347987d33d591f51c679f9d52d9b217ab148c5430367f22002979ea7561"},
-    {file = "bgm_tv_wiki-0.0.21-cp313-cp313-win_amd64.whl", hash = "sha256:4428521a0c3357756873f63b775de6c9b8091c9faf02af02702ebdf3259b9924"},
-    {file = "bgm_tv_wiki-0.0.21-py3-none-any.whl", hash = "sha256:e52cfdc291a324e8b0f4ea5dccbb16cc4d12a836a398deaac71805bcadd4d841"},
-    {file = "bgm_tv_wiki-0.0.21.tar.gz", hash = "sha256:39997f47a73da99cdc1f62c37e60a7dd74aa781923c5fa60829a85d59dfd82a1"},
+    {file = "bgm_tv_wiki-0.0.22-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fdac481292e96cd4ee80ea6260b01f6f0c9877fb5c5a04565cbaa4c57de8dc6e"},
+    {file = "bgm_tv_wiki-0.0.22-cp310-cp310-win_amd64.whl", hash = "sha256:dfa0110113f8bb8d9db158a86eb8b76003a22396ae288392ae4637d9ffba62da"},
+    {file = "bgm_tv_wiki-0.0.22-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8f8a336c496d6f70a4e89ef0325f149e85679cb4ea17794bebc3cff93a6168d9"},
+    {file = "bgm_tv_wiki-0.0.22-cp311-cp311-win_amd64.whl", hash = "sha256:2a2eb997fa83abca8cecb089a7d8ef178b5e45ea8e47aff069a6286d7adfb171"},
+    {file = "bgm_tv_wiki-0.0.22-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8b2272bd1e6dac741daee9eb5ac43714f304d703e01e3b7aeaf7d6ed90b92dd5"},
+    {file = "bgm_tv_wiki-0.0.22-cp312-cp312-win_amd64.whl", hash = "sha256:06f85206f5a6eb1469994c4cd705d2af3fb6f10e90403aae370125b3dc145e6b"},
+    {file = "bgm_tv_wiki-0.0.22-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8e6460dec0f64bb139434a876770f6c64ab744e095a52886e77e8f4cf38a4ffd"},
+    {file = "bgm_tv_wiki-0.0.22-cp313-cp313-win_amd64.whl", hash = "sha256:4073528e34965dfd3df2615f65efc00e24964f450469d66642156984f7233665"},
+    {file = "bgm_tv_wiki-0.0.22-py3-none-any.whl", hash = "sha256:298f2450dad98c361779e2b4fcd7d1ddb50fab553440370a87c981bf4fec4f6c"},
+    {file = "bgm_tv_wiki-0.0.22.tar.gz", hash = "sha256:b6f732231d5efbbf687159141897d629b76a46d7ff13c4dc9fa56b7f0f87e6a0"},
 ]
 
 [package.extras]
@@ -2068,4 +2064,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "69cb4d659b2699d1d24ceebe753eb0913d9af7904f83094b44bd07f7e8616987"
+content-hash = "a69d24b116f1cdbe3ba6b252752749b6891d93bdfb7d4ffd3fbb88a6c1d7c5e0"
