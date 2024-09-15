@@ -47,7 +47,7 @@ jobs:
           path: pip-wheel-cache
           key: ${{ runner.os }}-pip-cache-${{ hashFiles('**/poetry.lock') }}
 
-      - name: inject go-build-cache into docker
+      - name: inject pip-wheel-cache into docker
         uses: reproducible-containers/buildkit-cache-dance@v3.1.0
         with:
           cache-map: |
