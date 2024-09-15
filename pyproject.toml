@@ -16,7 +16,7 @@ dacite = "^1.8.1"
 uuid-utils = "^0.9.0"
 frozendict = "^2.4.4"
 regex = "^2024.9.11"
-bgm-tv-wiki = "^0.0.21"
+bgm-tv-wiki = "^0.0.22"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.2"
