@@ -1528,13 +1528,13 @@ files = [
 
 [[package]]
 name = "sslog"
-version = "0.0.0a24"
+version = "0.0.0a25"
 description = "opinionated logger based on structlog"
 optional = false
 python-versions = "~=3.8"
 files = [
-    {file = "sslog-0.0.0a24-py3-none-any.whl", hash = "sha256:5fc81e587259f1cd4e91d06ed289e6ab71085e1e619befb2f44adfbde770bfe9"},
-    {file = "sslog-0.0.0a24.tar.gz", hash = "sha256:b908120223e4fc756fe2ce3e85dc1e7eee91cced2ae61adad2f5bd9ad6ae88c0"},
+    {file = "sslog-0.0.0a25-py3-none-any.whl", hash = "sha256:16e81315e28e4db5f672934b6a7a1bf888987c0ea514d48d95249312b2f9e918"},
+    {file = "sslog-0.0.0a25.tar.gz", hash = "sha256:2fcd79627c75df7694fda8a393e0e7c74a1d026c19553f589caed0e17b4bceec"},
 ]
 
 [package.dependencies]
@@ -1542,7 +1542,7 @@ structlog = ">=24.4.0,<25"
 typing-extensions = {version = "*", markers = "python_version < \"3.11\""}
 
 [package.extras]
-dev = ["mypy", "pre-commit"]
+dev = ["colorama", "mypy", "pre-commit"]
 
 [[package]]
 name = "structlog"
@@ -2039,4 +2039,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "9e115325e57b31c7e8e3097516679b4104910aa8fd5fd14d1055c23b3838a4a6"
+content-hash = "9f0d732dd58875169b86871c7802e5f37828ba3d59dc38d8ac8ad5c5988d2468"
