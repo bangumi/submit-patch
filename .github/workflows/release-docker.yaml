@@ -45,7 +45,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: pip-wheel-cache
-          key: ${{ runner.os }}-pip-cache
+          key: ${{ runner.os }}-pip-cache-${{ hashFiles('**/poetry.lock') }}
+          restore-keys:
+            ${{ runner.os }}-pip-cache-
 
       - name: inject pip-wheel-cache into docker
         uses: reproducible-containers/buildkit-cache-dance@v3.1.0
