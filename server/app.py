@@ -22,7 +22,7 @@ from litestar.static_files import create_static_files_router
 from litestar.status_codes import HTTP_500_INTERNAL_SERVER_ERROR
 from litestar.stores.redis import RedisStore
 from litestar.template import TemplateConfig
-from loguru import logger
+from sslog import logger
 
 from server import auth, badge, contrib, index, patch, review, tmpl
 from server.auth import session_auth_config
@@ -136,7 +136,7 @@ def plain_text_exception_handler(req: Request, exc: HTTPException) -> Response[A
 
 
 def internal_error_handler(req: Request, exc: Exception) -> Response[Any]:
-    logger.exception("internal server error: {} {}", type(exc), exc)
+    logger.exception(f"internal server error: {type(exc)} {exc}")
 
     return Response(
         content={

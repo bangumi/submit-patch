@@ -14,7 +14,7 @@ from litestar.enums import RequestEncodingType
 from litestar.exceptions import InternalServerException, NotAuthorizedException, NotFoundException
 from litestar.params import Body
 from litestar.response import Redirect
-from loguru import logger
+from sslog import logger
 from uuid_utils import uuid7
 
 from server.auth import require_user_editor
@@ -198,7 +198,7 @@ class SubjectReviewController(Controller):
                 request.set_session({session_key_back_to: f"/subject/{patch.id}"})
                 return Redirect("/login")
 
-            logger.error("failed to apply patch {!r}", data)
+            logger.error(f"failed to apply patch {data!r}")
             raise InternalServerException()
 
         await conn.execute(
@@ -318,7 +318,7 @@ class EpisodeReviewController(Controller):
                 request.set_session({session_key_back_to: f"/episode/{patch.id}"})
                 return Redirect("/login")
 
-            logger.error("failed to apply patch {!r}", data)
+            logger.error(f"failed to apply patch {data!r}")
             raise InternalServerException()
 
         await conn.execute(

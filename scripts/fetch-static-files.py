@@ -7,7 +7,7 @@ from pathlib import Path
 from tarfile import TarFile
 
 import httpx
-from loguru import logger
+from sslog import logger
 
 
 project_root = Path(__file__, "../..").resolve()
@@ -29,14 +29,14 @@ def download_npm_package(
         .json()["version"]
     )
 
-    logger.info("[{}]: latest version {}", name, latest_version)
+    logger.info(f"[{name}]: latest version {latest_version}")
 
     if package_json.exists():
         if json.loads(package_json.read_bytes())["version"] == latest_version:
             if target.joinpath(latest_version).exists():
                 return
 
-    logger.info("[{}]: download new version {}", name, latest_version)
+    logger.info(f"[{name}]: download new version {latest_version}")
 
     with contextlib.suppress(FileNotFoundError):
         shutil.rmtree(target)

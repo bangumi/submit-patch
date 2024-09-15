@@ -10,8 +10,8 @@ import litestar
 from frozendict import frozendict
 from litestar.exceptions import ClientException
 from litestar.status_codes import HTTP_400_BAD_REQUEST
-from loguru import logger
 from redis.asyncio import Redis
+from sslog import logger
 
 from server.config import PG_DSN, REDIS_DSN
 

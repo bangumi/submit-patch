@@ -4,7 +4,7 @@ from uuid import UUID
 import litestar
 from litestar.exceptions import InternalServerException, NotFoundException
 from litestar.response import Redirect, Template
-from loguru import logger
+from sslog import logger
 
 from server.base import Request, patch_keys, pg
 from server.model import EpisodePatch, PatchState, PatchType, SubjectPatch
@@ -46,7 +46,7 @@ async def get_patch(patch_id: UUID, request: Request) -> Template:
     infobox_patch = ""
     if patch.infobox is not None:
         if patch.original_infobox is None:
-            logger.error("broken patch {!r}", patch_id)
+            logger.error(f"broken patch {patch_id!r}")
             raise InternalServerException
         infobox_patch = "".join(
             difflib.unified_diff(
@@ -61,7 +61,7 @@ async def get_patch(patch_id: UUID, request: Request) -> Template:
     summary_patch = ""
     if patch.summary is not None:
         if patch.original_summary is None:
-            logger.error("broken patch {!r}", patch_id)
+            logger.error(f"broken patch {patch_id!r}")
             raise InternalServerException
         summary_patch = "".join(
             # need a tailing new line to generate correct diff
