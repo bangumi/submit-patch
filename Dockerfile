@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 ### convert poetry.lock to requirements.txt ###
 FROM python:3.10-slim@sha256:80619a5316afae7045a3c13371b0ee670f39bac46ea1ed35081d2bf91d6c3dbd AS poetry
 
@@ -17,6 +19,8 @@ WORKDIR /app
 ENV PYTHONPATH=/app
 
 COPY --from=poetry /app/requirements.txt ./requirements.txt
+
+ENV PIP_ROOT_USER_ACTION=ignore
 
 RUN --mount=type=cache,target=/root/.cache/pip pip install -U pip && \
     pip install -r requirements.txt
