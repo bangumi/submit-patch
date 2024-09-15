@@ -5,6 +5,8 @@ FROM python:3.10-slim@sha256:80619a5316afae7045a3c13371b0ee670f39bac46ea1ed35081
 
 WORKDIR /app
 
+ENV PIP_ROOT_USER_ACTION=ignore
+
 COPY requirements-poetry.txt ./
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements-poetry.txt
 
