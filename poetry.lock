@@ -1528,17 +1528,18 @@ files = [
 
 [[package]]
 name = "sslog"
-version = "0.0.0a21"
+version = "0.0.0a22"
 description = "opinionated logger based on structlog"
 optional = false
 python-versions = "~=3.8"
 files = [
-    {file = "sslog-0.0.0a21-py3-none-any.whl", hash = "sha256:8005eb4414eafb192936f9998d0031dbaaa323e0e2eda2b494ab79dc45107ddf"},
-    {file = "sslog-0.0.0a21.tar.gz", hash = "sha256:0ae7079970b0a39c4f30b414b6342f7d6c64d01dc5b80816e5423333518dbd4e"},
+    {file = "sslog-0.0.0a22-py3-none-any.whl", hash = "sha256:9bff85eb6246b75428c84259ce12ad899866e38a6d7d6652882edefae8a96b7d"},
+    {file = "sslog-0.0.0a22.tar.gz", hash = "sha256:162d06a1dfd5a0324bf030f1966234d7109f5ebae30f1369371e852c7abae32e"},
 ]
 
 [package.dependencies]
 structlog = ">=24.4.0,<25"
+typing-extensions = "*"
 
 [package.extras]
 dev = ["rich"]
@@ -2038,4 +2039,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "5dcf68242de0ca06cc053e10773f47691cb7ff7f7e30a3f08b72deed38167182"
+content-hash = "b5ed64f42e7bc3f4f388514ab99c8d4feeed9e1b72bdc0df12762b1a590cb7f7"
