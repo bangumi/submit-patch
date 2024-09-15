@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Annotated, Any
 from uuid import UUID
 
 import litestar
-import msgspec.structs
 import pydash
 from asyncpg import Record
 from litestar import Controller, Response
@@ -345,9 +344,6 @@ class EpisodeReviewController(Controller):
             return Redirect(f"/episode/{next_pk}")
 
         return Redirect("/?type=episode")
-
-
-msgspec.structs.replace()
 
 
 async def add_comment(
