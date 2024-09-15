@@ -8,7 +8,8 @@ asyncpg = "^0.29.0"
 httpx = { extras = ["http2"], version = "^0.27.2" }
 jinja2 = "^3.1.4"
 loguru = "^0.7.2"
-litestar = { version = "^2.11.0", extras = ['jinja', 'standard'] }
+litestar = { version = "^2.11.0", extras = ['jinja'] }
+fast-query-parsers = ">=1.0.2,<2"
 redis = { extras = ["hiredis"], version = "^5.0.8" }
 uvicorn = { version = "^0.30.6", extras = ['standard'] }
 pydash = "^8.0.3"
