@@ -20,13 +20,13 @@ from uuid_utils import uuid7
 from server.auth import require_user_editor
 from server.base import (
     AuthorizedRequest,
-    BadRequestException,
     User,
     http_client,
     pg,
     session_key_back_to,
 )
 from server.config import UTC
+from server.errors import BadRequestException
 from server.model import EpisodePatch, PatchState, PatchType, SubjectPatch
 from server.router import Router
 from server.strings import check_invalid_input_str

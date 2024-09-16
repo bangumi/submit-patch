@@ -8,8 +8,6 @@ from uuid import UUID
 import asyncpg
 import httpx
 import litestar
-from litestar.exceptions import ClientException
-from litestar.status_codes import HTTP_400_BAD_REQUEST
 from redis.asyncio import Redis
 from sslog import logger
 
@@ -75,12 +73,6 @@ async def pg_pool_startup() -> None:
 Request = litestar.Request[None, User | None, Any]
 
 AuthorizedRequest = litestar.Request[None, User, Any]
-
-
-class BadRequestException(ClientException):
-    """Server knows the request method, but the target resource doesn't support this method."""
-
-    status_code = HTTP_400_BAD_REQUEST
 
 
 patch_keys: Mapping[str, str] = {

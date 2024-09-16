@@ -10,8 +10,9 @@ from litestar.exceptions import NotFoundException
 from litestar.response import Redirect, Template
 
 from server.auth import require_user_login
-from server.base import BadRequestException, Request, disable_cookies_opt, pg
+from server.base import Request, disable_cookies_opt, pg
 from server.db import fetch_users
+from server.errors import BadRequestException
 from server.model import PatchState, PatchType
 from server.router import Router
 

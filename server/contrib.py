@@ -20,7 +20,6 @@ from uuid_utils.compat import uuid7
 from server.auth import require_user_login
 from server.base import (
     AuthorizedRequest,
-    BadRequestException,
     QueueItem,
     Request,
     http_client,
@@ -30,6 +29,7 @@ from server.base import (
     subject_infobox_queue,
 )
 from server.config import TURNSTILE_SECRET_KEY, UTC
+from server.errors import BadRequestException
 from server.model import PatchState, SubjectPatch
 from server.router import Router
 from server.strings import check_invalid_input_str, contains_invalid_input_str
