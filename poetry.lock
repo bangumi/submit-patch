@@ -1456,18 +1456,18 @@ files = [
 
 [[package]]
 name = "sslog"
-version = "0.0.0a28"
+version = "0.0.0a33"
 description = "opinionated logger based on structlog"
 optional = false
 python-versions = "~=3.8"
 files = [
-    {file = "sslog-0.0.0a28-py3-none-any.whl", hash = "sha256:c5b6f15da3cf8d2651b0c0df8ab2800ce5c4926cafbfcc2d30660340b798df57"},
-    {file = "sslog-0.0.0a28.tar.gz", hash = "sha256:1f2dc036007a7ff83661dbda061c321632b2875eac4d91c5cdda1711e794597a"},
+    {file = "sslog-0.0.0a33-py3-none-any.whl", hash = "sha256:fbbfd25ab974a0696dc6129b25795567d86bdfe81aa392afac42cddeeb16ce86"},
+    {file = "sslog-0.0.0a33.tar.gz", hash = "sha256:67957767287a9568a67b8d324d20b7f01353f536131c7f2fa89f67fe40cfdf39"},
 ]
 
 [package.dependencies]
 structlog = ">=24.4.0,<25"
-typing-extensions = {version = "*", markers = "python_version < \"3.11\""}
+typing-extensions = "*"
 
 [package.extras]
 dev = ["colorama", "mypy", "pre-commit", "rich"]
@@ -1865,4 +1865,4 @@ anyio = ">=3.0.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "048aa656794ef6b501a9df55ce70bba2ab934f536f2599c9eb5e7fde9ef724df"
+content-hash = "f62d6abd8a522d5052326c9304501d9d76ef373eda33e74bd2436bdd0ebaf472"
