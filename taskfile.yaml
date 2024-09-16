@@ -7,15 +7,8 @@ tasks:
     - mypy .
 
   server:
-    sources:
-      - .env
-      - '**/*.py'
-      - exclude: .venv/**/*
-      - '**/*.yaml'
-    generates:
-      - a-path-wont-exists
     cmds:
-      - uvicorn server.app:app --env-file .env --no-access-log
+      - watchfiles -target-type=command --filter python 'uvicorn server.app:app --env-file .env --no-access-log' server
 
   run:
     dotenv: [ .env ]
