@@ -4,6 +4,7 @@ from typing import Any, TypeVar
 from uuid import UUID
 
 import msgspec
+from typing_extensions import Self
 
 
 class PatchState(enum.IntEnum):
@@ -29,7 +30,7 @@ class PatchBase(msgspec.Struct, kw_only=True, frozen=True):
     patch_desc: str  # extra description from user will not be included in commit message
 
     @classmethod
-    def from_dict(cls: type[T], d: Any) -> T:
+    def from_dict(cls, d: Any) -> Self:
         # will remove extra fields and do field level instance checking
         return msgspec.convert(d, cls)
 

@@ -1,5 +1,6 @@
 import asyncio
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
@@ -7,7 +8,6 @@ from uuid import UUID
 import asyncpg
 import httpx
 import litestar
-from frozendict import frozendict
 from litestar.exceptions import ClientException
 from litestar.status_codes import HTTP_400_BAD_REQUEST
 from redis.asyncio import Redis
@@ -83,13 +83,12 @@ class BadRequestException(ClientException):
     status_code = HTTP_400_BAD_REQUEST
 
 
-patch_keys: frozendict[str, str] = frozendict(
-    {
-        "name": "标题",
-        "name_cn": "简体中文标题",
-        "duration": "时长",
-        "airdate": "放送日期",
-        "description": "简介",
-    }
-)
+patch_keys: Mapping[str, str] = {
+    "name": "标题",
+    "name_cn": "简体中文标题",
+    "duration": "时长",
+    "airdate": "放送日期",
+    "description": "简介",
+}
+
 disable_cookies_opt = {"skip_session": True, "exclude_from_auth": True, "exclude_from_csrf": True}

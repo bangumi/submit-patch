@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Annotated, Any
 from uuid import UUID
 
 import litestar
-import pydash
+import msgspec.structs
 from asyncpg import Record
 from litestar import Controller, Response
 from litestar.enums import RequestEncodingType
@@ -78,6 +78,8 @@ class SubjectReviewController(Controller):
 
                 patch = SubjectPatch.from_dict(p)
 
+                msgspec.structs.replace(patch)
+
                 if patch.state != PatchState.Pending:
                     raise BadRequestException("patch already reviewed")
 
@@ -146,14 +148,15 @@ class SubjectReviewController(Controller):
             headers={"Authorization": f"Bearer {request.auth.access_token}"},
             json={
                 "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/subject/{patch.id}]",
-                "expectedRevision": pydash.pick(
-                    {
-                        "infobox": patch.original_infobox,
-                        "name": patch.original_name,
-                        "summary": patch.original_summary,
-                    },
-                    *subject.keys(),
-                ),
+                "expectedRevision": {
+                    key: value
+                    for key, value in [
+                        ("infobox", patch.original_infobox),
+                        ("name", patch.original_name),
+                        ("summary", patch.original_summary),
+                    ]
+                    if key in subject
+                },
                 "subject": subject,
             },
         )
