@@ -1,13 +1,12 @@
 import os
 import sys
+from datetime import timezone
 from pathlib import Path
-
-from dateutil import tz
 
 
 DEV = sys.platform == "win32"
 
-UTC = tz.UTC
+UTC = timezone.utc
 
 PROJECT_PATH = Path(__file__, "../..").resolve()
 
