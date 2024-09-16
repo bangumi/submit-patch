@@ -1528,13 +1528,13 @@ files = [
 
 [[package]]
 name = "sslog"
-version = "0.0.0a26"
+version = "0.0.0a28"
 description = "opinionated logger based on structlog"
 optional = false
 python-versions = "~=3.8"
 files = [
-    {file = "sslog-0.0.0a26-py3-none-any.whl", hash = "sha256:315ee65c1b92ef11aaafcdf70190b78a14e381f05bb0f66368d64320c4929d16"},
-    {file = "sslog-0.0.0a26.tar.gz", hash = "sha256:ee5cd025e600fa44113b6e5654ae841fbbf9207544f004dbe8a858ccd8907a93"},
+    {file = "sslog-0.0.0a28-py3-none-any.whl", hash = "sha256:c5b6f15da3cf8d2651b0c0df8ab2800ce5c4926cafbfcc2d30660340b798df57"},
+    {file = "sslog-0.0.0a28.tar.gz", hash = "sha256:1f2dc036007a7ff83661dbda061c321632b2875eac4d91c5cdda1711e794597a"},
 ]
 
 [package.dependencies]
@@ -1542,7 +1542,7 @@ structlog = ">=24.4.0,<25"
 typing-extensions = {version = "*", markers = "python_version < \"3.11\""}
 
 [package.extras]
-dev = ["colorama", "mypy", "pre-commit"]
+dev = ["colorama", "mypy", "pre-commit", "rich"]
 
 [[package]]
 name = "structlog"
@@ -1842,4 +1842,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "7f7ee91432248a3b9ec6d8fddc83e676ed96e609f28dce570f8ec781784d618b"
+content-hash = "5017b5aced98f5a1a508d43e1dfe568ed0a64a276f5b47c21bc573495c9ea0d4"
