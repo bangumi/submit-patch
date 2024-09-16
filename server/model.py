@@ -1,10 +1,9 @@
 import enum
-from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, TypeVar
 from uuid import UUID
 
-from dacite import from_dict
+import msgspec
 
 
 class PatchState(enum.IntEnum):
@@ -17,8 +16,7 @@ class PatchState(enum.IntEnum):
 T = TypeVar("T")
 
 
-@dataclass(frozen=True, kw_only=True, slots=True)
-class PatchBase:
+class PatchBase(msgspec.Struct, kw_only=True, frozen=True):
     id: UUID
     state: int
     from_user_id: int
@@ -33,11 +31,10 @@ class PatchBase:
     @classmethod
     def from_dict(cls: type[T], d: Any) -> T:
         # will remove extra fields and do field level instance checking
-        return from_dict(cls, d)
+        return msgspec.convert(d, cls)
 
 
-@dataclass(frozen=True, kw_only=True, slots=True)
-class SubjectPatch(PatchBase):
+class SubjectPatch(PatchBase, kw_only=True, frozen=True):
     subject_id: int
     subject_type: int
 
@@ -53,8 +50,7 @@ class SubjectPatch(PatchBase):
     nsfw: bool | None
 
 
-@dataclass(frozen=True, kw_only=True, slots=True)
-class EpisodePatch(PatchBase):
+class EpisodePatch(PatchBase, kw_only=True, frozen=True):
     episode_id: int
     ep: int | None = None
 
@@ -74,8 +70,7 @@ class EpisodePatch(PatchBase):
     description: str | None
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
-class Wiki:
+class Wiki(msgspec.Struct, kw_only=True):
     name: str
     infobox: str
     summary: str

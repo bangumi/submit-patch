@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Annotated, Any
 
 import litestar
+import msgspec
 from litestar import params
 from litestar.exceptions import NotFoundException
 from litestar.response import Redirect, Template
@@ -283,58 +284,42 @@ async def show_user_review(
     )
 
 
-@router
-@litestar.get("/api/count", opt=disable_cookies_opt)
-async def count_handler(
-    patch_type: Annotated[PatchType, params.Parameter(query="type")] = PatchType.Subject,
-    patch_state_filter: Annotated[
-        StateFilter, params.Parameter(query="state")
-    ] = StateFilter.Pending,
-    subject_id: int | None = None,
-) -> dict[str, Any]:
-    table = f"view_{patch_type}_patch"
-
-    where, arg = patch_state_filter.to_sql(index=1)
-    args = [arg]
-
-    if subject_id is not None:
-        where += " AND subject_id = $2"
-        args.append(subject_id)
-
-    total: int = await pg.fetchval(f"select count(1) from {table} where {where}", *args)
-
-    return {"count": total}
-
-
 @dataclass(slots=True, kw_only=True, frozen=True)
-class PatchListItem:
+class PendingSubject:
     id: uuid.UUID
     subject_id: int
 
 
+class PendingSubjects(msgspec.Struct):
+    data: list[PendingSubject]
+
+
 @router
 @litestar.get("/api/subject/pending", opt=disable_cookies_opt)
-async def current_pending_list() -> dict[str, Any]:
+async def current_pending_list() -> PendingSubjects:
     rows = await pg.fetch(
         "select id,subject_id from view_subject_patch where state = $1",
         PatchState.Pending,
     )
 
-    return {"data": [PatchListItem(id=row[0], subject_id=row[1]) for row in rows]}
+    return PendingSubjects(data=[PendingSubject(id=row[0], subject_id=row[1]) for row in rows])
 
 
-@dataclass(slots=True, kw_only=True, frozen=True)
-class PendingEpisodeListItem:
+class PendingEpisode(msgspec.Struct):
     id: uuid.UUID
     episode_id: int
 
 
+class PendingEpisodes(msgspec.Struct):
+    data: list[PendingEpisode]
+
+
 @router
 @litestar.get("/api/episode/pending", opt=disable_cookies_opt)
-async def current_pending_episode_list() -> dict[str, Any]:
+async def current_pending_episode_list() -> PendingEpisodes:
     rows = await pg.fetch(
         "select id,episode_id from view_episode_patch where state = $1",
         PatchState.Pending,
     )
 
-    return {"data": [PendingEpisodeListItem(id=row[0], episode_id=row[1]) for row in rows]}
+    return PendingEpisodes(data=[PendingEpisode(id=row[0], episode_id=row[1]) for row in rows])
