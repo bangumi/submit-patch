@@ -21,7 +21,7 @@ fast-query-parsers = "^1.0.3"
 # speedup uvicorn
 httptools = "^0.6.1"
 uvloop = { version = '^0.20.0', platform = 'linux' }
-anyio = '^4.4.0'
+anyio = '^4.5.0'
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.2"
