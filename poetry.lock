@@ -107,22 +107,25 @@ typing-extensions = ">=4.7.0,<5.0.0"
 
 [[package]]
 name = "bgm-tv-wiki"
-version = "0.0.23"
+version = "0.0.26"
 description = "bgm.tv wiki syntax parser"
 optional = false
 python-versions = "~=3.10"
 files = [
-    {file = "bgm_tv_wiki-0.0.23-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:aab686b1dfa64925e8127c5a740a47baef0aac7ef3a68bec00267936aa288d8f"},
-    {file = "bgm_tv_wiki-0.0.23-cp310-cp310-win_amd64.whl", hash = "sha256:ec39d32c6c2a9c7d4ff2dcbf7b386d798e78e0ecbc126f02c111984eaa543f67"},
-    {file = "bgm_tv_wiki-0.0.23-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4f9ead0d4331541c071dde368a4ad77b226f3d6866b00e4e6ea9ec634816d4e2"},
-    {file = "bgm_tv_wiki-0.0.23-cp311-cp311-win_amd64.whl", hash = "sha256:e2601e2e947735d7453055220397532532ac31e7fc4f952478b3d5249582fa62"},
-    {file = "bgm_tv_wiki-0.0.23-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c382eb7087c9f543d8d5835270ecd668f7125f9c7cac9faeb61276025a35240e"},
-    {file = "bgm_tv_wiki-0.0.23-cp312-cp312-win_amd64.whl", hash = "sha256:ab4cf899fb2b2dd72cfcb8be113d43fea331df3d253f7e519e4feda4c6a7ff06"},
-    {file = "bgm_tv_wiki-0.0.23-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:217751271661204840ade412249e25da845b3a9ba765bc52a64ce3fd6faeb7bc"},
-    {file = "bgm_tv_wiki-0.0.23-cp313-cp313-win_amd64.whl", hash = "sha256:12040520adcf4005aed7aa4d3c2666be0f70f78caa9bdb5a61bab4e08138afc1"},
-    {file = "bgm_tv_wiki-0.0.23-py3-none-any.whl", hash = "sha256:bd7d2562a6eed2bcce58c8a96b002e6cc3de3f51d276e01e2bd29ce084094720"},
-    {file = "bgm_tv_wiki-0.0.23.tar.gz", hash = "sha256:e6be0acea30848103c59c9b92f28b4ddab32182319f38cde137ee68c2173a16d"},
+    {file = "bgm_tv_wiki-0.0.26-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5b36d7af21ff227c6c7eae8cf7d49b5c3e4a021e8fddc10575d547e6b7975d78"},
+    {file = "bgm_tv_wiki-0.0.26-cp310-cp310-win_amd64.whl", hash = "sha256:0e20be5eb02b47876c63ff8d596dc56316b2709bc76e186077bd836abb3df173"},
+    {file = "bgm_tv_wiki-0.0.26-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2a402d8b5df51a4bfdf421c61c79f3739fee9781e6a576b2b101bffc9b2b011b"},
+    {file = "bgm_tv_wiki-0.0.26-cp311-cp311-win_amd64.whl", hash = "sha256:422233442690af17204c2013c00a7e90b996e7ad35271a9338fde786f88b43d9"},
+    {file = "bgm_tv_wiki-0.0.26-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a79a53f30b100fc053e6db225292ef39fdc4850584d14da77c786faec2041ce7"},
+    {file = "bgm_tv_wiki-0.0.26-cp312-cp312-win_amd64.whl", hash = "sha256:4578c0683f166fb21feeb15051dc7c559c56727953adac1d7faa69503c0afca9"},
+    {file = "bgm_tv_wiki-0.0.26-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:66da311c41c0a5204d2876e7cda0449b290bbc17659cfd79515539e319aae7b0"},
+    {file = "bgm_tv_wiki-0.0.26-cp313-cp313-win_amd64.whl", hash = "sha256:f6b272bba0dd59d47923969b32ca926a80e9be196eee2fe34cc5bf7c12343bbc"},
+    {file = "bgm_tv_wiki-0.0.26-py3-none-any.whl", hash = "sha256:6248552066782bac6a48081a627b2be28e016a47366ff296ad463cf0abd719a3"},
+    {file = "bgm_tv_wiki-0.0.26.tar.gz", hash = "sha256:efa5cdc6f4bdd14eb31c5edce3ba3bdd514141862f2ad8e22db96ae92f0eb1ad"},
 ]
+
+[package.dependencies]
+typing-extensions = ">=4.7.0"
 
 [package.extras]
 dev = ["coverage (==7.6.1)", "mypy (==1.11.2)", "pre-commit (==3.8.0)", "pytest (==8.3.3)", "pytest-github-actions-annotate-failures (==0.2.0)", "pyyaml (>=6,<7)", "types-pyyaml"]
@@ -1865,4 +1868,4 @@ anyio = ">=3.0.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "d5b18d524a1bffb334a9622253b483cda69b7920c5cbe7d514046026b11da0f3"
+content-hash = "d0687914a585483bcc3b41fcf780892f552aa086f818e14286d7643b5665e9d0"
