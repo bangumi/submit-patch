@@ -1459,13 +1459,13 @@ files = [
 
 [[package]]
 name = "sslog"
-version = "0.0.0a47"
+version = "0.0.0a48"
 description = "opinionated logger based on structlog"
 optional = false
 python-versions = "~=3.8"
 files = [
-    {file = "sslog-0.0.0a47-py3-none-any.whl", hash = "sha256:f77bb238acaf56116fc1606ffe1c9e7e7f6d9db627f2d716dfe6bd802527982f"},
-    {file = "sslog-0.0.0a47.tar.gz", hash = "sha256:2590a7b02d2b7dc6b3db014a89281330a6a7314b6bf54b1a3c64dcbaded79350"},
+    {file = "sslog-0.0.0a48-py3-none-any.whl", hash = "sha256:c18082feb581e7734c8d5933ed3aad8ea87b8fdf2c8f19c03f1282f30420abbe"},
+    {file = "sslog-0.0.0a48.tar.gz", hash = "sha256:df3696e7663dafdfa7a7cb6e62c0c800314f279839a23237c4ed18a116e72dbf"},
 ]
 
 [package.dependencies]
@@ -1868,4 +1868,4 @@ anyio = ">=3.0.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a5ba10837433f899f201f6bbc0e82880068e78731685a12587912ac2277b5bdd"
+content-hash = "ce02fcbc8bc6363face43e4512dad5cb7b399d26b573623200c88d844ee1951f"
