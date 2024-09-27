@@ -4,6 +4,7 @@ from typing import Annotated, Any
 from uuid import UUID
 
 import litestar
+import msgspec.json
 from litestar import Response
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import (
@@ -17,6 +18,7 @@ from litestar.params import Body
 from litestar.response import Redirect, Template
 from uuid_utils.compat import uuid7
 
+from common.py.platform import PLATFORM_CONFIG, WIKI_TEMPLATES
 from server.auth import require_user_login
 from server.base import (
     AuthorizedRequest,
@@ -30,7 +32,7 @@ from server.base import (
 )
 from server.config import TURNSTILE_SECRET_KEY, UTC
 from server.errors import BadRequestException
-from server.model import PatchState, SubjectPatch
+from server.model import PatchAction, PatchState, SubjectPatch, SubjectType
 from server.router import Router
 from server.strings import check_invalid_input_str, contains_invalid_input_str
 
@@ -289,15 +291,20 @@ async def _(request: AuthorizedRequest, patch_id: UUID) -> Response[Any]:
     if not p:
         raise NotFoundException()
 
-    if p["from_user_id"] != request.auth.user_id:
+    patch = SubjectPatch.from_dict(p)
+
+    if patch.from_user_id != request.auth.user_id:
         raise PermissionDeniedException("you are not owner of this patch")
 
-    if p["state"] != PatchState.Pending:
+    if patch.state != PatchState.Pending:
         raise BadRequestException("patch 已经被审核")
 
-    res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{p['subject_id']}")
-    res.raise_for_status()
-    wiki = res.json()
+    if patch.action == PatchAction.Update:
+        res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{p['subject_id']}")
+        res.raise_for_status()
+        wiki = res.json()
+    else:
+        wiki = {}
 
     return Template(
         "suggest.html.jinja2",
@@ -346,17 +353,37 @@ async def _(
             if not p:
                 raise NotFoundException()
 
+            patch = SubjectPatch.from_dict(p)
+
             changed = {}
+
+            if patch.from_user_id != request.auth.user_id:
+                raise PermissionDeniedException()
+
+            if patch.state != PatchState.Pending:
+                raise BadRequestException("patch已经被审核")
+
+            if patch.action == PatchAction.Create:
+                await conn.execute(
+                    """
+                update subject_patch set name=$1, infobox=$2, summary=$3, nsfw=$4, reason=$5,
+                updated_at=$6
+                where id=$7
+                """,
+                    data.name,
+                    data.infobox,
+                    data.summary,
+                    data.nsfw is not None,
+                    data.reason,
+                    datetime.now(tz=UTC),
+                    patch_id,
+                )
+
+                return Redirect(f"/subject/{patch_id}")
 
             res = await http_client.get(f"https://next.bgm.tv/p1/wiki/subjects/{p['subject_id']}")
             res.raise_for_status()
             original = res.json()
-
-            if p["from_user_id"] != request.auth.user_id:
-                raise PermissionDeniedException()
-
-            if p["state"] != PatchState.Pending:
-                raise BadRequestException("patch已经被审核")
 
             for field in ["name", "infobox", "summary"]:
                 if getattr(data, field) != original[field]:
@@ -536,3 +563,73 @@ async def delete_episode_patch(patch_id: UUID, request: AuthorizedRequest) -> Re
             )
 
             return Redirect("/?type=episode")
+
+
+@router
+@litestar.get(
+    "/new-subject/{subject_type:int}",
+    guards=[require_user_login],
+)
+async def new_subject(subject_type: SubjectType) -> Template:
+    return Template(
+        "new-subject.html.jinja2",
+        context={
+            "subject_type": subject_type,
+            "pp": PLATFORM_CONFIG.get(subject_type),
+            "platforms": msgspec.json.encode(PLATFORM_CONFIG.get(subject_type)).decode(),
+            "templates": WIKI_TEMPLATES,
+        },
+    )
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class NewSubject:
+    name: str
+    type_id: SubjectType
+    platform: int
+    infobox: str
+    summary: str
+    # HTML form will only include checkbox when it's checked,
+    # so any input is true, default value is false.
+    nsfw: str | None = None
+
+    patch_desc: str = ""
+    cf_turnstile_response: str
+
+
+@router
+@litestar.post(
+    "/new-subject",
+    guards=[require_user_login],
+)
+async def patch_for_new_subject(
+    data: Annotated[NewSubject, Body(media_type=RequestEncodingType.URL_ENCODED)],
+    request: AuthorizedRequest,
+) -> Redirect:
+    if not request.auth.super_user():
+        await _validate_captcha(data.cf_turnstile_response)
+
+    if data.platform not in PLATFORM_CONFIG.get(data.type_id, {}):
+        raise BadRequestException("平台不正确")
+
+    pk = uuid7()
+
+    await pg.execute(
+        """
+        insert into subject_patch (id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
+                             subject_type, platform, patch_desc, action)
+        VALUES ($1, 0, $2, '', $3, $4, $5, $6, $7, $8, $9, $10)
+    """,
+        pk,
+        request.auth.user_id,
+        data.name,
+        data.infobox,
+        data.summary,
+        data.nsfw is not None,
+        data.type_id,
+        data.platform,
+        data.patch_desc,
+        PatchAction.Create,
+    )
+
+    return Redirect(f"/subject/{pk}")

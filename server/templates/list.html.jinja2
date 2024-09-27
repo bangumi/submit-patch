@@ -89,6 +89,10 @@
           class="list-group-item list-group-item-action flex-column align-items-start"
         >
           <div class="d-flex align-content-start mb-1 flex-wrap">
+            {% if patch.action == 2 %}
+              <h5 class="me-2"><span class="badge bg-success">新条目</span></h5>
+            {% endif %}
+
             {% if patch.state == 0 %}
               <h5 class="me-2"><span class="badge bg-primary">待审核</span></h5>
             {% elif patch.state == 1 %}

@@ -141,7 +141,7 @@ def internal_error_handler(req: Request, exc: Exception) -> Response[Any]:
     return Response(
         content={
             "status_code": 500,
-            "detail": f"Internal Server Error: {type(exc)}",
+            "detail": "Internal Server Error",
             "method": req.method,
             "url": str(req.url),
         },

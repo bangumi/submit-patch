@@ -36,10 +36,14 @@
 
   <div class="row">
     <div class="col">
-      <a href="https://bgm.tv/subject/{{ patch.subject_id }}" target="_blank"
-         rel="noopener">
-        <h3>条目链接</h3>
-      </a>
+      {% if patch.subject_id %}
+        <a href="https://bgm.tv/subject/{{ patch.subject_id }}" target="_blank"
+           rel="noopener">
+          <h3>条目链接</h3>
+        </a>
+      {% else %}
+        <h3>创建新条目</h3>
+      {% endif %}
     </div>
     <div class="col">
       <h3>
@@ -134,10 +138,18 @@
 
   {% if patch.nsfw is not none %}
     <div class="row mb-4">
-      {% if patch.nsfw %}
-        <p>NSFW: ❌ -> ✅</p>
+      {% if patch.action == 1 %}
+        {% if patch.nsfw %}
+          <p>NSFW: ❌ -> ✅</p>
+        {% else %}
+          <p>NSFW: ✅ -> ❌ </p>
+        {% endif %}
       {% else %}
-        <p>NSFW: ✅ -> ❌ </p>
+        {% if patch.nsfw %}
+          <p>NSFW: ✅</p>
+        {% else %}
+          <p>NSFW: ❌</p>
+        {% endif %}
       {% endif %}
     </div>
   {% endif %}
