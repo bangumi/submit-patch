@@ -10,14 +10,14 @@
   <script src="/static/bootstrap/5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/static/jquery/3.7.1/dist/jquery.min.js"></script>
 
+  {% block head %}{% endblock %}
+
   <script type="module" async defer>
     // fetching this in type=module will not block html render thread
     import Cookies from '/static/js-cookie/3.0.5/dist/js.cookie.min.mjs'
 
     Cookies.set('tz', (new Date()).getTimezoneOffset());
   </script>
-
-  {% block head %}{% endblock %}
 </head>
 
 <body>

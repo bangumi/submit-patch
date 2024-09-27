@@ -14,6 +14,23 @@ class PatchState(enum.IntEnum):
     Outdated = 3
 
 
+class PatchAction(enum.IntEnum):
+    Unknown = 0
+    Update = 1
+    Create = 2
+
+
+class SubjectType(enum.IntEnum):
+    Book = 1
+    Anime = 2
+    Music = 3
+    Game = 4
+    Real = 6
+
+    def __str__(self):
+        return str(self.value)
+
+
 T = TypeVar("T")
 
 
@@ -49,6 +66,9 @@ class SubjectPatch(PatchBase, kw_only=True, frozen=True):
     summary: str | None
 
     nsfw: bool | None
+
+    platform: int | None
+    action: PatchAction
 
 
 class EpisodePatch(PatchBase, kw_only=True, frozen=True):
