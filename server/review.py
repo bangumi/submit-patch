@@ -197,8 +197,7 @@ class SubjectReviewController(Controller):
             patch.id,
         )
 
-        return Redirect(f'https://bgm.tv/subject/{subject_id}')
-
+        return Redirect(f"https://bgm.tv/subject/{subject_id}")
 
     async def __accept_patch_update(
         self,
