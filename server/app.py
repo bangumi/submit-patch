@@ -54,7 +54,7 @@ class File(NamedTuple):
 
 mimetypes.add_type("application/javascript", ".mjs", True)
 
-static_path = PROJECT_PATH.joinpath("server/static/")
+static_path = PROJECT_PATH.joinpath("static/")
 if not DEV:
     static_files: dict[str, File] = {}
 

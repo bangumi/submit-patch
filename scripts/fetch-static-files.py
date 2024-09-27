@@ -11,7 +11,7 @@ from sslog import logger
 
 
 project_root = Path(__file__, "../..").resolve()
-static_path = project_root.joinpath("server/static")
+static_path = project_root.joinpath("static")
 client = httpx.Client(proxies="http://192.168.1.3:7890")
 
 
@@ -21,6 +21,7 @@ def download_npm_package(
     version_spec: str = "latest",
 ) -> None:
     target = static_path.joinpath(name)
+    target.mkdir(exist_ok=True, parents=True)
     package_json = target.joinpath("installed.json")
 
     latest_version = (
