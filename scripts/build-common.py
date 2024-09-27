@@ -22,4 +22,6 @@ for file in common_path.iterdir():
             file.with_suffix(
                 "." + hashlib.sha3_256(file.read_bytes()).hexdigest()[:6] + ".json"
             ).name
-        ).write_bytes(json.dumps(yaml.safe_load(file.read_bytes())).encode())
+        ).write_bytes(
+            json.dumps(yaml.safe_load(file.read_bytes()), ensure_ascii=False, indent=2).encode()
+        )
