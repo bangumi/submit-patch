@@ -27,7 +27,7 @@ from server.base import (
 )
 from server.config import UTC
 from server.errors import BadRequestException
-from server.model import EpisodePatch, PatchState, PatchType, SubjectPatch
+from server.model import EpisodePatch, PatchAction, PatchState, PatchType, SubjectPatch
 from server.router import Router
 from server.strings import check_invalid_input_str
 
@@ -96,7 +96,11 @@ class SubjectReviewController(Controller):
                     )
 
                 if data.react == React.Accept:
-                    return await self.__accept_patch(patch, conn, request)
+                    if patch.action == PatchAction.Update:
+                        return await self.__accept_patch_update(patch, conn, request)
+                    if patch.action == PatchAction.Create:
+                        return await self.__accept_patch_create(patch, conn, request)
+                    raise NotImplementedError()
 
         raise NotAuthorizedException("暂不支持")
 
@@ -124,7 +128,87 @@ class SubjectReviewController(Controller):
         )
         return Redirect(f"/subject/{patch.id}")
 
-    async def __accept_patch(
+    async def __accept_patch_create(
+        self,
+        patch: SubjectPatch,
+        conn: PoolConnectionProxy[Record],
+        request: AuthorizedRequest,
+    ) -> Redirect:
+        if not request.auth.is_access_token_fresh():
+            request.set_session({session_key_back_to: f"/subject/{patch.id}"})
+            return Redirect("/login")
+
+        res = await http_client.post(
+            "https://next.bgm.tv/p1/wiki/subjects",
+            headers={"Authorization": f"Bearer {request.auth.access_token}"},
+            json={
+                "name": patch.name,
+                "type": patch.subject_type,
+                "platform": patch.platform,
+                "infobox": patch.infobox,
+                "nsfw": patch.nsfw,
+                "summary": patch.summary,
+            },
+        )
+        print(res.text)
+        if res.status_code >= 300:
+            data: dict[str, Any] = res.json()
+            err_code = data.get("code")
+            if err_code == "INVALID_SYNTAX_ERROR":
+                await conn.execute(
+                    """
+                    update view_subject_patch set
+                        state = $1,
+                        wiki_user_id = $2,
+                        updated_at = $3,
+                        reject_reason = $4
+                    where id = $5
+                    """,
+                    PatchState.Rejected,
+                    request.auth.user_id,
+                    datetime.now(tz=UTC),
+                    f"建议包含语法错误，已经自动拒绝: {data.get('message')}",
+                    patch.id,
+                )
+                return Redirect(f"/subject/{patch.id}")
+
+            if err_code == "TOKEN_INVALID":
+                request.set_session({session_key_back_to: f"/subject/{patch.id}"})
+                return Redirect("/login")
+
+            logger.error(f"failed to apply patch {data!r}")
+            raise InternalServerException()
+
+        data: dict[str, Any] = res.json()
+        subject_id = data["subjectID"]
+
+        await conn.execute(
+            """
+                    update subject_patch set
+                        state = $1,
+                        wiki_user_id = $2,
+                        updated_at = $3,
+                        subject_id = $4
+                    where id = $5 and deleted_at is NULL
+                    """,
+            PatchState.Accept,
+            request.auth.user_id,
+            datetime.now(tz=UTC),
+            subject_id,
+            patch.id,
+        )
+
+        next_pk = await conn.fetchval(
+            "select id from view_subject_patch where state = $1 order by random() limit 1",
+            PatchState.Pending,
+        )
+
+        if next_pk:
+            return Redirect(f"/subject/{next_pk}")
+
+        return Redirect("/?type=subject")
+
+    async def __accept_patch_update(
         self,
         patch: SubjectPatch,
         conn: PoolConnectionProxy[Record],
