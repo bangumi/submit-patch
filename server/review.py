@@ -150,7 +150,6 @@ class SubjectReviewController(Controller):
                 "summary": patch.summary,
             },
         )
-        print(res.text)
         if res.status_code >= 300:
             data: dict[str, Any] = res.json()
             err_code = data.get("code")
@@ -198,15 +197,8 @@ class SubjectReviewController(Controller):
             patch.id,
         )
 
-        next_pk = await conn.fetchval(
-            "select id from view_subject_patch where state = $1 order by random() limit 1",
-            PatchState.Pending,
-        )
+        return Redirect(f'https://bgm.tv/subject/{subject_id}')
 
-        if next_pk:
-            return Redirect(f"/subject/{next_pk}")
-
-        return Redirect("/?type=subject")
 
     async def __accept_patch_update(
         self,
