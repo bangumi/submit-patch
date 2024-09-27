@@ -128,8 +128,41 @@
   </form>
 
   <script type="module">
-    globalThis.subject_type = {{ subject_type }}
-  </script>
+    import {
+      parseToMap, stringifyMap
+    } from '/static/@bgm38/wiki/0.2.8/dist/index.js';
 
-  <script type="module" src="/static/new-wiki.1.mjs"></script>
+    import platforms from '/static/common/subject_platforms.370f9e.json' assert {type: 'json'};
+    import templates from '/static/common/wiki_template.7ce1ba.json' assert {type: 'json'};
+
+    const subjectType = {{ subject_type | tojson }};
+    const configForSubjectType = platforms.platforms[subjectType];
+
+    if (!configForSubjectType) {
+      const tpl = templates[platforms.default[subjectType].wiki_tpl];
+      $('#infobox').val(tpl);
+    }
+
+    function platformChange() {
+      const currentPlatform = $('#wiki-form').find('input[name="platform"]:checked').val();
+
+      const config = platforms.platforms[subjectType]?.[currentPlatform]
+      const tpl = templates[config?.wiki_tpl ?? platforms.default[subjectType].wiki_tpl];
+
+      const currentInfobox = $('#infobox').val()
+
+      const defaultWiki = parseToMap(tpl)
+      const w = parseToMap(currentInfobox)
+
+      defaultWiki.type = defaultWiki.type || w.type;
+
+      w.data.forEach((v, k) => {
+        defaultWiki.data.set(k, v);
+      })
+
+      $('#infobox').val(stringifyMap(defaultWiki));
+    }
+
+    $('.platform-radio').on('change', platformChange)
+  </script>
 {% endblock %}
