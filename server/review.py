@@ -179,7 +179,7 @@ class SubjectReviewController(Controller):
             logger.error(f"failed to apply patch {data!r}")
             raise InternalServerException()
 
-        data: dict[str, Any] = res.json()
+        data = res.json()
         subject_id = data["subjectID"]
 
         await conn.execute(
