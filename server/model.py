@@ -27,7 +27,7 @@ class SubjectType(enum.IntEnum):
     Game = 4
     Real = 6
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.value)
 
 
