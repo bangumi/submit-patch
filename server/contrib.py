@@ -617,8 +617,8 @@ async def patch_for_new_subject(
     await pg.execute(
         """
         insert into subject_patch (id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
-                             subject_type, platform, patch_desc, action)
-        VALUES ($1, 0, $2, '', $3, $4, $5, $6, $7, $8, $9, $10)
+                             subject_type, platform, patch_desc, action, original_name)
+        VALUES ($1, 0, $2, '', $3, $4, $5, $6, $7, $8, $9, $10, '')
     """,
         pk,
         request.auth.user_id,
