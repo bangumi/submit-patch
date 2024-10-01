@@ -74,7 +74,6 @@ def main() -> None:
         ("diff2html", ("bundles",)),
         ("bootstrap", None),
         ("jquery", ("dist",)),
-        ("js-cookie", None),
         ("@bgm38/wiki", None),
     ]:
         download_npm_package(
