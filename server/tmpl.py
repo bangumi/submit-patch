@@ -25,7 +25,6 @@ engine.globals["TURNSTILE_SITE_KEY"] = TURNSTILE_SITE_KEY
 engine.globals["min"] = min
 engine.globals["max"] = max
 
-
 P = typing.ParamSpec("P")
 T = typing.TypeVar("T")
 
@@ -128,7 +127,7 @@ local_tz = timezone(timedelta(hours=8), name="Asia/Shanghai")
 @add_filter
 @pass_context
 def to_user_local_time(ctx: Context, dt: datetime) -> str:
-    return str(dt.replace(microsecond=0).astimezone(ctx["request"].state.get("tz", local_tz)))
+    return dt.astimezone(ctx["request"].state.get("tz", local_tz)).strftime("%Y-%m-%d %H:%M:%S")
 
 
 @add_global_function

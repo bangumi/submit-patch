@@ -28,6 +28,7 @@ from server import auth, badge, contrib, index, patch, review, tmpl
 from server.auth import session_auth_config
 from server.base import (
     Request,
+    User,
     http_client,
     pg,
     pg_pool_startup,
@@ -89,13 +90,18 @@ else:
         )
     )
 
-
 # \d will match many Unicode number
 __tz_pattern = re.compile(r"-?[0-9]+")
 
 
-def before_req(req: litestar.Request[None, None, State]) -> None:
+def before_req(req: litestar.Request[None, User | None, State]) -> None:
     req.state["now"] = datetime.now(tz=UTC)
+
+    a = req.auth
+    if a is not None:
+        req.state["tz"] = timezone(timedelta(hours=int(a.time_offset)))
+        return
+
     tz = req.cookies.get("tz")
     if tz:
         if __tz_pattern.match(tz):

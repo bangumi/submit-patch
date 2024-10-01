@@ -52,6 +52,7 @@ class SessionDict(TypedDict):
     refresh_token: str
     access_token_created_at: int
     access_token_expires_in: int
+    tz: int
 
 
 async def retrieve_user_from_session(
@@ -71,6 +72,7 @@ def __user_from_session(session: SessionDict) -> User:
         refresh_token=session["refresh_token"],
         access_token_created_at=session["access_token_created_at"],
         access_token_expires_in=session["access_token_expires_in"],
+        time_offset=session["tz"],
     )
 
 
@@ -98,6 +100,7 @@ class MyAuthenticationMiddleware(SessionAuthMiddleware):
                         refresh_token="",
                         access_token_created_at=0,
                         access_token_expires_in=0,
+                        time_offset=8,
                     ),
                 )
 
@@ -148,7 +151,7 @@ async def callback(code: str, request: Request) -> Redirect:
     if res.status_code >= 300:
         raise InternalServerException("api request error")
     data: OAuthResponse = res.json()
-    print(data)
+
     user_id = data["user_id"]
 
     access_token = data["access_token"]
@@ -181,6 +184,7 @@ async def callback(code: str, request: Request) -> Redirect:
             user_id=user_id,
             group_id=group_id,
             access_token=access_token,
+            tz=user["time_offset"],
             refresh_token=data["refresh_token"],
             access_token_created_at=int(time.time()),
             access_token_expires_in=int(data["expires_in"]),

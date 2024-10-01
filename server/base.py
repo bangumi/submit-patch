@@ -22,6 +22,8 @@ class User:
     user_id: int
     group_id: int
 
+    time_offset: int
+
     access_token: str
     refresh_token: str
 
@@ -73,7 +75,6 @@ async def pg_pool_startup() -> None:
 Request = litestar.Request[None, User | None, Any]
 
 AuthorizedRequest = litestar.Request[None, User, Any]
-
 
 patch_keys: Mapping[str, str] = {
     "name": "标题",
