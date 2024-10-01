@@ -1,5 +1,6 @@
 import asyncio
 import html
+import logging
 import mimetypes
 import os
 import re
@@ -9,6 +10,7 @@ from pathlib import Path
 from typing import Any, NamedTuple
 
 import litestar
+import sslog
 from litestar import Response
 from litestar.config.csrf import CSRFConfig
 from litestar.contrib.jinja import JinjaTemplateEngine
@@ -17,7 +19,7 @@ from litestar.exceptions import (
     HTTPException,
     NotFoundException,
 )
-from litestar.response import Template
+from litestar.response import Redirect, Template
 from litestar.static_files import create_static_files_router
 from litestar.status_codes import HTTP_500_INTERNAL_SERVER_ERROR
 from litestar.stores.redis import RedisStore
@@ -27,6 +29,7 @@ from sslog import logger
 from server import auth, badge, contrib, index, patch, review, tmpl
 from server.auth import session_auth_config
 from server.base import (
+    RedirectException,
     Request,
     User,
     http_client,
@@ -43,6 +46,14 @@ from server.config import (
 from server.migration import run_migration
 from server.queue import on_app_start_queue
 from server.router import Router
+
+
+httpx_logger = logging.getLogger("httpx")
+for h in httpx_logger.handlers:
+    httpx_logger.removeHandler(h)
+
+httpx_logger.propagate = False
+httpx_logger.addHandler(sslog.InterceptHandler())
 
 
 router = Router()
@@ -222,6 +233,10 @@ async def refresh_db(application: litestar.Litestar) -> None:
     application.state["background_refresh-db"] = asyncio.create_task(refresh())
 
 
+def exception_as_redirect(req: Request, exc: RedirectException) -> Response[Any]:
+    return Redirect(exc.location)
+
+
 app = litestar.Litestar(
     [
         *index.router,
@@ -247,6 +262,7 @@ app = litestar.Litestar(
     before_request=before_req,
     middleware=[session_auth_config.middleware],
     exception_handlers={
+        RedirectException: exception_as_redirect,
         HTTPException: plain_text_exception_handler,
         Exception: internal_error_handler,
     },

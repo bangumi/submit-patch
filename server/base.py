@@ -2,7 +2,7 @@ import asyncio
 import time
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypeAlias
 from uuid import UUID
 
 import asyncpg
@@ -15,6 +15,13 @@ from server.config import PG_DSN, REDIS_DSN
 
 
 session_key_back_to = "backTo"
+
+
+class RedirectException(Exception):
+    location: str
+
+    def __init__(self, location: str):
+        self.location = location
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -74,7 +81,7 @@ async def pg_pool_startup() -> None:
 
 Request = litestar.Request[None, User | None, Any]
 
-AuthorizedRequest = litestar.Request[None, User, Any]
+AuthorizedRequest: TypeAlias = litestar.Request[None, User, Any]
 
 patch_keys: Mapping[str, str] = {
     "name": "标题",

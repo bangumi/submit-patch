@@ -17,7 +17,7 @@ from litestar.response import Redirect
 from sslog import logger
 from uuid_utils import uuid7
 
-from server.auth import require_user_editor
+from server.auth import refresh_access_token, require_user_editor
 from server.base import (
     AuthorizedRequest,
     User,
@@ -67,6 +67,9 @@ class SubjectReviewController(Controller):
         request: AuthorizedRequest,
         data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
     ) -> Response[Any]:
+        if not request.auth.is_access_token_fresh():
+            await refresh_access_token(request, back_to=f"/subject/{patch_id}")
+
         async with pg.acquire() as conn:
             async with conn.transaction():
                 p = await pg.fetchrow(
@@ -134,10 +137,6 @@ class SubjectReviewController(Controller):
         conn: PoolConnectionProxy[Record],
         request: AuthorizedRequest,
     ) -> Redirect:
-        if not request.auth.is_access_token_fresh():
-            request.set_session({session_key_back_to: f"/subject/{patch.id}"})
-            return Redirect("/login")
-
         res = await http_client.post(
             "https://next.bgm.tv/p1/wiki/subjects",
             headers={"Authorization": f"Bearer {request.auth.access_token}"},
@@ -205,10 +204,6 @@ class SubjectReviewController(Controller):
         conn: PoolConnectionProxy[Record],
         request: AuthorizedRequest,
     ) -> Redirect:
-        if not request.auth.is_access_token_fresh():
-            request.set_session({session_key_back_to: f"/subject/{patch.id}"})
-            return Redirect("/login")
-
         subject = _strip_none(
             {
                 "infobox": patch.infobox,
@@ -317,6 +312,9 @@ class EpisodeReviewController(Controller):
         request: AuthorizedRequest,
         data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
     ) -> Response[Any]:
+        if not request.auth.is_access_token_fresh():
+            await refresh_access_token(request, back_to=f"/episode/{patch_id}")
+
         async with pg.acquire() as conn:
             async with conn.transaction():
                 p = await pg.fetchrow(
@@ -367,10 +365,6 @@ class EpisodeReviewController(Controller):
         request: AuthorizedRequest,
         auth: User,
     ) -> Redirect:
-        if not auth.is_access_token_fresh():
-            request.set_session({session_key_back_to: f"/episode/{patch.id}"})
-            return Redirect("/login")
-
         episode = _strip_none(
             {
                 "nameCN": patch.name_cn,

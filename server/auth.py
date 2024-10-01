@@ -1,4 +1,5 @@
 import html
+import json
 import time
 from dataclasses import dataclass
 from typing import Any, TypedDict
@@ -15,8 +16,17 @@ from litestar.middleware.session.server_side import (
 from litestar.response import Redirect
 from litestar.security.session_auth import SessionAuth, SessionAuthMiddleware
 from litestar.types import Empty
+from sslog import logger
 
-from server.base import Request, User, http_client, pg, session_key_back_to
+from server.base import (
+    AuthorizedRequest,
+    RedirectException,
+    Request,
+    User,
+    http_client,
+    pg,
+    session_key_back_to,
+)
 from server.config import (
     BGM_TV_APP_ID,
     BGM_TV_APP_SECRET,
@@ -124,7 +134,7 @@ session_auth_config = SessionAuth[User, ServerSideSessionBackend](
 @litestar.get("/login", sync_to_thread=False)
 def login() -> Redirect:
     return Redirect(
-        "https://bgm.tv/oauth/authorize?"
+        "https://next.bgm.tv/oauth/authorize?"
         + urlencode(
             {
                 "client_id": BGM_TV_APP_ID,
@@ -139,7 +149,7 @@ def login() -> Redirect:
 @litestar.get("/oauth_callback")
 async def callback(code: str, request: Request) -> Redirect:
     res = await http_client.post(
-        "https://bgm.tv/oauth/access_token",
+        "https://next.bgm.tv/oauth/access_token",
         data={
             "code": code,
             "client_id": BGM_TV_APP_ID,
@@ -152,7 +162,7 @@ async def callback(code: str, request: Request) -> Redirect:
         raise InternalServerException("api request error")
     data: OAuthResponse = res.json()
 
-    user_id = data["user_id"]
+    user_id = int(data["user_id"])
 
     access_token = data["access_token"]
 
@@ -204,3 +214,71 @@ def require_user_editor(connection: ASGIConnection[Any, Any, Any, Any], _: Any) 
         raise NotAuthorizedException("require user to login before this action")
     if not connection.auth.allow_edit:
         raise NotAuthorizedException("you don't have wiki edit permission")
+
+
+async def refresh_access_token(request: AuthorizedRequest, back_to: str):
+    logger.debug("refresh_access_token")
+
+    auth: User = request.auth
+    res = await http_client.post(
+        "https://next.bgm.tv/oauth/access_token",
+        data={
+            "grant_type": "refresh_token",
+            "refresh_token": auth.refresh_token,
+            "client_id": BGM_TV_APP_ID,
+            "redirect_uri": CALLBACK_URL,
+            "client_secret": BGM_TV_APP_SECRET,
+        },
+    )
+    if res.status_code >= 300:
+        try:
+            err_data = res.json()
+            if err_data.get("code") == "INVALID_REFRESH_TOKEN":
+                request.set_session({session_key_back_to: back_to})
+                raise RedirectException("/login")
+        except json.JSONDecodeError:
+            pass
+        logger.error("failed to refresh token")
+        raise InternalServerException("oauth server error")
+
+    data: OAuthResponse = res.json()
+
+    user_id = int(data["user_id"])
+
+    access_token = data["access_token"]
+
+    res = await http_client.get(
+        "https://api.bgm.tv/v0/me", headers={"Authorization": f"Bearer {access_token}"}
+    )
+
+    if res.status_code >= 300:
+        raise InternalServerException("api request error")
+    user = res.json()
+
+    group_id = user["user_group"]
+
+    await pg.execute(
+        """
+        insert into patch_users (user_id, username, nickname) VALUES ($1,$2,$3)
+        on conflict (user_id) do update set
+            username = excluded.username,
+            nickname = excluded.nickname
+    """,
+        user_id,
+        user["username"],
+        html.unescape(user["nickname"]),
+    )
+
+    s = SessionDict(
+        user_id=user_id,
+        group_id=group_id,
+        access_token=access_token,
+        tz=user["time_offset"],
+        refresh_token=data["refresh_token"],
+        access_token_created_at=int(time.time()),
+        access_token_expires_in=int(data["expires_in"]),
+    )
+
+    request.set_session(s)
+
+    request.scope["auth"] = __user_from_session(s)
