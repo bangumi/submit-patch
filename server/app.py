@@ -108,7 +108,7 @@ __tz_pattern = re.compile(r"-?[0-9]+")
 def before_req(req: litestar.Request[None, User | None, State]) -> None:
     req.state["now"] = datetime.now(tz=UTC)
 
-    a = req.auth
+    a = req.scope.get("auth")
     if a is not None:
         req.state["tz"] = timezone(timedelta(hours=int(a.time_offset)))
         return
