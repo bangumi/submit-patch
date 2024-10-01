@@ -38,6 +38,7 @@ python-dotenv = "^1.0.1"
 watchfiles = '0.24.0'
 
 [tool.black]
+extend-exclude = 'common'
 line-length = 100
 
 [tool.ruff]
@@ -45,7 +46,7 @@ cache-dir = ".venv/.cache/ruff"
 line-length = 100
 target-version = 'py310'
 
-exclude = ['dist', '.venv']
+exclude = ['dist', '.venv', 'common']
 
 [tool.ruff.format]
 

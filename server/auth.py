@@ -216,7 +216,7 @@ def require_user_editor(connection: ASGIConnection[Any, Any, Any, Any], _: Any) 
         raise NotAuthorizedException("you don't have wiki edit permission")
 
 
-async def refresh_access_token(request: AuthorizedRequest, back_to: str):
+async def refresh_access_token(request: AuthorizedRequest, back_to: str) -> None:
     logger.debug("refresh_access_token")
 
     auth: User = request.auth
