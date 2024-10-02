@@ -17,7 +17,7 @@ from litestar.response import Redirect
 from sslog import logger
 from uuid_utils import uuid7
 
-from server.auth import refresh_access_token, require_user_editor
+from server.auth import refresh_access_token, require_user_editor, require_user_login
 from server.base import (
     AuthorizedRequest,
     User,
@@ -58,7 +58,7 @@ def _strip_none(d: dict[str, Any]) -> dict[str, Any]:
 class SubjectReviewController(Controller):
     @litestar.post(
         "/api/review-patch/{patch_id:str}",
-        guards=[require_user_editor],
+        guards=[require_user_login],
         status_code=200,
     )
     async def review_patch(
@@ -86,9 +86,6 @@ class SubjectReviewController(Controller):
                 if patch.state != PatchState.Pending:
                     raise BadRequestException("patch already reviewed")
 
-                if data.react == React.Reject:
-                    return await self.__reject_patch(patch, conn, request.auth, data.text.strip())
-
                 if data.react == React.Comment:
                     return await add_comment(
                         conn,
@@ -97,6 +94,11 @@ class SubjectReviewController(Controller):
                         request.auth.user_id,
                         patch_type=PatchType.Subject,
                     )
+
+                require_user_editor(request)
+
+                if data.react == React.Reject:
+                    return await self.__reject_patch(patch, conn, request.auth, data.text.strip())
 
                 if data.react == React.Accept:
                     if patch.action == PatchAction.Update:

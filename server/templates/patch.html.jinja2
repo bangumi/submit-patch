@@ -172,12 +172,30 @@
               <button type="submit"
                       name="react"
                       value="comment"
-                      class="btn btn-warning">要求修改
+                      class="btn btn-warning">添加评论
               </button>
             </div>
             <div class="col">
               <button type="submit" name="react" value="reject" class="btn btn-danger">
                 Reject
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    {% else %}
+            <div class="row">
+        <hr>
+        <form action="/api/review-patch/{{ patch.id }}" method="post"
+              enctype="application/x-www-form-urlencoded">
+          {{ csrf_input | safe }}
+          <textarea class="form-control mb-4" name="text"></textarea>
+          <div class="row">
+            <div class="col">
+              <button type="submit"
+                      name="react"
+                      value="comment"
+                      class="btn btn-success">添加评论
               </button>
             </div>
           </div>

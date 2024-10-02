@@ -209,7 +209,7 @@ def require_user_login(connection: ASGIConnection[Any, Any, Any, Any], _: Any) -
         raise NotAuthorizedException("require user to login before this action")
 
 
-def require_user_editor(connection: ASGIConnection[Any, Any, Any, Any], _: Any) -> None:
+def require_user_editor(connection: ASGIConnection[Any, Any, Any, Any], _: Any = None) -> None:
     if not connection.auth:
         raise NotAuthorizedException("require user to login before this action")
     if not connection.auth.allow_edit:
