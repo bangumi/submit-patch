@@ -235,7 +235,7 @@ class SubjectReviewController(Controller):
         if res.status_code >= 300:
             data: dict[str, Any] = res.json()
             err_code = data.get("code")
-            if err_code == "SUBJECT_CHANGED":
+            if err_code == "WIKI_CHANGED":
                 await conn.execute(
                     """
                     update view_subject_patch set
