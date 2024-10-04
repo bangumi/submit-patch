@@ -242,7 +242,7 @@ class SubjectReviewController(Controller):
                         state = $1,
                         wiki_user_id = $2,
                         updated_at = $3,
-                        reason = $4
+                        reject_reason = $4
                     where id = $5
                     """,
                     PatchState.Outdated,
