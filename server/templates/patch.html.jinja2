@@ -184,7 +184,7 @@
         </form>
       </div>
     {% else %}
-            <div class="row">
+      <div class="row">
         <hr>
         <form action="/api/review-patch/{{ patch.id }}" method="post"
               enctype="application/x-www-form-urlencoded">
@@ -226,6 +226,7 @@
     <hr>
     <div class="col">
       <h2> 已过期 </h2>
+      <p>{{ patch.reject_reason }}</p>
     </div>
   {% endif %}
 

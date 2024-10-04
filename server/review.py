@@ -241,12 +241,14 @@ class SubjectReviewController(Controller):
                     update view_subject_patch set
                         state = $1,
                         wiki_user_id = $2,
-                        updated_at = $3
-                    where id = $4
+                        updated_at = $3,
+                        reason = $4
+                    where id = $5
                     """,
                     PatchState.Outdated,
                     request.auth.user_id,
                     datetime.now(tz=UTC),
+                    data.get("message", ""),
                     patch.id,
                 )
                 return Redirect(f"/subject/{patch.id}")
