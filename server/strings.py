@@ -1,11 +1,11 @@
-import regex
+from __future__ import annotations
+
+import re2
 
 from server.errors import BadRequestException
 
 
-# stdlib re doesn't support `\p`
-# re2 doesn't support negative lookahead
-__invisible_pattern = regex.compile(r"(?![\t\r\n])(\p{Cf}|\p{Cc}|\p{Co})")
+__invisible_pattern = re2.compile(r"[^\t\r\n\p{L}\p{M}\p{N}\p{P}\p{S}\p{Z}]")
 
 
 def check_invalid_input_str(*ss: str) -> None:
@@ -23,9 +23,9 @@ def contains_invalid_input_str(*ss: str) -> str | None:
             return m.group(0)
 
 
-def __repl(m: regex.Match[str]) -> str:
+def __repl(m: re2._Match[str]) -> str:
     return m.group(0).encode("unicode-escape").decode()
 
 
 def escape_invisible(s: str) -> str:
-    return __invisible_pattern.sub(repl=__repl, string=s)
+    return __invisible_pattern.sub(__repl, s)
