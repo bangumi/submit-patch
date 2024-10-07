@@ -5,9 +5,9 @@
   "private": true,
   "scripts": {},
   "dependencies": {
-    "@bgm38/wiki": "^0.2.8",
-    "bootstrap": "^5.3.3",
-    "diff2html": "^3.4.48",
-    "jquery": "^3.7.1"
+    "@bgm38/wiki": "0.2.8",
+    "bootstrap": "5.3.3",
+    "diff2html": "3.4.48",
+    "jquery": "3.7.1"
   }
 }
