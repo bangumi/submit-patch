@@ -248,7 +248,7 @@ class SubjectReviewController(Controller):
                     PatchState.Outdated,
                     request.auth.user_id,
                     datetime.now(tz=UTC),
-                    data.get("message", ""),
+                    str(data.get("message", ""))[:255],
                     patch.id,
                 )
                 return Redirect(f"/subject/{patch.id}")
