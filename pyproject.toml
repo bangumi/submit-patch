@@ -39,7 +39,7 @@ watchfiles = '0.24.0'
 [tool.poetry.group.dev.dependencies.google-re2-stubs]
 git = 'https://github.com/trim21/google-re2-stubs'
 branch = 'fix-typing'
-rev = 'a51a38d718d8f534e7404ec5128ecf9dc10546b0'
+rev = 'd8ca14975bf7fcf7424fd9ca0e92ac3c7c0f8e27'
 
 [tool.black]
 extend-exclude = 'common'

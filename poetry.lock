@@ -461,8 +461,8 @@ google-re2 = ">=1.0"
 [package.source]
 type = "git"
 url = "https://github.com/trim21/google-re2-stubs"
-reference = "a51a38d718d8f534e7404ec5128ecf9dc10546b0"
-resolved_reference = "a51a38d718d8f534e7404ec5128ecf9dc10546b0"
+reference = "d8ca14975bf7fcf7424fd9ca0e92ac3c7c0f8e27"
+resolved_reference = "d8ca14975bf7fcf7424fd9ca0e92ac3c7c0f8e27"
 
 [[package]]
 name = "h11"
@@ -1861,4 +1861,4 @@ anyio = ">=3.0.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a3de40927bcc919fa83915f305046456a71e70b04ed18aaec7666402bf7a40f4"
+content-hash = "e87429701637e450de7059e65360a0b83811c513a7f788842bb4c49389f45cb2"
