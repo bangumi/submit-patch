@@ -68,6 +68,7 @@ class SubjectReviewController(Controller):
         request: AuthorizedRequest,
         data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
     ) -> Response[Any]:
+        logger.info("{} {} patch {}", request.auth.user_id, data.react.name, patch_id)
         if not request.auth.is_access_token_fresh():
             await refresh_access_token(request, back_to=f"/subject/{patch_id}")
 
@@ -323,6 +324,7 @@ class EpisodeReviewController(Controller):
         request: AuthorizedRequest,
         data: Annotated[ReviewPatch, Body(media_type=RequestEncodingType.URL_ENCODED)],
     ) -> Response[Any]:
+        logger.info("{} {} patch {}", request.auth.user_id, data.react.name, patch_id)
         if not request.auth.is_access_token_fresh():
             await refresh_access_token(request, back_to=f"/episode/{patch_id}")
 

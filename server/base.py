@@ -14,7 +14,8 @@ from litestar.middleware import AbstractMiddleware
 from litestar.types import Receive, Scope, Send
 from redis.asyncio import Redis
 from sslog import logger
-from uuid_utils.compat import uuid7
+from structlog.contextvars import bind_contextvars, reset_contextvars
+from uuid_utils.compat import uuid4
 
 from server.config import PG_DSN, REDIS_DSN
 
@@ -116,17 +117,17 @@ class XRequestIdMiddleware(AbstractMiddleware):
         receive: Receive,
         send: Send,
     ) -> None:
-        async def send_wrapper(message: litestar.types.Message) -> None:
-            if message["type"] != "http.response.start":
-                reset = CTX_REQUEST_ID.set(str(uuid7()))
-            else:
-                request_id_header: str = litestar.Request(scope).headers.get("x-request-id") or str(
-                    uuid7()
-                )
-                reset = CTX_REQUEST_ID.set(request_id_header)
-            try:
-                await send(message)
-            finally:
-                CTX_REQUEST_ID.reset(reset)
+        if scope["type"] == ScopeType.HTTP:
+            if "headers" in scope:
+                request_id: str = Request(scope).headers.get("x-request-id") or str(uuid4())
+                reset = CTX_REQUEST_ID.set(request_id)
+                ctx = bind_contextvars(request_id=request_id)
+                try:
+                    await self.app(scope, receive, send)
+                finally:
+                    reset_contextvars(**ctx)
+                    CTX_REQUEST_ID.reset(reset)
 
-        await self.app(scope, receive, send_wrapper)
+                return
+
+        await self.app(scope, receive, send)
