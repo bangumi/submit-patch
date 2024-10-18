@@ -1,4 +1,5 @@
 import asyncio
+import contextvars
 import time
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -8,8 +9,12 @@ from uuid import UUID
 import asyncpg
 import httpx
 import litestar
+from litestar.enums import ScopeType
+from litestar.middleware import AbstractMiddleware
+from litestar.types import Receive, Scope, Send
 from redis.asyncio import Redis
 from sslog import logger
+from uuid_utils.compat import uuid7
 
 from server.config import PG_DSN, REDIS_DSN
 
@@ -92,3 +97,36 @@ patch_keys: Mapping[str, str] = {
 }
 
 disable_cookies_opt = {"skip_session": True, "exclude_from_auth": True, "exclude_from_csrf": True}
+
+CTX_REQUEST_ID: contextvars.ContextVar[str] = contextvars.ContextVar("request.id", default="")
+
+
+class XRequestIdMiddleware(AbstractMiddleware):
+    """If X-Request-Id is in the request headers, add it to the response headers.
+
+    Reference: https://docs.litestar.dev/2/usage/middleware/creating-middleware.html
+
+    """
+
+    scopes = {ScopeType.HTTP}  # noqa: RUF012
+
+    async def __call__(
+        self,
+        scope: Scope,
+        receive: Receive,
+        send: Send,
+    ) -> None:
+        async def send_wrapper(message: litestar.types.Message) -> None:
+            if message["type"] != "http.response.start":
+                reset = CTX_REQUEST_ID.set(str(uuid7()))
+            else:
+                request_id_header: str = litestar.Request(scope).headers.get("x-request-id") or str(
+                    uuid7()
+                )
+                reset = CTX_REQUEST_ID.set(request_id_header)
+            try:
+                await send(message)
+            finally:
+                CTX_REQUEST_ID.reset(reset)
+
+        await self.app(scope, receive, send_wrapper)

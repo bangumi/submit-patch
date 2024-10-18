@@ -19,6 +19,7 @@ from uuid_utils import uuid7
 
 from server.auth import refresh_access_token, require_user_editor, require_user_login
 from server.base import (
+    CTX_REQUEST_ID,
     AuthorizedRequest,
     User,
     http_client,
@@ -141,7 +142,10 @@ class SubjectReviewController(Controller):
     ) -> Redirect:
         res = await http_client.post(
             "https://next.bgm.tv/p1/wiki/subjects",
-            headers={"Authorization": f"Bearer {request.auth.access_token}"},
+            headers={
+                "Authorization": f"Bearer {request.auth.access_token}",
+                "cf-ray": CTX_REQUEST_ID.get(),
+            },
             json={
                 "name": patch.name,
                 "type": patch.subject_type,
@@ -217,7 +221,10 @@ class SubjectReviewController(Controller):
 
         res = await http_client.patch(
             f"https://next.bgm.tv/p1/wiki/subjects/{patch.subject_id}",
-            headers={"Authorization": f"Bearer {request.auth.access_token}"},
+            headers={
+                "Authorization": f"Bearer {request.auth.access_token}",
+                "cf-ray": CTX_REQUEST_ID.get(),
+            },
             json={
                 "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/subject/{patch.id}]",
                 "expectedRevision": {
@@ -381,7 +388,10 @@ class EpisodeReviewController(Controller):
 
         res = await http_client.patch(
             f"https://next.bgm.tv/p1/wiki/ep/{patch.episode_id}",
-            headers={"Authorization": f"Bearer {auth.access_token}"},
+            headers={
+                "Authorization": f"Bearer {auth.access_token}",
+                "cf-ray": CTX_REQUEST_ID.get(),
+            },
             json={
                 "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/episode/{patch.id}]",
                 "episode": episode,

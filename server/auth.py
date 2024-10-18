@@ -19,6 +19,7 @@ from litestar.types import Empty
 from sslog import logger
 
 from server.base import (
+    CTX_REQUEST_ID,
     AuthorizedRequest,
     RedirectException,
     Request,
@@ -150,6 +151,9 @@ def login() -> Redirect:
 async def callback(code: str, request: Request) -> Redirect:
     res = await http_client.post(
         "https://next.bgm.tv/oauth/access_token",
+        headers={
+            "cf-ray": CTX_REQUEST_ID.get(),
+        },
         data={
             "code": code,
             "client_id": BGM_TV_APP_ID,
@@ -222,6 +226,7 @@ async def refresh_access_token(request: AuthorizedRequest, back_to: str) -> None
     auth: User = request.auth
     res = await http_client.post(
         "https://next.bgm.tv/oauth/access_token",
+        headers={"cf-ray": CTX_REQUEST_ID.get()},
         data={
             "grant_type": "refresh_token",
             "refresh_token": auth.refresh_token,
