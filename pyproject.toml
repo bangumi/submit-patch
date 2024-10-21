@@ -31,11 +31,8 @@ pytest = "8.3.3"
 pre-commit = "4.0.1"
 asyncpg-stubs = "0.29.1"
 types-redis = "^4.6.0.20240806"
-
-[tool.poetry.group.dev.dependencies.google-re2-stubs]
-git = 'https://github.com/trim21/google-re2-stubs'
-branch = 'fix-typing'
-rev = 'd8ca14975bf7fcf7424fd9ca0e92ac3c7c0f8e27'
+types-pyyaml = "^6.0.12.20240917"
+google-re2-stubs = "^0.1.1"
 
 [tool.black]
 extend-exclude = 'common'

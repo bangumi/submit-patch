@@ -448,21 +448,17 @@ files = [
 
 [[package]]
 name = "google-re2-stubs"
-version = "0.1.0"
+version = "0.1.1"
 description = "Typestubs for google-re2"
 optional = false
-python-versions = "^3.8.0"
-files = []
-develop = false
+python-versions = "<4.0.0,>=3.8.0"
+files = [
+    {file = "google_re2_stubs-0.1.1-py3-none-any.whl", hash = "sha256:a82eb6c3accd20879d711cd38151583d8a154fcca755f43a5595143a484c8118"},
+    {file = "google_re2_stubs-0.1.1.tar.gz", hash = "sha256:f5ebef2f4188957bf980a5ad88ab266589638e5090329e6a0fde99f6bb684657"},
+]
 
 [package.dependencies]
 google-re2 = ">=1.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/trim21/google-re2-stubs"
-reference = "d8ca14975bf7fcf7424fd9ca0e92ac3c7c0f8e27"
-resolved_reference = "d8ca14975bf7fcf7424fd9ca0e92ac3c7c0f8e27"
 
 [[package]]
 name = "h11"
@@ -1516,6 +1512,17 @@ cryptography = ">=35.0.0"
 types-cffi = "*"
 
 [[package]]
+name = "types-pyyaml"
+version = "6.0.12.20240917"
+description = "Typing stubs for PyYAML"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-PyYAML-6.0.12.20240917.tar.gz", hash = "sha256:d1405a86f9576682234ef83bcb4e6fff7c9305c8b1fbad5e0bcd4f7dbdc9c587"},
+    {file = "types_PyYAML-6.0.12.20240917-py3-none-any.whl", hash = "sha256:392b267f1c0fe6022952462bf5d6523f31e37f6cea49b14cee7ad634b6301570"},
+]
+
+[[package]]
 name = "types-redis"
 version = "4.6.0.20241004"
 description = "Typing stubs for redis"
@@ -1730,4 +1737,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "3fe46a77b08a2071b1483daaf1384ee9adfcb5fd8b5f5da8a7c136d14a000ade"
+content-hash = "ad9286371101b5ac8ffbf5e6cc71c543aa9af7c0268183d8038f520034901213"
