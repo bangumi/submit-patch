@@ -31,10 +31,6 @@ pytest = "8.3.3"
 pre-commit = "4.0.1"
 asyncpg-stubs = "0.29.1"
 types-redis = "^4.6.0.20240806"
-types-python-dateutil = "^2.9.0.20240316"
-types-pyyaml = "^6.0.12.20240808"
-python-dotenv = "1.0.1"
-watchfiles = '0.24.0'
 
 [tool.poetry.group.dev.dependencies.google-re2-stubs]
 git = 'https://github.com/trim21/google-re2-stubs'

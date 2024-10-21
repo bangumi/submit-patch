@@ -8,7 +8,7 @@ tasks:
 
   server:
     cmds:
-      - watchfiles --target-type=command --filter python 'uvicorn server.app:app --env-file .env --no-access-log' server
+      - watchexec -r -e py -- uvicorn server.app:app --env-file .env --no-access-log
 
   run:
     dotenv: [ .env ]

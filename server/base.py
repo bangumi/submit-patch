@@ -103,12 +103,6 @@ CTX_REQUEST_ID: contextvars.ContextVar[str] = contextvars.ContextVar("request.id
 
 
 class XRequestIdMiddleware(AbstractMiddleware):
-    """If X-Request-Id is in the request headers, add it to the response headers.
-
-    Reference: https://docs.litestar.dev/2/usage/middleware/creating-middleware.html
-
-    """
-
     scopes = {ScopeType.HTTP}  # noqa: RUF012
 
     async def __call__(
