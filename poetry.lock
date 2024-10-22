@@ -107,28 +107,28 @@ typing-extensions = ">=4.7.0,<5.0.0"
 
 [[package]]
 name = "bgm-tv-wiki"
-version = "0.0.28"
+version = "0.0.29"
 description = "bgm.tv wiki syntax parser"
 optional = false
 python-versions = "~=3.10"
 files = [
-    {file = "bgm_tv_wiki-0.0.28-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e3cfb47d5023354a2167266d294fe0ee934c9e3d7662a4cb1d082caccdd03f97"},
-    {file = "bgm_tv_wiki-0.0.28-cp310-cp310-win_amd64.whl", hash = "sha256:9a257012d1279ab62c1307b6820e6f2905180fd8363c17dd059f61bff324f4e8"},
-    {file = "bgm_tv_wiki-0.0.28-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2868024aacb5e94d2ca5751f377bfcf0c830f90fe94f005c7b45766ff790064d"},
-    {file = "bgm_tv_wiki-0.0.28-cp311-cp311-win_amd64.whl", hash = "sha256:78deb4f63a4c47b4f6a450ec8110ae0581abed97c4a39daca58b66eb5dfb7ec7"},
-    {file = "bgm_tv_wiki-0.0.28-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:88435d67ec1f35197a6cacbd8e7b2ff546c772e26bf9d949f911ef6c97a24b93"},
-    {file = "bgm_tv_wiki-0.0.28-cp312-cp312-win_amd64.whl", hash = "sha256:e7248c798ebb5034411a76a953efdef324faaac278a68de04683875eccd25196"},
-    {file = "bgm_tv_wiki-0.0.28-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8a4f83f0c8736315b2f997c2e93b0bd9b859b0ad51489a69096e686a2dc5e681"},
-    {file = "bgm_tv_wiki-0.0.28-cp313-cp313-win_amd64.whl", hash = "sha256:247e3b5db1055d6b5f7fb881d4f64ea48af5aab8e86473f18bf6684aaa77c84e"},
-    {file = "bgm_tv_wiki-0.0.28-py3-none-any.whl", hash = "sha256:c9fcee3a9c460e8b316b3948cf3547778114c7a661139e13d7380a8cb2eca4d6"},
-    {file = "bgm_tv_wiki-0.0.28.tar.gz", hash = "sha256:4ecb38f7b0bc3d8c6ffcab462edcf355e7ba69c96b11c667f7b962af433e920d"},
+    {file = "bgm_tv_wiki-0.0.29-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ef9e29bff149b71e0941ed12e9e579f7adee53848e194ea6b1ef6def5021a20e"},
+    {file = "bgm_tv_wiki-0.0.29-cp310-cp310-win_amd64.whl", hash = "sha256:34f3cd38b3a49d4ffb92245f3827338800bd08cb7707a5b4730f9a000d6ba350"},
+    {file = "bgm_tv_wiki-0.0.29-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6c19e4f19a5537f893a88364637c509fae7889898bb247afdee51bba74fa6a10"},
+    {file = "bgm_tv_wiki-0.0.29-cp311-cp311-win_amd64.whl", hash = "sha256:853822e47d42daeb37650e246f8e48f23854b8171e443edba625ebf9eb3738a9"},
+    {file = "bgm_tv_wiki-0.0.29-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:036b197b5a3970e865f3baed377f86c94cfbe7d603181e5fc9abd0193c1eb9ea"},
+    {file = "bgm_tv_wiki-0.0.29-cp312-cp312-win_amd64.whl", hash = "sha256:e60aaf1c77e4a3964f31296a64d03a1e1df0837b0db4cbc66fe7b01191d5cf2b"},
+    {file = "bgm_tv_wiki-0.0.29-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:85c44a1184a18d946d27ec7d7e1af739c1deabd3276b1ce65ba1b8a96e0e8bff"},
+    {file = "bgm_tv_wiki-0.0.29-cp313-cp313-win_amd64.whl", hash = "sha256:d8f90879b3eba6fd68404c0b1d2c9daec0bfdc045c46981bf3a1c8c0fec81b42"},
+    {file = "bgm_tv_wiki-0.0.29-py3-none-any.whl", hash = "sha256:79968c286c633c0fee9a0ba60b04cd7ddbd60d163c9893d64cd596b7aca90808"},
+    {file = "bgm_tv_wiki-0.0.29.tar.gz", hash = "sha256:eb072a96e87ad2041966a99b43045073db4a0cbb9586083c7fbcfe3bb6633b85"},
 ]
 
 [package.dependencies]
 typing-extensions = ">=4.7.0"
 
 [package.extras]
-dev = ["coverage (==7.6.1)", "mypy (==1.11.2)", "pre-commit (==3.8.0)", "pytest (==8.3.3)", "pytest-github-actions-annotate-failures (==0.2.0)", "pyyaml (>=6,<7)", "types-pyyaml"]
+dev = ["coverage (==7.6.3)", "mypy (==1.12.0)", "pre-commit (==4.0.1)", "pytest (==8.3.3)", "pytest-github-actions-annotate-failures (==0.2.0)", "pyyaml (>=6,<7)", "types-pyyaml"]
 
 [[package]]
 name = "certifi"
@@ -1737,4 +1737,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "4831243fbcdf1802985a74ffbc8a55e575820077c0b2d40e3ff36bdc067ac1ee"
+content-hash = "348efe7f184240b6f97e565fc0a66f345932ae3283a2de911bc1cb2040b32a99"
