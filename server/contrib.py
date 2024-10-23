@@ -16,7 +16,6 @@ from litestar.exceptions import (
 )
 from litestar.params import Body
 from litestar.response import Redirect, Template
-from uuid_utils.compat import uuid7
 
 from common.py.platform import PLATFORM_CONFIG, WIKI_TEMPLATES
 from server.auth import require_user_login
@@ -131,15 +130,13 @@ async def suggest_api(
         if key in changed:
             check_invalid_input_str(changed[key])
 
-    pk = uuid7()
-
-    await pg.execute(
+    pk = await pg.fetchval(
         """
         insert into subject_patch (id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
                            original_name, original_infobox, original_summary, subject_type, patch_desc)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        VALUES (uuid_generate_v7(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        returning id
     """,
-        pk,
         subject_id,
         request.auth.user_id,
         data.reason,
@@ -220,15 +217,13 @@ async def suggest_api_from_partial(
         if key in changed:
             check_invalid_input_str(changed[key])
 
-    pk = uuid7()
-
-    await pg.execute(
+    pk = await pg.fetchval(
         """
         insert into subject_patch (id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
                            original_name, original_infobox, original_summary, subject_type, patch_desc)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        VALUES (uuid_generate_v7(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        returning id
     """,
-        pk,
         subject_id,
         request.auth.user_id,
         data.reason,
@@ -507,16 +502,14 @@ async def creat_episode_patch(
         if c := contains_invalid_input_str(value):
             raise BadRequestException(f"{patch_keys[key]} 包含不可见字符 {c!r}")
 
-    pk = uuid7()
-
-    await pg.execute(
+    pk = await pg.fetchval(
         """
         insert into episode_patch (id, episode_id, from_user_id, reason, original_name, name,
             original_name_cn, name_cn, original_duration, duration,
             original_airdate, airdate, original_description, description, subject_id, ep)
-        VALUES ($1, $2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+        VALUES (uuid_generate_v7(), $1, $2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+        returning id
     """,
-        pk,
         episode_id,
         request.auth.user_id,
         reason,
@@ -612,15 +605,13 @@ async def patch_for_new_subject(
     if data.platform not in PLATFORM_CONFIG.get(data.type_id, {}):
         raise BadRequestException("平台不正确")
 
-    pk = uuid7()
-
-    await pg.execute(
+    pk = await pg.fetchval(
         """
         insert into subject_patch (id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
                              subject_type, platform, patch_desc, action, original_name)
-        VALUES ($1, 0, $2, '', $3, $4, $5, $6, $7, $8, $9, $10, '')
+        VALUES (uuid_generate_v7(), 0, $1, '', $2, $3, $4, $5, $6, $7, $8, $9, '')
+        returning id
     """,
-        pk,
         request.auth.user_id,
         data.name,
         data.infobox,

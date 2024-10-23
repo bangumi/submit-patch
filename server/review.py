@@ -15,7 +15,6 @@ from litestar.exceptions import InternalServerException, NotAuthorizedException,
 from litestar.params import Body
 from litestar.response import Redirect
 from sslog import logger
-from uuid_utils import uuid7
 
 from server.auth import refresh_access_token, require_user_editor, require_user_login
 from server.base import (
@@ -449,9 +448,8 @@ async def add_comment(
     await conn.execute(
         """
     insert into edit_suggestion (id, patch_id, patch_type, text, from_user)
-    values ($1, $2, $3, $4, $5)
+    values (uuid_generate_v7(), $1, $2, $3, $4)
         """,
-        uuid7(),
         patch_id,
         patch_type,
         text,

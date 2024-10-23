@@ -3,7 +3,6 @@ import asyncio
 from bgm_tv_wiki import WikiSyntaxError, parse
 from litestar import Litestar
 from sslog import logger
-from uuid_utils import uuid7
 
 from server.base import QueueItem, pg, subject_infobox_queue
 from server.model import PatchType
@@ -26,9 +25,8 @@ async def check_infobox_error(item: QueueItem) -> None:
         await pg.execute(
             """
             insert into edit_suggestion (id, patch_id, patch_type, text, from_user)
-            VALUES ($1, $2, $3, $4, $5)
+            VALUES (uuid_generate_v7(), $1, $2, $3, $4)
         """,
-            uuid7(),
             item.patch_id,
             PatchType.Subject,
             "infobox 包含语法错误，请检查\n" + msg,

@@ -1,3 +1,6 @@
 [submodule "common"]
 	path = common
 	url = https://github.com/Bangumi/common
+[submodule "vendor/uuidv7"]
+	path = vendor/uuidv7
+	url = https://github.com/Betterment/postgresql-uuid-generate-v7.git

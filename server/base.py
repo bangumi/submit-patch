@@ -4,7 +4,7 @@ import time
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, TypeAlias
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import asyncpg
 import httpx
@@ -15,9 +15,8 @@ from litestar.types import Receive, Scope, Send
 from redis.asyncio import Redis
 from sslog import logger
 from structlog.contextvars import bind_contextvars, reset_contextvars
-from uuid_utils.compat import uuid4
 
-from server.config import PG_DSN, REDIS_DSN
+from server.config import PG_DSN, PROJECT_PATH, REDIS_DSN
 
 
 session_key_back_to = "backTo"
@@ -83,6 +82,17 @@ pg = asyncpg.create_pool(dsn=PG_DSN, server_settings={"application_name": "patch
 async def pg_pool_startup() -> None:
     logger.info("init")
     await pg
+    pgcrypto_enabled = await pg.fetchval(
+        "SELECT count(1) FROM pg_extension  where extname = 'pgcrypto'"
+    )
+    if not pgcrypto_enabled:
+        if not await pg.fetchval(
+            "SELECT count(1) FROM pg_available_extensions where name = 'pgcrypto'"
+        ):
+            raise Exception("require pgcrypto to be available")
+        await pg.execute("create extension pgcrypto;")
+
+    await pg.execute(PROJECT_PATH.joinpath("./vendor/uuidv7/uuid_generate_v7.sql").read_text())
 
 
 Request = litestar.Request[None, User | None, Any]

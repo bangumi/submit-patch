@@ -7,8 +7,10 @@ tasks:
     - mypy .
 
   server:
+    dotenv:
+      - .env
     cmds:
-      - watchexec -r -e py -- uvicorn server.app:app --env-file .env --no-access-log
+      - watchexec -r -e py -- uvicorn server.app:app --no-access-log
 
   run:
     dotenv: [ .env ]
