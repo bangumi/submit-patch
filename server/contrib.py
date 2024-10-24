@@ -414,6 +414,14 @@ async def _(
                 conn, patch_id, PatchType.Subject, text="提交者进行了修改", from_user=0
             )
 
+            if "infobox" in changed:
+                await subject_infobox_queue.put(
+                    QueueItem(
+                        patch_id=patch_id,
+                        infobox=changed["infobox"],
+                    )
+                )
+
             return Redirect(f"/subject/{patch_id}")
 
 
