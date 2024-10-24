@@ -30,7 +30,7 @@ from server.base import (
     subject_infobox_queue,
 )
 from server.config import TURNSTILE_SECRET_KEY, UTC
-from server.db import new_edit_suggestion
+from server.db import create_edit_suggestion
 from server.errors import BadRequestException
 from server.model import PatchAction, PatchState, PatchType, SubjectPatch, SubjectType
 from server.router import Router
@@ -410,7 +410,7 @@ async def _(
                 patch_id,
             )
 
-            await new_edit_suggestion(
+            await create_edit_suggestion(
                 conn, patch_id, PatchType.Subject, text="提交者进行了修改", from_user=0
             )
 

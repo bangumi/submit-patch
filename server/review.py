@@ -26,6 +26,7 @@ from server.base import (
     session_key_back_to,
 )
 from server.config import UTC
+from server.db import create_edit_suggestion
 from server.errors import BadRequestException
 from server.model import EpisodePatch, PatchAction, PatchState, PatchType, SubjectPatch
 from server.router import Router
@@ -455,16 +456,7 @@ async def add_comment(
 
     check_invalid_input_str(text)
 
-    await conn.execute(
-        """
-    insert into edit_suggestion (id, patch_id, patch_type, text, from_user)
-    values (uuid_generate_v7(), $1, $2, $3, $4)
-        """,
-        patch_id,
-        patch_type,
-        text,
-        from_user_id,
-    )
+    await create_edit_suggestion(conn, patch_id, patch_type, text, from_user_id)
 
     await conn.execute(
         f"""

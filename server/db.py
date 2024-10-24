@@ -23,7 +23,7 @@ async def fetch_users(rows: list[asyncpg.Record]) -> dict[int, asyncpg.Record]:
     return users
 
 
-async def new_edit_suggestion(
+async def create_edit_suggestion(
     conn: asyncpg.Connection[Any] | PoolConnectionProxy[Any] | asyncpg.Pool[Any],
     patch_id: UUID,
     type: PatchType,

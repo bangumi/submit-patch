@@ -5,6 +5,7 @@ from litestar import Litestar
 from sslog import logger
 
 from server.base import QueueItem, pg, subject_infobox_queue
+from server.db import create_edit_suggestion
 from server.model import PatchType
 
 
@@ -22,11 +23,8 @@ async def check_infobox_error(item: QueueItem) -> None:
 
         msg = msg + e.message
 
-        await pg.execute(
-            """
-            insert into edit_suggestion (id, patch_id, patch_type, text, from_user)
-            VALUES (uuid_generate_v7(), $1, $2, $3, $4)
-        """,
+        await create_edit_suggestion(
+            pg,
             item.patch_id,
             PatchType.Subject,
             "infobox 包含语法错误，请检查\n" + msg,
