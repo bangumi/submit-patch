@@ -300,8 +300,13 @@ class SubjectReviewController(Controller):
         )
 
         next_pk = await conn.fetchval(
-            "select id from view_subject_patch where state = $1 order by random() limit 1",
+            """
+            select id from view_subject_patch
+            where state = $1 and created_at < $2
+            order by created_at desc limit 1
+            """,
             PatchState.Pending,
+            patch.created_at,
         )
 
         if next_pk:
@@ -423,8 +428,13 @@ class EpisodeReviewController(Controller):
         )
 
         next_pk = await conn.fetchval(
-            "select id from view_episode_patch where state = $1 order by random() limit 1",
+            """
+            select id from view_episode_patch
+            where state = $1 and created_at < $2
+            order by created_at desc limit 1
+            """,
             PatchState.Pending,
+            patch.created_at,
         )
 
         if next_pk:
