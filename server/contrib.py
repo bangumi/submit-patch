@@ -30,8 +30,9 @@ from server.base import (
     subject_infobox_queue,
 )
 from server.config import TURNSTILE_SECRET_KEY, UTC
+from server.db import new_edit_suggestion
 from server.errors import BadRequestException
-from server.model import PatchAction, PatchState, SubjectPatch, SubjectType
+from server.model import PatchAction, PatchState, PatchType, SubjectPatch, SubjectType
 from server.router import Router
 from server.strings import check_invalid_input_str, contains_invalid_input_str
 
@@ -407,6 +408,10 @@ async def _(
                 original["summary"],
                 datetime.now(tz=UTC),
                 patch_id,
+            )
+
+            await new_edit_suggestion(
+                conn, patch_id, PatchType.Subject, text="提交者进行了修改", from_user=0
             )
 
             return Redirect(f"/subject/{patch_id}")

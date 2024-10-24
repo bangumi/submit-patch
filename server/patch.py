@@ -69,7 +69,7 @@ async def get_patch(patch_id: UUID, request: Request) -> Template:
     suggestions = await pg.fetch(
         """
     select * from edit_suggestion
-        inner join patch_users on patch_users.user_id = edit_suggestion.from_user
+        left join patch_users on patch_users.user_id = edit_suggestion.from_user
         where deleted_at IS NULL AND
             patch_id = $1 AND
             patch_type = $2

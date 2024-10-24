@@ -65,18 +65,27 @@
 
   {% if suggestions %}
     <div class="row mb-2">
-      <h2>修改建议</h2>
+{#      <h2>修改建议</h2>#}
       <ul class="list-group">
         {% for s in suggestions %}
-          <li class="list-group-item border-dark-subtle list-group-item-warning">
-            <div class="d-flex w-100 justify-content-between">
-              <h5> [{{ s.nickname }}]: </h5>
-              <small>{{ s.created_at | to_user_local_time }}</small>
-            </div>
-            <p class="mb-1" style="white-space: pre-wrap">
-              {{- s.text | auto_url -}}
-            </p>
-          </li>
+          {% if s.from_user != 0 %}
+            <li class="list-group-item border-dark-subtle list-group-item-warning">
+              <div class="d-flex w-100 justify-content-between">
+                <h5> [{{ s.nickname }}]: </h5>
+                <small>{{ s.created_at | to_user_local_time }}</small>
+              </div>
+              <p class="mb-1" style="white-space: pre-wrap">
+                {{- s.text | auto_url -}}
+              </p>
+            </li>
+          {% else %}
+            <li class="list-group-item border-dark-subtle list-group-item-info">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-0"> {{ s.text }} </h5>
+                <small>{{ s.created_at | to_user_local_time }}</small>
+              </div>
+            </li>
+          {% endif %}
         {% endfor %}
       </ul>
     </div>
