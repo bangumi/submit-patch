@@ -65,7 +65,7 @@
 
   {% if suggestions %}
     <div class="row mb-2">
-{#      <h2>修改建议</h2>#}
+      {#      <h2>修改建议</h2>#}
       <ul class="list-group">
         {% for s in suggestions %}
           {% if s.from_user != 0 %}
@@ -91,15 +91,45 @@
     </div>
   {% endif %}
 
-  {% if patch.from_user_id == auth.user_id %}
-    <div class="row mb-2">
-      <form action="/edit/subject/{{ patch.id }}" method="get" class="col">
-        <button type="submit" class="btn btn-success">Edit</button>
-      </form>
-      <form action="/api/delete-subject/{{ patch.id }}" method="post" class="col">
-        {{ csrf_input | safe }}
-        <button type="submit" class="btn btn-danger">Delete</button>
-      </form>
+  {% if patch.state == 0 %}
+    {% if patch.from_user_id == auth.user_id %}
+      <div class="row mb-2">
+        <form action="/edit/subject/{{ patch.id }}" method="get" class="col">
+          <button type="submit" class="btn btn-success">Edit</button>
+        </form>
+        <form action="/api/delete-subject/{{ patch.id }}" method="post" class="col">
+          {{ csrf_input | safe }}
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+      <hr>
+    {% endif %}
+  {% elif patch.state == 1 %}
+    <hr>
+    <div class="col">
+      <h2> 已被 <a href="/review/{{ patch.wiki_user_id }}"
+                   target="_blank">{{ reviewer.nickname }}</a>
+        <span class="badge bg-success"> 接受 </span>
+      </h2>
+      <hr>
+    </div>
+  {% elif patch.state == 2 %}
+    <div class="col">
+      <h3> 已被 <a href="/review/{{ patch.wiki_user_id }}"
+                   target="_blank">{{ reviewer.nickname }}</a>
+        <span class="badge bg-danger"> 拒绝 </span>
+      </h3>
+
+      {% if patch.reject_reason %}
+        <h4>原因：{{ patch.reject_reason }}</h4>
+      {% endif %}
+      <hr>
+    </div>
+  {% elif patch.state == 3 %}
+    <div class="col">
+      <h2> 已过期 </h2>
+      <p>{{ patch.reject_reason }}</p>
+      <hr>
     </div>
   {% endif %}
 
@@ -211,32 +241,6 @@
         </form>
       </div>
     {% endif %}
-  {% elif patch.state == 1 %}
-    <hr>
-    <div class="col">
-      <h2> 已被 <a href="/review/{{ patch.wiki_user_id }}"
-                   target="_blank">{{ reviewer.nickname }}</a>
-        <span class="badge bg-success"> 接受 </span>
-      </h2>
-    </div>
-  {% elif patch.state == 2 %}
-    <hr>
-    <div class="col">
-      <h3> 已被 <a href="/review/{{ patch.wiki_user_id }}"
-                   target="_blank">{{ reviewer.nickname }}</a>
-        <span class="badge bg-danger"> 拒绝 </span>
-      </h3>
-
-      {% if patch.reject_reason %}
-        <h4>原因：{{ patch.reject_reason }}</h4>
-      {% endif %}
-    </div>
-  {% elif patch.state == 3 %}
-    <hr>
-    <div class="col">
-      <h2> 已过期 </h2>
-      <p>{{ patch.reject_reason }}</p>
-    </div>
   {% endif %}
 
   {% if name_patch %}
