@@ -27,8 +27,9 @@ from litestar.template import TemplateConfig
 from sslog import logger
 
 from server import auth, badge, contrib, index, patch, review, tmpl
-from server.auth import session_auth_config
+from server.auth import require_user_login, session_auth_config
 from server.base import (
+    AuthorizedRequest,
     RedirectException,
     Request,
     User,
@@ -236,6 +237,15 @@ async def refresh_db(application: litestar.Litestar) -> None:
 
 def exception_as_redirect(req: Request, exc: RedirectException) -> Response[Any]:
     return Redirect(exc.location)
+
+
+@router
+@litestar.get("/api/debug", guards=[require_user_login])
+async def debug_router(request: AuthorizedRequest) -> Any:
+    if request.auth.super_user():
+        return request.session
+
+    return {}
 
 
 app = litestar.Litestar(
