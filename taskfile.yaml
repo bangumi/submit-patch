@@ -6,7 +6,7 @@ tasks:
     - black .
     - mypy .
 
-  server:
+  dev:
     dotenv:
       - .env
     cmds:
