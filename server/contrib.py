@@ -317,6 +317,7 @@ class EditSubjectPatch:
     infobox: str | None = None
     summary: str | None = None
     reason: str
+    patch_desc: str
     cf_turnstile_response: str
     # HTML form will only include checkbox when it's checked,
     # so any input is true, default value is false.
@@ -395,8 +396,8 @@ async def _(
             await conn.execute(
                 """
             update subject_patch set name=$1, infobox=$2, summary=$3, reason=$4,nsfw=$5,
-            original_name=$6, original_infobox=$7,original_summary=$8,updated_at=$9
-            where id=$10
+            original_name=$6, original_infobox=$7,original_summary=$8,updated_at=$9,patch_desc=$10
+            where id=$11
             """,
                 changed.get("name"),
                 changed.get("infobox"),
@@ -407,6 +408,7 @@ async def _(
                 original["infobox"],
                 original["summary"],
                 datetime.now(tz=UTC),
+                data.patch_desc,
                 patch_id,
             )
 
