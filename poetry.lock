@@ -1465,13 +1465,13 @@ files = [
 
 [[package]]
 name = "sslog"
-version = "0.0.0a50"
+version = "0.0.0a51"
 description = "opinionated logger based on structlog"
 optional = false
 python-versions = "~=3.8"
 files = [
-    {file = "sslog-0.0.0a50-py3-none-any.whl", hash = "sha256:ab2f4d9da9e38d24a43e6d9003bc3103f73ae75870daeee11d7e20b78e5bedb9"},
-    {file = "sslog-0.0.0a50.tar.gz", hash = "sha256:0b7e8740d3599373cdd97d5fa61f4663e822777952d6dcc0b477842efb110ee7"},
+    {file = "sslog-0.0.0a51-py3-none-any.whl", hash = "sha256:786c091c9fd072d629730aeaa8cd49c677449369bf218136658867dba321b750"},
+    {file = "sslog-0.0.0a51.tar.gz", hash = "sha256:7cffce8bbcdd82399b09fb60a36788aec6437c952d19906a60cd413c8c93ecd2"},
 ]
 
 [package.dependencies]
@@ -1679,4 +1679,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "1ad4c51f601c8a06bbbb24b667ff1e52551085d4227604169dac57a8ddad8f52"
+content-hash = "b6e2bbc5faaaf6f5d2c38fb715f0000b7a9cd4724b42a22134f83d33042d3af5"
