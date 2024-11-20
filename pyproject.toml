@@ -8,7 +8,7 @@ asyncpg = "0.30.0"
 httpx = { extras = ["http2"], version = "0.27.2" }
 jinja2 = "3.1.4"
 sslog = "0.0.0a50"
-litestar = { version = "2.12.1", extras = ['jinja'] }
+litestar = { version = "2.13.0", extras = ['jinja'] }
 redis = { extras = ["hiredis"], version = "5.2.0" }
 uvicorn = { version = "0.32.0" }
 bgm-tv-wiki = "0.0.29"
