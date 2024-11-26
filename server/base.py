@@ -75,7 +75,24 @@ redis_client = Redis.from_url(REDIS_DSN)
 http_client = httpx.AsyncClient(
     follow_redirects=False,
     headers={"user-agent": "trim21/submit-patch"},
+    limits=httpx.Limits(
+        max_keepalive_connections=3,
+        max_connections=5,
+        keepalive_expiry=5,
+    ),
 )
+
+external_http_client = httpx.AsyncClient(
+    follow_redirects=False,
+    headers={"user-agent": "trim21/submit-patch"},
+    limits=httpx.Limits(
+        max_keepalive_connections=3,
+        max_connections=5,
+        keepalive_expiry=5,
+    ),
+)
+
+
 pg = asyncpg.create_pool(dsn=PG_DSN, server_settings={"application_name": "patch"})
 
 

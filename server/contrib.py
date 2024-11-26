@@ -23,6 +23,7 @@ from server.base import (
     AuthorizedRequest,
     QueueItem,
     Request,
+    external_http_client,
     http_client,
     patch_keys,
     pg,
@@ -41,7 +42,7 @@ router = Router()
 
 
 async def _validate_captcha(cf_turnstile_response: str) -> None:
-    res = await http_client.post(
+    res = await external_http_client.post(
         "https://challenges.cloudflare.com/turnstile/v0/siteverify",
         data={
             "secret": TURNSTILE_SECRET_KEY,

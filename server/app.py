@@ -34,7 +34,7 @@ from server.base import (
     Request,
     User,
     XRequestIdMiddleware,
-    http_client,
+    external_http_client,
     pg,
     pg_pool_startup,
     redis_client,
@@ -192,7 +192,7 @@ async def startup_fetch_missing_users() -> None:
         return
 
     for user in s:
-        r = await http_client.get(f"https://api.bgm.tv/user/{user}")
+        r = await external_http_client.get(f"https://api.bgm.tv/user/{user}")
         data = r.json()
         await pg.execute(
             """

@@ -5,7 +5,7 @@ from litestar import Response
 
 from server.base import (
     disable_cookies_opt,
-    http_client,
+    external_http_client,
     pg,
     redis_client,
 )
@@ -111,7 +111,7 @@ async def __get_badge(count: int) -> bytes:
         else:
             color = "green"
 
-        res = await http_client.get(f"https://img.shields.io/badge/待审核-{s}-{color}")
+        res = await external_http_client.get(f"https://img.shields.io/badge/待审核-{s}-{color}")
         badge = res.content
         await redis_client.set(val_key, badge, ex=7 * 24 * 3600)
 

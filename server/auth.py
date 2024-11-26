@@ -24,6 +24,7 @@ from server.base import (
     RedirectException,
     Request,
     User,
+    external_http_client,
     http_client,
     pg,
     session_key_back_to,
@@ -170,7 +171,7 @@ async def callback(code: str, request: Request) -> Redirect:
 
     access_token = data["access_token"]
 
-    res = await http_client.get(
+    res = await external_http_client.get(
         "https://api.bgm.tv/v0/me", headers={"Authorization": f"Bearer {access_token}"}
     )
 
@@ -252,7 +253,7 @@ async def refresh_access_token(request: AuthorizedRequest, back_to: str) -> None
 
     access_token = data["access_token"]
 
-    res = await http_client.get(
+    res = await external_http_client.get(
         "https://api.bgm.tv/v0/me", headers={"Authorization": f"Bearer {access_token}"}
     )
 
