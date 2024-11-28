@@ -27,7 +27,7 @@ async def check_infobox_error(item: QueueItem) -> None:
             pg,
             item.patch_id,
             PatchType.Subject,
-            "infobox 包含维基语法错误，请检查。\n 请查看 https://bgm.tv/group/topic/365856 \n"
+            "infobox 包含维基语法错误，请查看 https://bgm.tv/group/topic/365856 了解具体详情 \n"
             + msg,
             287622,
         )
