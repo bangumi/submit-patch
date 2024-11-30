@@ -76,7 +76,8 @@ http_client = httpx.AsyncClient(
     follow_redirects=False,
     headers={"user-agent": "trim21/submit-patch"},
     limits=httpx.Limits(
-        max_keepalive_connections=3,
+        # http pool 在本地环境下经常会超时
+        max_keepalive_connections=0,
         max_connections=5,
         keepalive_expiry=5,
     ),
