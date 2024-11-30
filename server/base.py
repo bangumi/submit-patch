@@ -74,12 +74,15 @@ redis_client = Redis.from_url(REDIS_DSN)
 
 http_client = httpx.AsyncClient(
     follow_redirects=False,
-    headers={"user-agent": "trim21/submit-patch"},
+    headers={
+        "user-agent": "trim21/submit-patch",
+        # http pool 在本地环境下经常会超时
+        "Connection": "close",
+    },
     limits=httpx.Limits(
         # http pool 在本地环境下经常会超时
         max_keepalive_connections=0,
         max_connections=5,
-        keepalive_expiry=5,
     ),
 )
 
