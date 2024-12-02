@@ -223,6 +223,19 @@ def require_user_editor(connection: ASGIConnection[Any, Any, Any, Any], _: Any =
 
 async def refresh_access_token(request: AuthorizedRequest, back_to: str) -> None:
     logger.debug("refresh_access_token")
+    if not request.auth.access_token:
+        logger.debug("no access token")
+    elif not request.auth.access_token_created_at:
+        logger.debug("no access_token_created_at")
+    elif not request.auth.access_token_expires_in:
+        logger.debug("no access_token_expires_in")
+    else:
+        logger.debug(
+            "token create at {},expires in {}, now {}",
+            request.auth.access_token_created_at,
+            request.auth.access_token_expires_in,
+            time.time(),
+        )
 
     auth: User = request.auth
     res = await http_client.post(
