@@ -228,6 +228,7 @@ async def refresh_access_token(request: AuthorizedRequest, back_to: str) -> None
     res = await http_client.post(
         "https://next.bgm.tv/oauth/access_token",
         headers={"cf-ray": CTX_REQUEST_ID.get()},
+        timeout=10,
         data={
             "grant_type": "refresh_token",
             "refresh_token": auth.refresh_token,
