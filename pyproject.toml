@@ -25,7 +25,7 @@ uvloop = { version = '0.21.0', platform = 'linux' }
 anyio = '4.7.0'
 
 [tool.poetry.group.dev.dependencies]
-mypy = "1.13.0"
+mypy = "1.14.0"
 pytest = "8.3.3"
 pre-commit = "4.0.1"
 asyncpg-stubs = "0.30.0"
