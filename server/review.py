@@ -383,14 +383,13 @@ class EpisodeReviewController(Controller):
         request: AuthorizedRequest,
         auth: User,
     ) -> Redirect:
-
         episode = _strip_none(
             {
-                "nameCN": patch.name_cn,
                 "name": patch.name,
-                "summary": patch.description,
-                "duration": patch.duration,
+                "nameCN": patch.name_cn,
                 "date": patch.airdate,
+                "duration": patch.duration,
+                "summary": patch.description,
             }
         )
 
@@ -401,10 +400,18 @@ class EpisodeReviewController(Controller):
                 ("nameCN", patch.original_name_cn),
                 ("date", patch.original_airdate),
                 ("duration", patch.original_duration),
-                ("summary", patch.original_duration),
+                ("summary", patch.original_description),
             ]
             if key in episode
         }
+
+        data = {
+            "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/episode/{patch.id}]",
+            "episode": episode,
+            "expectedRevision": expected_revision,
+        }
+
+        print(data)
 
         res = await http_client.patch(
             f"https://next.bgm.tv/p1/wiki/ep/{patch.episode_id}",
@@ -412,14 +419,11 @@ class EpisodeReviewController(Controller):
                 "Authorization": f"Bearer {auth.access_token}",
                 "cf-ray": CTX_REQUEST_ID.get(),
             },
-            json={
-                "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/episode/{patch.id}]",
-                "episode": episode,
-                "expectedRevision": expected_revision,
-            },
+            json=data,
         )
         if res.status_code >= 300:
             data = res.json()
+            print(data)
             err_code = data.get("code")
             if err_code == "TOKEN_INVALID":
                 request.set_session({session_key_back_to: f"/episode/{patch.id}"})
