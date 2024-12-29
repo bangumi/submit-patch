@@ -12,7 +12,7 @@ from sslog import logger
 
 project_root = Path(__file__, "../..").resolve()
 static_path = project_root.joinpath("static")
-client = httpx.Client(proxies="http://192.168.1.3:7890")
+client = httpx.Client()
 
 
 def download_npm_package(
