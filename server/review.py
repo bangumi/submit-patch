@@ -383,6 +383,16 @@ class EpisodeReviewController(Controller):
         request: AuthorizedRequest,
         auth: User,
     ) -> Redirect:
+        expected_revision = _strip_none(
+            {
+                "name": patch.original_name,
+                "nameCN": patch.original_name_cn,
+                "date": patch.original_airdate,
+                "duration": patch.original_duration,
+                "summary": patch.original_duration,
+            }
+        )
+
         episode = _strip_none(
             {
                 "nameCN": patch.name_cn,
@@ -402,6 +412,7 @@ class EpisodeReviewController(Controller):
             json={
                 "commitMessage": f"{patch.reason} [patch https://patch.bgm38.tv/episode/{patch.id}]",
                 "episode": episode,
+                "expectedRevision": expected_revision,
             },
         )
         if res.status_code >= 300:
@@ -410,6 +421,24 @@ class EpisodeReviewController(Controller):
             if err_code == "TOKEN_INVALID":
                 request.set_session({session_key_back_to: f"/episode/{patch.id}"})
                 return Redirect("/login")
+
+            if err_code == "WIKI_CHANGED":
+                await conn.execute(
+                    """
+                    update view_episode_patch set
+                        state = $1,
+                        wiki_user_id = $2,
+                        updated_at = $3,
+                        reject_reason = $4
+                    where id = $5
+                    """,
+                    PatchState.Outdated,
+                    request.auth.user_id,
+                    datetime.now(tz=UTC),
+                    str(data.get("message", ""))[:255],
+                    patch.id,
+                )
+                return Redirect(f"/episode/{patch.id}")
 
             logger.error(f"failed to apply patch {data!r}")
             raise InternalServerException()
