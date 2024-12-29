@@ -383,15 +383,6 @@ class EpisodeReviewController(Controller):
         request: AuthorizedRequest,
         auth: User,
     ) -> Redirect:
-        expected_revision = _strip_none(
-            {
-                "name": patch.original_name,
-                "nameCN": patch.original_name_cn,
-                "date": patch.original_airdate,
-                "duration": patch.original_duration,
-                "summary": patch.original_duration,
-            }
-        )
 
         episode = _strip_none(
             {
@@ -402,6 +393,18 @@ class EpisodeReviewController(Controller):
                 "date": patch.airdate,
             }
         )
+
+        expected_revision = {
+            key: value
+            for key, value in [
+                ("name", patch.original_name),
+                ("nameCN", patch.original_name_cn),
+                ("date", patch.original_airdate),
+                ("duration", patch.original_duration),
+                ("summary", patch.original_duration),
+            ]
+            if key in episode
+        }
 
         res = await http_client.patch(
             f"https://next.bgm.tv/p1/wiki/ep/{patch.episode_id}",
