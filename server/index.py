@@ -337,7 +337,9 @@ class Statistics(msgspec.Struct):
 async def statistics(start: datetime, end: datetime) -> Statistics:
     subjects = await pg.fetch(
         """
-        select id, from_user_id, created_at from view_subject_patch where state = any($1) and (created_at between $2 and $3)
+        select from_user_id as user_id, count(from_user_id) from view_subject_patch
+        where state = any($1) and (created_at between $2 and $3)
+        group by from_user_id
         """,
         [PatchState.Accept, PatchState.Outdated],
         start,
@@ -346,7 +348,9 @@ async def statistics(start: datetime, end: datetime) -> Statistics:
 
     episodes = await pg.fetch(
         """
-        select id, from_user_id, created_at from view_episode_patch where state = any($1) and (created_at between $2 and $3)
+        select from_user_id as user_id, count(from_user_id) from view_episode_patch
+        where state = any($1) and (created_at between $2 and $3)
+        group by from_user_id
         """,
         [PatchState.Accept, PatchState.Outdated],
         start,
