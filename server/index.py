@@ -340,6 +340,7 @@ async def statistics(start: datetime, end: datetime) -> Statistics:
         select from_user_id as user_id, count(from_user_id) from view_subject_patch
         where state = any($1) and (created_at between $2 and $3)
         group by from_user_id
+        order by from_user_id asc
         """,
         [PatchState.Accept, PatchState.Outdated],
         start,
@@ -351,6 +352,7 @@ async def statistics(start: datetime, end: datetime) -> Statistics:
         select from_user_id as user_id, count(from_user_id) from view_episode_patch
         where state = any($1) and (created_at between $2 and $3)
         group by from_user_id
+        order by from_user_id asc
         """,
         [PatchState.Accept, PatchState.Outdated],
         start,
