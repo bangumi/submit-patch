@@ -1,6 +1,7 @@
 import enum
 import uuid
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Annotated, Any
 
 import litestar
@@ -324,3 +325,32 @@ async def current_pending_episode_list() -> PendingEpisodes:
     )
 
     return PendingEpisodes(data=[PendingEpisode(id=row[0], episode_id=row[1]) for row in rows])
+
+
+class Statistics(msgspec.Struct):
+    subjects: Any
+    episodes: Any
+
+
+@router
+@litestar.get("/api/statistics", opt=disable_cookies_opt)
+async def statistics(start: datetime, end: datetime) -> Statistics:
+    subjects = await pg.fetch(
+        """
+        select id, from_user_id, created_at from view_subject_patch where state = any($1) and (created_at between $2 and $3)
+        """,
+        [PatchState.Accept, PatchState.Outdated],
+        start,
+        end,
+    )
+
+    episodes = await pg.fetch(
+        """
+        select id, from_user_id, created_at from view_episode_patch where state = any($1) and (created_at between $2 and $3)
+        """,
+        [PatchState.Accept, PatchState.Outdated],
+        start,
+        end,
+    )
+
+    return Statistics(subjects=[dict(x) for x in subjects], episodes=[dict(x) for x in episodes])
