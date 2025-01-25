@@ -11,7 +11,7 @@ sslog = "0.0.0a51"
 litestar = { version = "2.14.0", extras = ['jinja'] }
 redis = { extras = ["hiredis"], version = "5.2.1" }
 uvicorn = { version = "0.34.0" }
-bgm-tv-wiki = "0.0.29"
+bgm-tv-wiki = "0.0.30"
 pyyaml = "6.0.2"
 msgspec = "0.19.0"
 google-re2 = "1.1.20240702"
