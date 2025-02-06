@@ -21,9 +21,6 @@ ENV PIP_ROOT_USER_ACTION=ignore
 
 RUN pip install --only-binary=:all: --no-cache --no-deps -r requirements.txt
 
-# check oxipng is working
-RUN oxipng --version
-
 ENTRYPOINT [ "uvicorn", "server.app:app" ]
 
 COPY . .
