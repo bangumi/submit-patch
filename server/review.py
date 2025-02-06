@@ -424,6 +424,24 @@ class EpisodeReviewController(Controller):
                 request.set_session({session_key_back_to: f"/episode/{patch.id}"})
                 return Redirect("/login")
 
+            if err_code == "REQUEST_VALIDATION_ERROR":
+                await conn.execute(
+                    """
+                    update view_episode_patch set
+                        state = $1,
+                        wiki_user_id = $2,
+                        updated_at = $3,
+                        reject_reason = $4
+                    where id = $5
+                    """,
+                    PatchState.Rejected,
+                    request.auth.user_id,
+                    datetime.now(tz=UTC),
+                    f"格式错误，已经自动拒绝: {data.get('message')}",
+                    patch.id,
+                )
+                return Redirect(f"/episode/{patch.id}")
+
             if err_code == "WIKI_CHANGED":
                 await conn.execute(
                     """
