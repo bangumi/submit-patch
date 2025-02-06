@@ -20,6 +20,12 @@
   "semanticCommitType": "build",
   "packageRules": [
     {
+      "matchPackageNames": [
+        "python"
+      ],
+      "enabled": false
+    },
+    {
       "matchManagers": [
         "pre-commit"
       ],
