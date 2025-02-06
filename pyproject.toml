@@ -1,7 +1,7 @@
 [project]
 name = "project"
 version = "0"
-requires-python = "~=3.10"
+requires-python = "~=3.10.16"
 dependencies = [
     'asyncpg==0.30.0',
     'httpx[http2]==0.28.1',
