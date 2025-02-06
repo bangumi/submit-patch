@@ -11,15 +11,3 @@ tasks:
       - .env
     cmds:
       - watchexec -r -e py -- uvicorn server.app:app --no-access-log
-
-  update:
-    cmds:
-      - poetry update
-      - poetry install --sync
-
-  lock:
-    cmds:
-      - poetry lock --no-update
-      - poetry install --sync
-
-  sync: poetry install --sync
