@@ -1,34 +1,29 @@
-# syntax=docker/dockerfile:1@sha256:93bfd3b68c109427185cd78b4779fc82b484b0b7618e36d0f104d4d801e66d25
-
-### convert poetry.lock to requirements.txt ###
-FROM python:3.10-slim@sha256:a636f5aafba3654ac4d04d7c234a75b77fa26646fe0dafe4654b731bc413b02f AS poetry
+FROM ghcr.io/astral-sh/uv:debian-slim AS build
 
 WORKDIR /app
+
+COPY uv.lock pyproject.toml ./
+
+RUN uv export --no-group dev --frozen --no-emit-project > /app/requirements.txt
+
+FROM python:3.10-slim
+
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    mediainfo &&\
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY --from=build /app/requirements.txt .
 
 ENV PIP_ROOT_USER_ACTION=ignore
 
-COPY requirements-poetry.txt ./
-RUN pip install -r requirements-poetry.txt
+RUN pip install --only-binary=:all: --no-cache -r requirements.txt
 
-COPY pyproject.toml poetry.lock ./
-RUN poetry export -f requirements.txt --output requirements.txt
-
-### final image ###
-FROM python:3.10-slim@sha256:a636f5aafba3654ac4d04d7c234a75b77fa26646fe0dafe4654b731bc413b02f
-
-WORKDIR /app
-
-ENV PYTHONPATH=/app
-
-COPY --from=poetry /app/requirements.txt ./requirements.txt
-
-ENV PIP_ROOT_USER_ACTION=ignore
-
-RUN pip install -U pip && \
-    pip install -r requirements.txt
-
-WORKDIR /app
+# check oxipng is working
+RUN oxipng --version
 
 ENTRYPOINT [ "uvicorn", "server.app:app" ]
 
-COPY . ./
+COPY . .
