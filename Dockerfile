@@ -8,16 +8,10 @@ RUN uv export --no-group dev --frozen --no-emit-project > /app/requirements.txt
 
 FROM python:3.10-slim
 
-RUN apt-get update && apt-get install -y \
-    ffmpeg \
-    mediainfo &&\
-    rm -rf /var/lib/apt/lists/*
-
+ENV PIP_ROOT_USER_ACTION=ignore
 WORKDIR /app
 
 COPY --from=build /app/requirements.txt .
-
-ENV PIP_ROOT_USER_ACTION=ignore
 
 RUN pip install --only-binary=:all: --no-cache --no-deps -r requirements.txt
 
