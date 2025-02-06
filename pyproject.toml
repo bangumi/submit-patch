@@ -20,7 +20,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    'mypy ==1.14.1',
+    'mypy ==1.15.0',
     'pytest ==8.3.4',
     'pre-commit ==4.0.1',
     'asyncpg-stubs ==0.30.0',
