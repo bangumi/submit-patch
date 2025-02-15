@@ -53,6 +53,7 @@ unfixable = ['F841']
 ignore = [
     "A001",
     "A002",
+    "A005",
     "ANN",
     "ARG001",
     "ARG002",
