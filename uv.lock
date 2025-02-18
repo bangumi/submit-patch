@@ -680,7 +680,7 @@ dev = [
     { name = "pre-commit", specifier = "==4.1.0" },
     { name = "pytest", specifier = "==8.3.4" },
     { name = "types-pyyaml", specifier = "==6.0.12.20241230" },
-    { name = "types-redis", specifier = ">=4.6.0.20241004" },
+    { name = "types-redis", specifier = "==4.6.0.20241004" },
 ]
 
 [[package]]
