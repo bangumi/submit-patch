@@ -133,7 +133,6 @@ ban-relative-imports = "all"
 [tool.ruff.lint.isort]
 #length-sort = true
 lines-after-imports = 2
-known-first-party = ["lint", "bgm", "server", "config"]
 
 [tool.mypy]
 strict = true
