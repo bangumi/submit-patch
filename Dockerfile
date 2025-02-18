@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:debian-slim@sha256:5bfdee6155180eb4bb70301601b000c647b86ca6dd2d2c286fb22797a9a4669a AS build
+FROM ghcr.io/astral-sh/uv:debian-slim@sha256:2de381791ffdaff9397a47fba5507728185fb996a327aca19eabde4cdb269921 AS build
 
 WORKDIR /app
 
