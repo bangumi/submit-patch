@@ -170,7 +170,7 @@ def internal_error_handler(req: Request, exc: Exception) -> Response[Any]:
 
 async def startup_fetch_missing_users() -> None:
     logger.info("fetch missing users")
-    s = set()
+    s: set[int | None] = set()
 
     for u1, u2 in await pg.fetch("select from_user_id, wiki_user_id from subject_patch"):
         s.add(u1)

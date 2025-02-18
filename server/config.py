@@ -25,7 +25,7 @@ TURNSTILE_SECRET_KEY = os.environ["TURNSTILE_SECRET_KEY"]
 
 HEADER_KEY_API = "x-api-token"
 
-SUPER_USERS = {}
+SUPER_USERS: dict[str, dict[str, int]] = {}
 
 for key in os.environ:
     if not key.startswith("SUPER_USER_TOKEN_"):

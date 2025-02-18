@@ -109,9 +109,8 @@ async def suggest_api(
     res.raise_for_status()
     original_wiki = res.json()
 
-    original = {}
-
-    changed = {}
+    original: dict[str, Any] = {}
+    changed: dict[str, Any] = {}
 
     for key in ["name", "infobox", "summary"]:
         before = original_wiki[key]
@@ -199,9 +198,9 @@ async def suggest_api_from_partial(
     res.raise_for_status()
     original_wiki = res.json()
 
-    original = {}
+    original: dict[str, Any] = {}
 
-    changed = {}
+    changed: dict[str, Any] = {}
 
     for key in ["name", "infobox", "summary", "nsfw"]:
         before = original_wiki[key]
@@ -353,7 +352,7 @@ async def _(
 
             patch = SubjectPatch.from_dict(p)
 
-            changed = {}
+            changed: dict[str, Any] = {}
 
             if patch.from_user_id != request.auth.user_id:
                 raise PermissionDeniedException()
@@ -494,7 +493,7 @@ async def creat_episode_patch(
 
     keys = ["airdate", "name", "name_cn", "duration", "description"]
 
-    changed = {}
+    changed: dict[str, Any] = {}
 
     for key in keys:
         if original_wiki[key] != getattr(data, key):
@@ -505,7 +504,7 @@ async def creat_episode_patch(
 
     reason = data.reason.strip()
     if not reason:
-        reasons = []
+        reasons: list[str] = []
         for key in changed:
             if original_wiki[key]:
                 reasons.append(f"修改{patch_keys[key]}")

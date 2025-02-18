@@ -11,6 +11,7 @@ from jinja2 import pass_context, select_autoescape
 from jinja2.runtime import Context
 from litestar import Request
 from markupsafe import Markup
+from multidict import MultiDict
 
 from server.config import DEV, PROJECT_PATH, TURNSTILE_SITE_KEY, UTC
 
@@ -21,9 +22,13 @@ engine = jinja2.Environment(
     auto_reload=DEV,
 )
 
-engine.globals["TURNSTILE_SITE_KEY"] = TURNSTILE_SITE_KEY
-engine.globals["min"] = min
-engine.globals["max"] = max
+
+engine_globals: dict[str, Any] = engine.globals
+engine_filters: dict[str, Any] = engine.filters
+
+engine_globals["TURNSTILE_SITE_KEY"] = TURNSTILE_SITE_KEY
+engine_globals["min"] = min
+engine_globals["max"] = max
 
 P = typing.ParamSpec("P")
 T = typing.TypeVar("T")
@@ -41,11 +46,15 @@ def add_filter(s: str | Callable[P, T]) -> Any:
     def real_wrapper(name: str, fn: Callable[P, T]) -> Callable[P, T]:
         if name in engine.filters:
             raise ValueError(f"filter '{name}' already exists")
-        engine.filters[name] = fn
+        engine_filters[name] = fn
         return fn
 
     if isinstance(s, str):
-        return lambda fn: real_wrapper(s, fn)
+
+        def inner(fn: Callable[P, T]) -> Callable[P, T]:
+            return real_wrapper(s, fn)
+
+        return inner
 
     return real_wrapper(s.__name__, s)
 
@@ -54,7 +63,7 @@ def add_global_function(fn: Callable[P, T]) -> Callable[P, T]:
     name = fn.__name__
     if name in engine.globals:
         raise ValueError(f"filter '{name}' already exists")
-    engine.globals[name] = fn
+    engine_globals[name] = fn
     return fn
 
 
@@ -134,7 +143,7 @@ def to_user_local_time(ctx: Context, dt: datetime) -> str:
 @pass_context
 def replace_url_query(ctx: Context, **kwargs: Any) -> str:
     req: Request[None, None, Any] = ctx["request"]
-    q = req.url.query_params.copy()
+    q: MultiDict[Any] = req.url.query_params.copy()
     q.update(kwargs)
     return req.url.path + "?" + urlencode(q)
 

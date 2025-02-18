@@ -26,6 +26,7 @@ dev = [
     'asyncpg-stubs ==0.30.0',
     'types-pyyaml ==6.0.12.20241230',
     'google-re2-stubs ==0.1.1',
+    "types-redis>=4.6.0.20241004",
 ]
 
 [tool.uv]
@@ -33,7 +34,6 @@ package = false
 required-environments = [
     "sys_platform == 'linux' and platform_machine == 'x86_64'",
     "sys_platform == 'win32' and platform_machine == 'x86_64'",
-
 ]
 
 [tool.black]
@@ -144,3 +144,17 @@ exclude = ['tests']
 
 [tool.pytest.ini_options]
 python_files = ['tests/**.py', 'test_*.py', '*_test.py']
+
+[tool.pyright]
+root = '.'
+ignore = ['./tests/']
+# include = ['./transmission_rpc/']
+# ignore = ['./tests/', './docs/']
+pythonVersion = '3.10'
+pythonPlatform = 'Linux'
+typeCheckingMode = "strict"
+# reportUnnecessaryComparison = false
+reportUnknownVariableType = false
+reportUnknownMemberType = false
+reportUnnecessaryIsInstance = false
+reportPrivateUsage = false
