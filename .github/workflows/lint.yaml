@@ -59,7 +59,8 @@ jobs:
 
       - run: uv sync --frozen
 
+      - run: echo "$PWD/.venv/bin" >> $GITHUB_PATH
+
       - uses: jakebailey/pyright-action@v2
         with:
-          venv-path: .
           pylance-version: latest-release
