@@ -148,8 +148,6 @@ python_files = ['tests/**.py', 'test_*.py', '*_test.py']
 [tool.pyright]
 root = '.'
 ignore = ['./tests/']
-# include = ['./transmission_rpc/']
-# ignore = ['./tests/', './docs/']
 pythonVersion = '3.10'
 pythonPlatform = 'Linux'
 typeCheckingMode = "strict"

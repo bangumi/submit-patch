@@ -46,19 +46,19 @@ jobs:
 
       - uses: trim21/actions/pre-commit@master
 
-    pyright:
-      runs-on: ubuntu-24.04
-      steps:
-        - uses: actions/checkout@v4
+  pyright:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
 
-        - uses: actions/setup-python@v5
-          with:
-            python-version: "3.10"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-        - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v5
 
-        - run: uv sync --frozen
+      - run: uv sync --frozen
 
-        - uses: jakebailey/pyright-action@v2
-          with:
-            venv-path: .venv
+      - uses: jakebailey/pyright-action@v2
+        with:
+          venv-path: .venv
