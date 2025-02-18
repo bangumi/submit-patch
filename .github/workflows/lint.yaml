@@ -61,4 +61,5 @@ jobs:
 
       - uses: jakebailey/pyright-action@v2
         with:
-          venv-path: .venv
+          venv-path: .
+          pylance-version: latest-release
