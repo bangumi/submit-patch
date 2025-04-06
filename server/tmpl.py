@@ -149,7 +149,8 @@ def replace_url_query(ctx: Context, **kwargs: str) -> str:
         req.url.path
         + "?"
         + urlencode(
-            list(cast("Iterator[tuple[str, str]]", q.multi_items())),
+            cast("dict[str, str]", q),
+            doseq=True,
         )
     )
 
