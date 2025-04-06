@@ -3,7 +3,7 @@ import re
 import typing
 from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import Any, cast
 from urllib.parse import urlencode
 
 import jinja2
@@ -141,11 +141,18 @@ def to_user_local_time(ctx: Context, dt: datetime) -> str:
 
 @add_global_function
 @pass_context
-def replace_url_query(ctx: Context, **kwargs: Any) -> str:
+def replace_url_query(ctx: Context, **kwargs: str) -> str:
     req: Request[None, None, Any] = ctx["request"]
-    q: MultiDict[Any] = req.url.query_params.copy()
+    q: MultiDict[str] = req.url.query_params.copy()
     q.update(kwargs)
-    return req.url.path + "?" + urlencode(q)
+    return (
+        req.url.path
+        + "?"
+        + urlencode(
+            cast("dict[str, str]", q),
+            doseq=True,
+        )
+    )
 
 
 # from https://stackoverflow.com/a/7160778/8062017
