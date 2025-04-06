@@ -182,4 +182,4 @@ def auto_url(s: str) -> Markup:
     if end != len(s):
         ss.append(html.escape(s[end:]))
 
-    return Markup("".join(ss))
+    return Markup("".join(ss))  # noqa: S704
