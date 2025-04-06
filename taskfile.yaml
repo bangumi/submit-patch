@@ -11,3 +11,7 @@ tasks:
       - .env
     cmds:
       - watchexec -r -e py -- uvicorn server.app:app --no-access-log
+
+  build:
+    - python scripts/build-common.py
+    - python scripts/fetch-static-files.py
