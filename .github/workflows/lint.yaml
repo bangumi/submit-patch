@@ -65,4 +65,4 @@ jobs:
 
       - uses: jakebailey/pyright-action@v2
         with:
-          pylance-version: latest-release
+          pylance-version: '2025.4.1'
