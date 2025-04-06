@@ -51,15 +51,15 @@ wheels = [
 
 [[package]]
 name = "asyncpg-stubs"
-version = "0.30.0"
+version = "0.30.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asyncpg" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/92/fb/08e27995b5444c888d58040203a2a73b9151855e267d171b3aff69033e7d/asyncpg_stubs-0.30.0.tar.gz", hash = "sha256:8bfe20f1b1e24a19674152ec9abbcc2df72c01e78af696f44fc275d56fe335ba", size = 20946 }
+sdist = { url = "https://files.pythonhosted.org/packages/8c/54/060d7ccafa322f15676daa5e32d34453e4a0ff24abb1f44182ffddc8a2d2/asyncpg_stubs-0.30.1.tar.gz", hash = "sha256:236b88fca49d0d181939ed35c21f79c9c404bc3cca51f8493f6d55210ecfcaf3", size = 20343 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/db/92/fb8ba4baca7f02ae627ad1f3b84fff8c550c93bd71fd7f993e6792d5718e/asyncpg_stubs-0.30.0-py3-none-any.whl", hash = "sha256:1eac258c10fc45a781729913a2fcfba775888bed160ae47f55fe0964d639e9cd", size = 26816 },
+    { url = "https://files.pythonhosted.org/packages/5f/51/29715a2551471a9ff4e196f02955e915ccbf7477c90bb2d6e59737d94f1b/asyncpg_stubs-0.30.1-py3-none-any.whl", hash = "sha256:a9d2ed3e53964da6aa6057b46b767b335532b85fa2a0b0ed124922f06d844ae9", size = 26880 },
 ]
 
 [[package]]
@@ -538,7 +538,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "asyncpg-stubs", specifier = "==0.30.0" },
+    { name = "asyncpg-stubs", specifier = "==0.30.1" },
     { name = "google-re2-stubs", specifier = "==0.1.1" },
     { name = "mypy", specifier = "==1.15.0" },
     { name = "pytest", specifier = "==8.3.5" },
