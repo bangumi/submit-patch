@@ -1,7 +1,7 @@
 import html
 import re
 import typing
-from collections.abc import Callable, Iterator
+from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 from typing import Any, cast
 from urllib.parse import urlencode
