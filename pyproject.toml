@@ -22,7 +22,7 @@ dependencies = [
 dev = [
     'mypy ==1.15.0',
     'pytest ==8.3.4',
-    'pre-commit ==4.1.0',
+    'pre-commit ==4.2.0',
     'asyncpg-stubs ==0.30.0',
     'types-pyyaml ==6.0.12.20241230',
     'google-re2-stubs ==0.1.1',
