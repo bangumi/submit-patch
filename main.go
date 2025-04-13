@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -18,7 +17,11 @@ func main() {
 	mux.Mount("/static/", http.FileServer(http.FS(staticFiles)))
 
 	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		_ = templates.Index(templates.Empty(), templates.Hello("world")).Render(context.Background(), w)
+		_ = templates.Index(templates.Empty(), templates.Hello("world")).Render(r.Context(), w)
+	})
+
+	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		_ = templates.Index(templates.Empty(), templates.Hello("world")).Render(r.Context(), w)
 	})
 
 	_ = http.ListenAndServe(":4096", mux)

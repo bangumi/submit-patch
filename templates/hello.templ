@@ -5,7 +5,6 @@ templ Hello(name string) {
 }
 
 templ Empty() {
-	// <></>
 }
 
 templ Index(head templ.Component, content templ.Component) {
@@ -30,4 +29,28 @@ templ Index(head templ.Component, content templ.Component) {
 			</div>
 		</body>
 	</html>
+}
+
+templ Error(method, url, err, extra, detail string) {
+	<div>
+		<div class="row">
+			method: { method }
+		</div>
+		<div class="row">
+			url: { url }
+		</div>
+		<div class="row">
+			error: { err }
+		</div>
+		if extra  != "" {
+			<div class="row">
+				{ extra }
+			</div>
+		}
+		if detail != "" {
+			<div class="row">
+				{ detail }
+			</div>
+		}
+	</div>
 }
