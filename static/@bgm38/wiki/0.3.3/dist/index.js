@@ -96,12 +96,12 @@ function stringify(wiki) {
 ${suffix}`;
 }
 function stringifyMap(wiki) {
-  const body = [...wiki.data].map(([_key, item]) => {
-    if (item.array) {
-      return `|${item.key} = {${stringifyArray(item.values)}
-}`;
+  const body = [...wiki.data].map(([key, value]) => {
+    if (typeof value === "string") {
+      return `|${key} = ${value ?? ""}`;
     }
-    return `|${item.key} = ${item.value ?? ""}`;
+    return `|${key} = {${stringifyArray(value)}
+}`;
   }).join("\n");
   const type = wiki.type ? " " + wiki.type : "";
   return `${prefix}${type}
@@ -110,16 +110,38 @@ ${suffix}`;
 }
 
 // src/index.ts
+function parseToMap2(s) {
+  try {
+    return [null, parseToMap(s)];
+  } catch (error) {
+    if (error instanceof WikiSyntaxError) {
+      return [error, null];
+    }
+    throw error;
+  }
+}
 function parseToMap(s) {
   const w = parse(s);
   const data = /* @__PURE__ */ new Map();
   for (const item of w.data) {
-    const previous = data.get(item.key);
-    if (!previous) {
-      data.set(item.key, item);
+    let previous = data.get(item.key);
+    if (previous) {
+      if (typeof previous === "string") {
+        previous = [new WikiArrayItem(void 0, previous)];
+      }
+      if (item.array) {
+        previous.push(...item.values);
+      } else {
+        previous.push(new WikiArrayItem(void 0, item.value));
+      }
+      data.set(item.key, previous);
       continue;
     }
-    previous.push(item);
+    if (item.array) {
+      data.set(item.key, item.values ?? []);
+    } else {
+      data.set(item.key, item.value);
+    }
   }
   return { type: w.type, data };
 }
@@ -142,6 +164,16 @@ function processInput(s) {
     }
   }
   return [s.trim(), offset];
+}
+function parse2(s) {
+  try {
+    return [null, parse(s)];
+  } catch (error) {
+    if (error instanceof WikiSyntaxError) {
+      return [error, null];
+    }
+    throw error;
+  }
 }
 function parse(s) {
   var _a, _b, _c, _d;
@@ -239,7 +271,9 @@ export {
   WikiItem,
   WikiSyntaxError,
   parse,
+  parse2,
   parseToMap,
+  parseToMap2,
   stringify,
   stringifyMap
 };

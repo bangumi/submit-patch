@@ -5,7 +5,7 @@ export interface Wiki {
 /** JS 的 map 会按照插入顺序排序 */
 export interface WikiMap {
     type: string;
-    data: Map<string, WikiItem>;
+    data: Map<string, string | WikiArrayItem[]>;
 }
 export type WikiItemType = 'array' | 'object';
 export declare class WikiArrayItem {

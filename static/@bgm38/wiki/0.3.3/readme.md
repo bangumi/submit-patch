@@ -16,17 +16,29 @@ npm i @bgm38/wiki
 
 ```typescript
 import type { Wiki } from '@bgm38/wiki';
-import { parse, WikiSyntaxError } from '@bgm38/wiki';
+import { parse2, WikiSyntaxError } from '@bgm38/wiki';
 
-try {
-  let w: Wiki = parse('...');
-} catch (error) {
-  if (error instanceof WikiSyntaxError) {
-    console.log('bad wiki string', `${error.message}`);
-  }
-
-  throw error;
+const [error, w] = parse2('...');
+if (error) {
+  console.log('bad wiki string', `${error.message}`);
+} else {
+  console.log('wiki', w);
 }
+```
+
+## 在用户脚本中使用（在 bangumi 组件中不起效）：
+
+```javascript
+// ==UserScript==
+// @name        new user script
+// @version     0.0.1
+// @match       https://example.com/*
+// @require     https://cdn.jsdelivr.net/npm/@bgm38/wiki@0.3.2
+// ==/UserScript==
+
+(() => {
+  console.log(bangumiWikiParser.parse2('...'));
+})();
 ```
 
 ## 开发

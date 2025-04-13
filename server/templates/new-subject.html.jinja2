@@ -5,7 +5,7 @@
   <script type="importmap">
     {
       "imports":{
-        "@bgm38/wiki": "/static/@bgm38/wiki/0.2.8/dist/index.js"
+        "@bgm38/wiki": "/static/@bgm38/wiki/0.3.3/dist/index.js"
       }
     }
   </script>
@@ -86,7 +86,7 @@
 
     <div class="form-group">
       <label for="infobox">Infobox</label>
-      <textarea rows="30"
+      <textarea rows="25"
                 class="form-control"
                 id="infobox"
                 name="infobox"></textarea>
@@ -130,12 +130,12 @@
   <script type="module">
     import {
       parseToMap, stringifyMap
-    } from '/static/@bgm38/wiki/0.2.8/dist/index.js';
+    } from '/static/@bgm38/wiki/0.3.3/dist/index.js';
 
     import platforms
       from '/static/common/subject_platforms.9b43ea.json' assert {type: 'json'};
     import templates
-      from '/static/common/wiki_template.02f3a7.json' assert {type: 'json'};
+      from '/static/common/wiki_template.eacd4d.json' assert {type: 'json'};
 
     const subjectType = {{ subject_type | tojson }};
     const configForSubjectType = platforms.platforms[subjectType];

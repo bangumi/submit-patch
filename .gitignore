@@ -8,3 +8,5 @@ log/
 .task/
 node_modules/
 yarn.lock
+
+.env
