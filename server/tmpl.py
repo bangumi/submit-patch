@@ -14,6 +14,7 @@ from markupsafe import Markup
 from multidict import MultiDict
 
 from server.config import DEV, PROJECT_PATH, TURNSTILE_SITE_KEY, UTC
+from server.file_digest import static_file_path
 
 
 engine = jinja2.Environment(
@@ -29,6 +30,7 @@ engine_filters: dict[str, Any] = engine.filters
 engine_globals["TURNSTILE_SITE_KEY"] = TURNSTILE_SITE_KEY
 engine_globals["min"] = min
 engine_globals["max"] = max
+engine_globals["static_file_path"] = static_file_path
 
 P = typing.ParamSpec("P")
 T = typing.TypeVar("T")

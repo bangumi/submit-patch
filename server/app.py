@@ -45,6 +45,7 @@ from server.config import (
     PROJECT_PATH,
     UTC,
 )
+from server.file_digest import digest_file
 from server.migration import run_migration
 from server.queue import on_app_start_queue
 from server.router import Router
@@ -75,7 +76,11 @@ if not DEV:
     for top, _, files in os.walk(static_path):
         for file in files:
             file_path = Path(top, file)
-            rel_path = file_path.relative_to(static_path).as_posix()
+            if file_path.is_relative_to(PROJECT_PATH.joinpath("static", "src")):
+                target = digest_file(file_path)
+            else:
+                target = file_path
+            rel_path = target.relative_to(static_path).as_posix()
             static_files["/" + rel_path] = File(
                 content=file_path.read_bytes(), content_type=mimetypes.guess_type(file)[0]
             )
