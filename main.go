@@ -1,18 +1,25 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+
+	"app/templates"
 )
 
 func main() {
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("welcome"))
+	fmt.Println("hello world")
+
+	mux := chi.NewRouter()
+
+	mux.Mount("/static/", http.FileServer(http.FS(staticFiles)))
+
+	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		_ = templates.Index(templates.Empty(), templates.Hello("world")).Render(context.Background(), w)
 	})
-	http.ListenAndServe(":3000", r)
+
+	_ = http.ListenAndServe(":4096", mux)
 }

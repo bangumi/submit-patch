@@ -1,17 +1,20 @@
-version: 3
+version: "3"
+
+dotenv: [.env]
 
 tasks:
-  default:
-    - ruff check . --fix --fixable=ALL
-    - black .
-    - mypy .
+  build:
+    sources:
+      - "**/*.go"
+    generates:
+      - ./dist/app.exe
+    cmd: go build -tags dev -o dist/app.exe
 
   dev:
-    dotenv:
-      - .env
-    cmds:
-      - watchexec -r -e py --shell=none -- uvicorn server.app:app --no-access-log
+    deps:
+      - build
+    cmd: ./dist/app.exe
 
-  build:
-    - python scripts/build-common.py
-    - python scripts/fetch-static-files.py
+  gen:
+    cmds:
+      - go tool templ generate -path templates/
