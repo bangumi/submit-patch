@@ -11,7 +11,7 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     env:
-      IMAGE: 'ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}'
+      IMAGE: "ghcr.io/${{ github.repository_owner }}/submit-patch"
 
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
@@ -19,14 +19,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          submodules: 'true'
 
       - uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
+
+      - uses: trim21/actions/setup-go@master
+
+      - run: go build -o ./dist/submit-patch
+        env:
+          CGO_ENABLED: "0"
 
       - name: Docker metadata
         id: meta

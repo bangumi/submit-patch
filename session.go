@@ -21,6 +21,14 @@ type Session struct {
 	Tz                   int       `json:"tz"`
 }
 
+func (s Session) AllowEdit() bool {
+	return s.GroupID == 1 || s.GroupID == 2 || s.GroupID == 9 || s.GroupID == 11
+}
+
+func (s Session) SuperUser() bool {
+	return s.UserID == 287622 || s.UserID == 427613
+}
+
 type key int
 
 const sessionKey = key(1)
