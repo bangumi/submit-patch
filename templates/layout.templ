@@ -7,10 +7,11 @@ templ Hello(name string) {
 templ Empty() {
 }
 
-templ Index(head templ.Component, content templ.Component) {
+templ Layout(title string, head templ.Component, content templ.Component) {
 	<!DOCTYPE html>
 	<html lang="zh">
 		<head>
+			<title>{ title }</title>
 			<meta charset="UTF-8"/>
 			<meta
 				name="viewport"
