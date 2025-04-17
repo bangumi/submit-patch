@@ -1,0 +1,10 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "query.sql"
+    schema: "server/sql/*.sql"
+    gen:
+      go:
+        package: "dao"
+        out: "dao"
+        sql_package: "pgx/v5"
