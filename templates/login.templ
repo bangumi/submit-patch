@@ -1,5 +1,13 @@
 package templates
 
 templ Login() {
+	@Layout(
+		"login",
+		Empty(),
+		loginContent(),
+	)
+}
+
+templ loginContent() {
 	<a href="/login" target="_blank"><h1>need login</h1></a>
 }

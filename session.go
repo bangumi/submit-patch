@@ -1,6 +1,7 @@
 package main
 
 import (
+	"app/session"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -11,37 +12,24 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type Session struct {
-	UserID               int32     `json:"user_id"`
-	GroupID              int       `json:"group_id"`
-	AccessToken          string    `json:"access_token"`
-	RefreshToken         string    `json:"refresh_token"`
-	AccessTokenCreatedAt time.Time `json:"access_token_created_at"`
-	AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
-	Tz                   int       `json:"tz"`
-}
-
-func (s Session) AllowEdit() bool {
-	return s.GroupID == 1 || s.GroupID == 2 || s.GroupID == 9 || s.GroupID == 11
-}
-
-func (s Session) SuperUser() bool {
-	return s.UserID == 287622 || s.UserID == 427613
-}
-
 type key int
 
 const sessionKey = key(1)
 
 const cookieName = "bgm-tv-patch-session-id"
 
-func GetSession(ctx context.Context) *Session {
-	return ctx.Value(sessionKey).(*Session)
+func GetSession(ctx context.Context) *session.Session {
+	s := ctx.Value(sessionKey)
+	if s == nil {
+		return &session.Session{}
+	}
+
+	return s.(*session.Session)
 }
 
 const SessionKeyRedisPrefix = "patch:session:"
 
-func (h *handler) SetSession(ctx context.Context, w http.ResponseWriter, session Session) error {
+func (h *handler) SetSession(ctx context.Context, w http.ResponseWriter, session session.Session) error {
 	state := uuid.Must(uuid.NewV4()).String()
 
 	err := h.r.Do(ctx, h.r.B().Set().Key(SessionKeyRedisPrefix+state).Value(rueidis.JSON(session)).Ex(time.Hour*24*30).Build()).Error()
@@ -75,7 +63,7 @@ func SessionMiddleware(h *handler) func(next http.Handler) http.Handler {
 				return
 			}
 
-			var session Session
+			var session session.Session
 			if err := json.Unmarshal(v, &session); err != nil {
 				log.Err(err).Msg("failed to decode session from redis value")
 				next.ServeHTTP(w, r)

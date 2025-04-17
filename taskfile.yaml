@@ -15,7 +15,13 @@ tasks:
       - build
     cmd: ./dist/app.exe
 
-  gen:
+  gen:template:
+    sources:
+      - "templates/**/*.templ"
+      - "templates/*.templ"
     cmds:
       - go tool templ generate -path templates/
+
+  gen:
+    cmds:
       - sqlc generate
