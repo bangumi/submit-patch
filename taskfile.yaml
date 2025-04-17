@@ -18,3 +18,4 @@ tasks:
   gen:
     cmds:
       - go tool templ generate -path templates/
+      - sqlc generate

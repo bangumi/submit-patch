@@ -5,6 +5,6 @@ sql:
     schema: "server/sql/*.sql"
     gen:
       go:
-        package: "dao"
-        out: "dao"
+        package: "q"
+        out: "q"
         sql_package: "pgx/v5"
