@@ -65,7 +65,7 @@ func indexHead() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<style>\r\n      .patch_reason {\r\n          white-space: nowrap;\r\n          order: 1;\r\n          flex: 0 1 auto;\r\n          text-wrap: nowrap;\r\n          overflow: hidden;\r\n          text-overflow: ellipsis;\r\n          min-width: 0;\r\n      }\r\n\r\n      @media screen and (min-device-width: 480px) {\r\n          html {\r\n              overflow-y: scroll;\r\n          }\r\n          .header h3 {\r\n              text-wrap: nowrap;\r\n          }\r\n      }\r\n  </style>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<style>\n      .patch_reason {\n          white-space: nowrap;\n          order: 1;\n          flex: 0 1 auto;\n          text-wrap: nowrap;\n          overflow: hidden;\n          text-overflow: ellipsis;\n          min-width: 0;\n      }\n\n      @media screen and (min-device-width: 480px) {\n          html {\n              overflow-y: scroll;\n          }\n          .header h3 {\n              text-wrap: nowrap;\n          }\n      }\n  </style>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -11,10 +11,26 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countSubjectPatchesByStates = `-- name: CountSubjectPatchesByStates :one
+select count(1)
+from episode_patch
+where deleted_at is null
+  and state = any($1::int[])
+order by created_at desc
+`
+
+func (q *Queries) CountSubjectPatchesByStates(ctx context.Context, dollar_1 []int32) (int64, error) {
+	row := q.db.QueryRow(ctx, countSubjectPatchesByStates, dollar_1)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const getEpisodePatch = `-- name: GetEpisodePatch :one
 SELECT id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, comments_count, patch_desc, ep
 FROM episode_patch
-WHERE id = $1 LIMIT 1
+WHERE id = $1
+LIMIT 1
 `
 
 func (q *Queries) GetEpisodePatch(ctx context.Context, id pgtype.UUID) (EpisodePatch, error) {
@@ -48,12 +64,64 @@ func (q *Queries) GetEpisodePatch(ctx context.Context, id pgtype.UUID) (EpisodeP
 	return i, err
 }
 
+const listSubjectPatchesByStates = `-- name: ListSubjectPatchesByStates :many
+select id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, comments_count, patch_desc, ep
+from episode_patch
+where deleted_at is null
+  and state = any($1::int[])
+order by created_at desc
+limit $1
+`
+
+func (q *Queries) ListSubjectPatchesByStates(ctx context.Context, limit int32) ([]EpisodePatch, error) {
+	rows, err := q.db.Query(ctx, listSubjectPatchesByStates, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []EpisodePatch
+	for rows.Next() {
+		var i EpisodePatch
+		if err := rows.Scan(
+			&i.ID,
+			&i.EpisodeID,
+			&i.State,
+			&i.FromUserID,
+			&i.WikiUserID,
+			&i.Reason,
+			&i.OriginalName,
+			&i.Name,
+			&i.OriginalNameCn,
+			&i.NameCn,
+			&i.OriginalDuration,
+			&i.Duration,
+			&i.OriginalAirdate,
+			&i.Airdate,
+			&i.OriginalDescription,
+			&i.Description,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.RejectReason,
+			&i.CommentsCount,
+			&i.PatchDesc,
+			&i.Ep,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const upsertUser = `-- name: UpsertUser :exec
 insert into patch_users (user_id, username, nickname)
-VALUES ($1, $2, $3) on conflict (user_id) do
-update set
-    username = excluded.username,
-    nickname = excluded.nickname
+VALUES ($1, $2, $3)
+on conflict (user_id) do update set username = excluded.username,
+                                    nickname = excluded.nickname
 `
 
 type UpsertUserParams struct {
