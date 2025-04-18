@@ -6,7 +6,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
+
+	"app/csrf"
 )
+
+const CsrfFieldName = "x-csrf-token"
 
 const oauthURL = "https://next.bgm.tv/oauth/authorize"
 
@@ -17,7 +21,7 @@ func routers(h *handler, config Config) *chi.Mux {
 
 	mux.Mount("/static/", http.FileServer(http.FS(staticFiles)))
 
-	r := mux.With(SessionMiddleware(h))
+	r := mux.With(SessionMiddleware(h), csrf.New())
 
 	r.Get("/login", h.login)
 	r.Get("/callback", logError(h.callback))
@@ -26,6 +30,8 @@ func routers(h *handler, config Config) *chi.Mux {
 	r.Get("/debug", logError(h.debug))
 
 	r.Get("/subject/{patchID}", logError(h.subjectPatchDetail))
+
+	r.Post("/api/review/subject/{patchID}", logError(h.handleReview))
 
 	return mux
 }

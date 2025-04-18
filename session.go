@@ -14,33 +14,18 @@ import (
 	"app/session"
 )
 
-type key int
-
-const sessionKey = key(1)
-
-const cookieName = "bgm-tv-patch-session-id"
-
-func GetSession(ctx context.Context) *session.Session {
-	s := ctx.Value(sessionKey)
-	if s == nil {
-		return &session.Session{}
-	}
-
-	return s.(*session.Session)
-}
-
 const SessionKeyRedisPrefix = "patch:session:"
 
-func (h *handler) SetSession(ctx context.Context, w http.ResponseWriter, session session.Session) error {
+func (h *handler) NetSession(ctx context.Context, w http.ResponseWriter, s session.Session) error {
 	state := uuid.Must(uuid.NewV4()).String()
 
-	err := h.r.Do(ctx, h.r.B().Set().Key(SessionKeyRedisPrefix+state).Value(rueidis.JSON(session)).Ex(time.Hour*24*30).Build()).Error()
+	err := h.r.Do(ctx, h.r.B().Set().Key(SessionKeyRedisPrefix+state).Value(rueidis.JSON(s)).Ex(time.Hour*24*30).Build()).Error()
 	if err != nil {
 		return err
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     cookieName,
+		Name:     session.CookieName,
 		Value:    state,
 		HttpOnly: true,
 		Expires:  time.Now().Add(time.Hour * 24 * 30),
@@ -52,7 +37,7 @@ func (h *handler) SetSession(ctx context.Context, w http.ResponseWriter, session
 func SessionMiddleware(h *handler) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c, err := r.Cookie(cookieName)
+			c, err := r.Cookie(session.CookieName)
 			if err != nil { // no cookie, do nothing
 				next.ServeHTTP(w, r)
 				return
@@ -80,8 +65,7 @@ func SessionMiddleware(h *handler) func(next http.Handler) http.Handler {
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), sessionKey, &s)
-			next.ServeHTTP(w, r.WithContext(ctx))
+			next.ServeHTTP(w, r.WithContext(session.SetSession(r.Context(), &s)))
 		})
 	}
 }

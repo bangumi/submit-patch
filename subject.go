@@ -1,12 +1,16 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
+	"github.com/gorilla/csrf"
+	"github.com/jackc/pgx/v5"
 
 	"app/q"
+	"app/session"
 	"app/templates"
 	"app/view"
 
@@ -20,7 +24,6 @@ func (h *handler) listSubjectPatches(
 	stateVals []int32,
 	currentPage int64,
 ) error {
-
 	c, err := h.q.CountSubjectPatchesByStates(r.Context(), stateVals)
 	if err != nil {
 		return err
@@ -70,7 +73,7 @@ func (h *handler) listSubjectPatches(
 	totalPage := (c + defaultPageSize - 1) / defaultPageSize
 
 	_ = templates.SubjectPatchList(r, view.SubjectPatchList{
-		Session:            GetSession(r.Context()),
+		Session:            session.GetSession(r.Context()),
 		Patches:            patches,
 		CurrentStateFilter: patchStateFilter,
 		Pagination: view.Pagination{
@@ -86,7 +89,7 @@ func (h *handler) subjectPatchDetail(
 	w http.ResponseWriter,
 	r *http.Request,
 ) error {
-	s := GetSession(r.Context())
+	s := session.GetSession(r.Context())
 
 	patchID := chi.URLParam(r, "patchID")
 	if patchID == "" {
@@ -102,6 +105,10 @@ func (h *handler) subjectPatchDetail(
 
 	patch, err := h.q.GetSubjectPatchByID(r.Context(), id)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Error(w, "patch not found", http.StatusNotFound)
+			return nil
+		}
 		return errgo.Wrap(err, "GetSubjectPatchByID")
 	}
 
@@ -150,5 +157,13 @@ func (h *handler) subjectPatchDetail(
 		})
 	}
 
-	return templates.SubjectPatchPage(s, patch, author, reviewer, comments, changes).Render(r.Context(), w)
+	return templates.SubjectPatchPage(
+		csrf.Token(r),
+		s,
+		patch,
+		author,
+		reviewer,
+		comments,
+		changes,
+	).Render(r.Context(), w)
 }

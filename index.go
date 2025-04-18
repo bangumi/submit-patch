@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"app/session"
 	"app/view"
 )
 
@@ -25,7 +26,7 @@ func (h *handler) debug(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *handler) index(w http.ResponseWriter, r *http.Request) error {
-	s := GetSession(r.Context())
+	s := session.GetSession(r.Context())
 
 	if s.UserID == 0 {
 		return h.template.Executor.ExecuteTemplate(w, "login.gohtml", nil)

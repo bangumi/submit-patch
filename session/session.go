@@ -1,6 +1,7 @@
 package session
 
 import (
+	"context"
 	"time"
 
 	"github.com/samber/lo"
@@ -32,4 +33,23 @@ func (s *Session) LocalTime(t time.Time) string {
 	}
 
 	return t.In(time.FixedZone("", s.Tz*3600)).Format("2006-01-02 15:04:05")
+}
+
+type key int
+
+const ctxKey = key(1)
+
+const CookieName = "bgm-tv-patch-session-id"
+
+func GetSession(ctx context.Context) *Session {
+	s := ctx.Value(ctxKey)
+	if s == nil {
+		return &Session{}
+	}
+
+	return s.(*Session)
+}
+
+func SetSession(ctx context.Context, s *Session) context.Context {
+	return context.WithValue(ctx, ctxKey, s)
 }

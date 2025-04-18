@@ -106,7 +106,7 @@ func (h *handler) callback(w http.ResponseWriter, r *http.Request) error {
 		return errgo.Wrap(err, "failed to upsert user to database")
 	}
 
-	err = h.SetSession(r.Context(), w, session.Session{
+	err = h.NetSession(r.Context(), w, session.Session{
 		UserID:               int32(userID),
 		GroupID:              user.UserGroup,
 		AccessToken:          oauthResponse.AccessToken,
