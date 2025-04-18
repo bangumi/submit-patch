@@ -22,14 +22,14 @@ func (h *handler) debug(w http.ResponseWriter, r *http.Request) error {
 		currentPage = 1
 	}
 
-	return h.template.Executor.ExecuteTemplate(w, "debug.gohtml", view.Pagination{URL: r.URL, TotalPage: 10, CurrentPage: currentPage})
+	return h.template.Debug.Execute(w, view.Pagination{URL: r.URL, TotalPage: 10, CurrentPage: currentPage})
 }
 
 func (h *handler) index(w http.ResponseWriter, r *http.Request) error {
 	s := session.GetSession(r.Context())
 
 	if s.UserID == 0 {
-		return h.template.Executor.ExecuteTemplate(w, "login.gohtml", nil)
+		return h.template.Login.Execute(w, nil)
 	}
 
 	rq := r.URL.Query()

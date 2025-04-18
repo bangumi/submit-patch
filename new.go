@@ -41,7 +41,7 @@ func (h *handler) newEditPatch(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 
-	return h.template.Executor.ExecuteTemplate(w, "subject-edit.gohtml", view.SubjectPatchEdit{
+	return h.template.NewSubjectPatch.Execute(w, view.SubjectPatchEdit{
 		PatchID:          "",
 		SubjectID:        sid,
 		CsrfToken:        csrf.GetToken(r),
