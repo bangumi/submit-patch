@@ -20,6 +20,9 @@ type Config struct {
 	PgDsn string `env:"PG_DSN"`
 
 	Debug bool `env:"DEBUG" default:"false"`
+
+	TurnstileSiteKey   string `env:"TURNSTILE_SITE_KEY"`
+	TurnstileSecretKey string `env:"TURNSTILE_SECRET_KEY"`
 }
 
 func newConfig() (Config, error) {

@@ -7,6 +7,8 @@ import (
 	"net/url"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/puzpuzpuz/xsync/v4"
+	"github.com/valyala/bytebufferpool"
 )
 
 func loadTemplates(config Config) (Template, error) {
@@ -20,7 +22,7 @@ func loadTemplates(config Config) (Template, error) {
 	//	}
 	//}
 
-	return Template{DebugTemplateExecutor{"view/templates/base/*.gohtml"}}, nil
+	return Template{&DebugTemplateExecutor{Glob: "view/templates/base/*.gohtml"}}, nil
 	//_ = executor
 
 	//baseTemplates := template.Must(template.ParseGlob("view/templates/base/*.gohtml")).Funcs(sprig.FuncMap())
@@ -42,24 +44,56 @@ type TemplateExecutor interface {
 }
 
 type DebugTemplateExecutor struct {
+	pool bytebufferpool.Pool
 	Glob string
 }
 
-func (e DebugTemplateExecutor) ExecuteTemplate(wr io.Writer, name string, data any) error {
+func (e *DebugTemplateExecutor) ExecuteTemplate(wr io.Writer, name string, data any) error {
 	t := template.Must(template.New("").Funcs(sprig.FuncMap()).Funcs(template.FuncMap{
 		"setQuery": setQuery,
 		"seq64":    seq64,
 	}).ParseGlob(e.Glob))
 
-	return template.Must(t.ParseFiles("view/templates/page/"+name)).ExecuteTemplate(wr, name, data)
+	buf := e.pool.Get()
+	defer e.pool.Put(buf)
+
+	err := template.Must(t.ParseFiles("view/templates/page/"+name)).ExecuteTemplate(buf, name, data)
+	if err != nil {
+		return err
+	}
+
+	_, _ = buf.WriteTo(wr)
+	return nil
 }
 
 type ReleaseTemplateExecutor struct {
-	Template *template.Template
+	m    xsync.Map[string, *template.Template]
+	pool bytebufferpool.Pool
+	base *template.Template
 }
 
-func (e ReleaseTemplateExecutor) ExecuteTemplate(wr io.Writer, name string, data interface{}) error {
-	return e.Template.ExecuteTemplate(wr, name, data)
+func (e *ReleaseTemplateExecutor) ExecuteTemplate(wr io.Writer, name string, data interface{}) error {
+
+	t, ok := e.m.Load(name)
+	if !ok {
+		t = template.Must(template.New("").Funcs(sprig.FuncMap()).Funcs(template.FuncMap{
+			"setQuery": setQuery,
+			"seq64":    seq64,
+		}).ParseGlob("view/templates/base/*.gohtml"))
+
+		t = template.Must(t.ParseFiles("view/templates/page/" + name))
+	}
+
+	buf := e.pool.Get()
+	defer e.pool.Put(buf)
+
+	err := t.ExecuteTemplate(buf, name, data)
+	if err != nil {
+		return err
+	}
+
+	_, _ = buf.WriteTo(wr)
+	return nil
 }
 
 func setQuery(u *url.URL, key string, value any) string {

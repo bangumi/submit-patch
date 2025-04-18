@@ -56,6 +56,48 @@ func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) er
 	return err
 }
 
+const createSubjectEditPatch = `-- name: CreateSubjectEditPatch :exec
+INSERT INTO subject_patch
+(id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
+ original_name, original_infobox, original_summary, subject_type, patch_desc)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+`
+
+type CreateSubjectEditPatchParams struct {
+	ID              uuid.UUID
+	SubjectID       int32
+	FromUserID      int32
+	Reason          string
+	Name            pgtype.Text
+	Infobox         pgtype.Text
+	Summary         pgtype.Text
+	Nsfw            pgtype.Bool
+	OriginalName    string
+	OriginalInfobox pgtype.Text
+	OriginalSummary pgtype.Text
+	SubjectType     int64
+	PatchDesc       string
+}
+
+func (q *Queries) CreateSubjectEditPatch(ctx context.Context, arg CreateSubjectEditPatchParams) error {
+	_, err := q.db.Exec(ctx, createSubjectEditPatch,
+		arg.ID,
+		arg.SubjectID,
+		arg.FromUserID,
+		arg.Reason,
+		arg.Name,
+		arg.Infobox,
+		arg.Summary,
+		arg.Nsfw,
+		arg.OriginalName,
+		arg.OriginalInfobox,
+		arg.OriginalSummary,
+		arg.SubjectType,
+		arg.PatchDesc,
+	)
+	return err
+}
+
 const getComments = `-- name: GetComments :many
 select edit_suggestion.id, edit_suggestion.patch_id, edit_suggestion.patch_type, edit_suggestion.text, edit_suggestion.from_user, edit_suggestion.created_at, edit_suggestion.deleted_at, author.user_id, author.username, author.nickname
 from edit_suggestion

@@ -2,11 +2,14 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
+	"github.com/samber/lo"
+	"github.com/trim21/errgo"
 
 	"app/csrf"
 	"app/q"
@@ -80,7 +83,7 @@ func (h *handler) handleSubjectReview(w http.ResponseWriter, r *http.Request, pa
 		case "comment":
 			return h.handleSubjectComment(w, r, qx, p, text, s)
 		case "approve":
-			return h.handleSubjectApprove(w, r, p.ID, s)
+			return h.handleSubjectApprove(w, r, p, s)
 		case "reject":
 			return h.handleSubjectReject(w, r, p, s)
 		default:
@@ -127,7 +130,50 @@ func (h *handler) handleEpisodeComment(w http.ResponseWriter, r *http.Request, p
 	return nil
 }
 
-func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, patchID uuid.UUID, s *session.Session) error {
+type ApiPatchSubject struct {
+	CommieMessage    string `json:"commitMessage"`
+	ExpectedRevision struct {
+		Infobox string `json:"infobox,omitempty"`
+		Name    string `json:"name,omitempty"`
+		Summary string `json:"summary,omitempty"`
+	} `json:"expectedRevision"`
+	Subject struct {
+		Infobox string `json:"infobox,omitempty"`
+		Name    string `json:"name,omitempty"`
+		Summary string `json:"summary,omitempty"`
+		Nsfw    *bool  `json:"nsfw,omitempty"`
+	} `json:"subject"`
+}
+
+func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, patch q.SubjectPatch, s *session.Session) error {
+	var body ApiPatchSubject
+
+	body.ExpectedRevision.Infobox = patch.OriginalInfobox.String
+	body.ExpectedRevision.Summary = patch.OriginalSummary.String
+
+	if patch.Name.Valid {
+		body.ExpectedRevision.Name = patch.OriginalName
+	}
+	body.Subject.Name = patch.Name.String
+	body.Subject.Infobox = patch.Infobox.String
+	body.Subject.Summary = patch.Summary.String
+	if patch.Nsfw.Valid {
+		body.Subject.Nsfw = lo.ToPtr(patch.Nsfw.Bool)
+	}
+
+	resp, err := h.client.R().
+		SetHeader("cf-ray", r.Header.Get("cf-ray")).
+		SetHeader("Authorization", "Bearer "+s.AccessToken).
+		SetBody(body).
+		Patch(fmt.Sprintf("https://next.bgm.tv/p1/wiki/subjects/%d", patch.SubjectID))
+	if err != nil {
+		return errgo.Wrap(err, "failed to submit patch")
+	}
+
+	if resp.StatusCode() >= 300 {
+
+	}
+
 	// Implement subject approval logic here
 	return nil
 }

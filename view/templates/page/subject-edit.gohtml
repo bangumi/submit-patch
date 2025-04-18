@@ -1,0 +1,82 @@
+{{- /* gotype: app/view.SubjectPatchEdit */ -}}
+
+{{ template "layout.gohtml" .}}
+
+{{define "title"}}提交修改请求{{end}}
+
+{{define "head"}}
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{{end}}
+
+{{define "content"}}
+  <div class="row m-1">
+    <p>
+      <a href="https://bgm.tv/group/wiki" target="_blank">
+        <h1>提交前请先阅读置顶了解常见错误</h1>
+      </a>
+    </p>
+  </div>
+  <form method="post"
+          {{if .PatchID}}
+            action="/edit/subject/{{.PatchID}}"
+          {{else}}
+            action="/suggest-subject?subject_id={{.SubjectID}}"
+          {{end}}
+        enctype="application/x-www-form-urlencoded">
+    <input type="hidden" name="x-csrf-token" value="{{.CsrfToken}}">
+
+    <div class="form-group">
+      <label for="name">条目名称</label>
+      <input class="form-control" id="name" name="name" value="{{.Data.Name}}">
+    </div>
+
+    <div class="form-group">
+      <label for="infobox">Infobox</label>
+        {{/* Calculate InfoboxRows in the Go handler: strings.Count(data.Infobox, "\n") + 3 */}}
+      <textarea rows="30"
+                class="form-control"
+                id="infobox"
+                name="infobox">{{.Data.Infobox}}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="summary">简介</label>
+      <textarea rows="10" class="form-control" id="summary"
+                name="summary">{{.Data.Summary}}</textarea>
+    </div>
+
+    <div class="form-check">
+      <label class="form-check-label" for="exampleCheck1">NSFW</label>
+      <input type="checkbox" name="nsfw" class="form-check-input"
+              {{if .Data.Nsfw}}
+                checked
+              {{end}}
+             id="exampleCheck1">
+    </div>
+
+    <hr>
+
+    <div class="form-group">
+      <label for="reason" class="mb-2">原因</label>
+      <input class="form-control mb-2"
+             id="reason"
+             required
+             placeholder="原因"
+             name="reason" value="{{.Reason}}">
+
+      <textarea rows="5"
+                class="form-control mb-2"
+                id="patch_desc"
+                placeholder="详细说明"
+                name="patch_desc">{{.Description}}</textarea>
+    </div>
+
+    <div class="cf-turnstile m-1" data-theme="light"
+         data-response-field-name="cf_turnstile_response"
+         data-sitekey="{{.TurnstileSiteKey}}"></div>
+
+    <p>请等待验证码通过再进行提交</p>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+{{end}}

@@ -14,7 +14,7 @@ func newHandler(db *pgxpool.Pool, r rueidis.Client, q *q.Queries, config Config,
 		r:        r,
 		config:   config,
 		q:        q,
-		client:   resty.New().SetHeader("User-Agent", "trim21/submit-patch"),
+		client:   resty.New().SetHeader("User-Agent", "trim21/submit-patch").SetJSONEscapeHTML(false),
 		template: template,
 		//tmpl:   tmpl,
 	}

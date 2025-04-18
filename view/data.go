@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"time"
 
+	"app/api"
 	"app/q"
 	"app/session"
 )
@@ -54,4 +55,17 @@ type SubjectPatchListItem struct {
 
 	Name        string
 	SubjectType int64
+}
+
+type SubjectPatchEdit struct {
+	PatchID   string
+	SubjectID uint64
+	CsrfToken string
+
+	Reason      string
+	Description string
+
+	Data api.WikiSubject
+
+	TurnstileSiteKey string
 }

@@ -96,3 +96,10 @@ set comments_count = (select count(1)
                         and edit_suggestion.from_user != 0)
 where id = $1
   and deleted_at is null;
+
+
+-- name: CreateSubjectEditPatch :exec
+INSERT INTO subject_patch
+(id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
+ original_name, original_infobox, original_summary, subject_type, patch_desc)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
