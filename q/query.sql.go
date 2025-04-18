@@ -26,10 +26,40 @@ func (q *Queries) CountSubjectPatchesByStates(ctx context.Context, dollar_1 []in
 	return count, err
 }
 
+const createComment = `-- name: CreateComment :exec
+insert into edit_suggestion (id,
+                             patch_id,
+                             patch_type,
+                             text,
+                             from_user,
+                             created_at,
+                             deleted_at)
+values ($1, $2, $3, $4, $5, current_timestamp, null)
+`
+
+type CreateCommentParams struct {
+	ID        uuid.UUID
+	PatchID   uuid.UUID
+	PatchType PatchType
+	Text      string
+	FromUser  int32
+}
+
+func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) error {
+	_, err := q.db.Exec(ctx, createComment,
+		arg.ID,
+		arg.PatchID,
+		arg.PatchType,
+		arg.Text,
+		arg.FromUser,
+	)
+	return err
+}
+
 const getComments = `-- name: GetComments :many
 select edit_suggestion.id, edit_suggestion.patch_id, edit_suggestion.patch_type, edit_suggestion.text, edit_suggestion.from_user, edit_suggestion.created_at, edit_suggestion.deleted_at, author.user_id, author.username, author.nickname
 from edit_suggestion
-         inner join patch_users as author on author.user_id = edit_suggestion.from_user
+         left join patch_users as author on author.user_id = edit_suggestion.from_user
 where deleted_at is null
   and patch_id = $1
   and patch_type = $2
@@ -50,9 +80,9 @@ type GetCommentsRow struct {
 	FromUser  int32
 	CreatedAt pgtype.Timestamptz
 	DeletedAt pgtype.Timestamptz
-	UserID    int32
-	Username  string
-	Nickname  string
+	UserID    pgtype.Int4
+	Username  pgtype.Text
+	Nickname  pgtype.Text
 }
 
 func (q *Queries) GetComments(ctx context.Context, arg GetCommentsParams) ([]GetCommentsRow, error) {
@@ -134,6 +164,45 @@ limit 1
 
 func (q *Queries) GetSubjectPatchByID(ctx context.Context, id uuid.UUID) (SubjectPatch, error) {
 	row := q.db.QueryRow(ctx, getSubjectPatchByID, id)
+	var i SubjectPatch
+	err := row.Scan(
+		&i.ID,
+		&i.SubjectID,
+		&i.State,
+		&i.FromUserID,
+		&i.WikiUserID,
+		&i.Reason,
+		&i.Name,
+		&i.OriginalName,
+		&i.Infobox,
+		&i.OriginalInfobox,
+		&i.Summary,
+		&i.OriginalSummary,
+		&i.Nsfw,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.RejectReason,
+		&i.SubjectType,
+		&i.CommentsCount,
+		&i.PatchDesc,
+		&i.OriginalPlatform,
+		&i.Platform,
+		&i.Action,
+	)
+	return i, err
+}
+
+const getSubjectPatchByIDForUpdate = `-- name: GetSubjectPatchByIDForUpdate :one
+select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action
+from subject_patch
+where deleted_at is null
+  and id = $1
+limit 1 for update
+`
+
+func (q *Queries) GetSubjectPatchByIDForUpdate(ctx context.Context, id uuid.UUID) (SubjectPatch, error) {
+	row := q.db.QueryRow(ctx, getSubjectPatchByIDForUpdate, id)
 	var i SubjectPatch
 	err := row.Scan(
 		&i.ID,
@@ -279,6 +348,43 @@ func (q *Queries) ListSubjectPatchesByStates(ctx context.Context, arg ListSubjec
 		return nil, err
 	}
 	return items, nil
+}
+
+const rejectSubjectPatch = `-- name: RejectSubjectPatch :exec
+update subject_patch
+set wiki_user_id = $1,
+    state        = $2,
+    updated_at   = current_timestamp
+where id = $3
+  and deleted_at is null
+  and state = 0
+`
+
+type RejectSubjectPatchParams struct {
+	WikiUserID int32
+	State      int32
+	ID         uuid.UUID
+}
+
+func (q *Queries) RejectSubjectPatch(ctx context.Context, arg RejectSubjectPatchParams) error {
+	_, err := q.db.Exec(ctx, rejectSubjectPatch, arg.WikiUserID, arg.State, arg.ID)
+	return err
+}
+
+const updateSubjectPatchCommentCount = `-- name: UpdateSubjectPatchCommentCount :exec
+update subject_patch
+set comments_count = (select count(1)
+                      from edit_suggestion
+                      where patch_type = 'subject'
+                        and patch_id = $1
+                        and edit_suggestion.from_user != 0)
+where id = $1
+  and deleted_at is null
+`
+
+func (q *Queries) UpdateSubjectPatchCommentCount(ctx context.Context, patchID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, updateSubjectPatchCommentCount, patchID)
+	return err
 }
 
 const upsertUser = `-- name: UpsertUser :exec

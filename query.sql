@@ -42,6 +42,14 @@ where deleted_at is null
   and id = $1
 limit 1;
 
+-- name: GetSubjectPatchByIDForUpdate :one
+select *
+from subject_patch
+where deleted_at is null
+  and id = $1
+limit 1 for update;
+
+
 -- name: GetUserByID :one
 select *
 from patch_users
@@ -51,10 +59,40 @@ where user_id = $1;
 -- name: GetComments :many
 select edit_suggestion.*, author.*
 from edit_suggestion
-         inner join patch_users as author on author.user_id = edit_suggestion.from_user
+         left join patch_users as author on author.user_id = edit_suggestion.from_user
 where deleted_at is null
   and patch_id = $1
   and patch_type = $2
   and deleted_at is null
-order by created_at
-;
+order by created_at;
+
+-- name: CreateComment :exec
+insert into edit_suggestion (id,
+                             patch_id,
+                             patch_type,
+                             text,
+                             from_user,
+                             created_at,
+                             deleted_at)
+values ($1, $2, $3, $4, $5, current_timestamp, null);
+
+
+-- name: RejectSubjectPatch :exec
+update subject_patch
+set wiki_user_id = $1,
+    state        = $2,
+    updated_at   = current_timestamp
+where id = $3
+  and deleted_at is null
+  and state = 0;
+
+
+-- name: UpdateSubjectPatchCommentCount :exec
+update subject_patch
+set comments_count = (select count(1)
+                      from edit_suggestion
+                      where patch_type = 'subject'
+                        and patch_id = $1
+                        and edit_suggestion.from_user != 0)
+where id = $1
+  and deleted_at is null;

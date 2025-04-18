@@ -1,6 +1,7 @@
 package templates
 
 import "app/view"
+import "fmt"
 
 templ Hello(name string) {
 	<div>Hello, { name }</div>
@@ -74,7 +75,7 @@ templ header(title string, user *view.CurrentUser) {
 			if user.UserID != 0 {
 				if user.AllowEdit() {
 					<a
-						href="/review/{ user.UserID }"
+						href={ templ.SafeURL(fmt.Sprintf("/review/%d", user.UserID)) }
 						class="link-underline link-underline-opacity-0 float-end"
 						target="_blank"
 					>
@@ -82,7 +83,7 @@ templ header(title string, user *view.CurrentUser) {
 					</a>
 				} else {
 					<a
-						href="/contrib/{ user.UserID }"
+						href={ templ.SafeURL(fmt.Sprintf("/contrib/%d", user.UserID)) }
 						class="link-underline link-underline-opacity-0 float-end"
 						target="_blank"
 					>

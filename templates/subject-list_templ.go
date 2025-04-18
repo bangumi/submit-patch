@@ -189,7 +189,7 @@ func subjectPatch(patch view.SubjectPatchListItem) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		case 1:
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<h5 class=\"me-2\"><span class=\"badge bg-primary\">Accepted</span></h5>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<h5 class=\"me-2\"><span class=\"badge bg-success\">Accepted</span></h5>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

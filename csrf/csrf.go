@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/securecookie"
+	"github.com/rs/zerolog/log"
 
 	"app/session"
 )
@@ -15,7 +16,6 @@ const tokenKey = key(1)
 const signerKey = key(2)
 
 const CookiesName = "x-csrf-token"
-
 const FormName = "x-csrf-token"
 
 func GetToken(r *http.Request) string {
@@ -24,10 +24,10 @@ func GetToken(r *http.Request) string {
 
 func New() func(http.Handler) http.Handler {
 	// Hash keys should be at least 32 bytes long
-	var hashKey = []byte("very-secret")
+	var hashKey = []byte("very-secret1234")
 	// Block keys should be 16 bytes (AES-128) or 32 bytes (AES-256) long.
 	// Shorter keys may weaken the encryption used.
-	var blockKey = []byte("a-lot-secret")
+	var blockKey = []byte("a-lot-secret1234")
 	var signer = securecookie.New(hashKey, blockKey).SetSerializer(securecookie.JSONEncoder{})
 
 	return func(next http.Handler) http.Handler {
@@ -40,14 +40,16 @@ func New() func(http.Handler) http.Handler {
 			}
 
 			c, err := r.Cookie(CookiesName)
-			if err == nil {
+			if err == nil && c.Value != "" {
 				next.ServeHTTP(w, r.WithContext(
 					context.WithValue(context.WithValue(r.Context(), signerKey, signer), tokenKey, c.Value),
 				))
+				return
 			}
 
 			encoded, err := signer.Encode(CookiesName, cookieValue{UserID: s.UserID})
 			if err == nil {
+				log.Err(err).Msg("failed to generate csrf token")
 				http.SetCookie(w, &http.Cookie{
 					Name:     CookiesName,
 					Value:    encoded,

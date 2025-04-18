@@ -29,7 +29,7 @@ func routers(h *handler, config Config) *chi.Mux {
 
 	r.Get("/subject/{patchID}", logError(h.subjectPatchDetail))
 
-	r.Post("/api/review/subject/{patchID}", logError(h.handleReview))
+	r.Post("/api/review/{patch_type}/{patch_id}", logError(h.handleReview))
 
 	return mux
 }

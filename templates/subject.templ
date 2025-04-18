@@ -97,7 +97,7 @@ templ subjectPatchDetailContent(
 		<div class="row mb-2">
 			<ul class="list-group">
 				for _, c := range comments {
-					@Comment(c)
+					@Comment(user, c)
 				}
 			</ul>
 		</div>
@@ -229,6 +229,27 @@ templ subjectPatchDetailContent(
 		</div>
 	}
 	if patch.State == 0 {
+		if user.AllowEdit() {
+			<hr/>
+			<form
+				class="row mb-4"
+				action={ templ.SafeURL(fmt.Sprintf("/api/review/subject/%s", patch.ID)) }
+				method="post"
+				enctype="application/x-www-form-urlencoded"
+			>
+				<input type="hidden" name="x-csrf-token" value={ csrfToken }/>
+				<div class="col">
+					<button type="submit" name="react" value="approve" class="btn btn-success">
+						Accept
+					</button>
+				</div>
+				<div class="col">
+					<button type="submit" name="react" value="reject" class="btn btn-danger">
+						Reject
+					</button>
+				</div>
+			</form>
+		}
 		<div class="row">
 			<hr/>
 			<form
@@ -249,30 +270,18 @@ templ subjectPatchDetailContent(
 							添加评论
 						</button>
 					</div>
-					if user.AllowEdit() {
-						<div class="col">
-							<button type="submit" name="react" value="accept" class="btn btn-success">
-								Accept
-							</button>
-						</div>
-						<div class="col">
-							<button type="submit" name="react" value="reject" class="btn btn-danger">
-								Reject
-							</button>
-						</div>
-					}
 				</div>
 			</form>
 		</div>
 	}
 }
 
-templ Comment(s q.GetCommentsRow) {
-	if s.UserID != 0 {
+templ Comment(u *view.CurrentUser, s q.GetCommentsRow) {
+	if s.UserID.Valid {
 		<li class="list-group-item border-dark-subtle list-group-item-warning">
 			<div class="d-flex w-100 justify-content-between">
-				<h5>[{ s.Nickname }]: </h5>
-				// <small>{ view.ToUserLocalTime(s.CreatedAt) }</small>
+				<h5>[{ s.Nickname.String }]: </h5>
+				<small>{ u.LocalTime(s.CreatedAt.Time) }</small>
 			</div>
 			<p class="mb-1" style="white-space: pre-wrap">
 				@templ.Raw(AutoURL(s.Text))
@@ -284,6 +293,7 @@ templ Comment(s q.GetCommentsRow) {
 				<h5 class="mb-0">
 					@templ.Raw(AutoURL(s.Text))
 				</h5>
+				<small>{ u.LocalTime(s.CreatedAt.Time) }</small>
 			</div>
 		</li>
 	}
