@@ -2,12 +2,9 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -191,18 +188,15 @@ func (h *handler) newSubjectEditPatch(w http.ResponseWriter, r *http.Request) er
 	}
 
 	form := r.PostForm
-
-	var data CreateSubjectPatch
-	data.Name = form.Get("name")
-	data.Infobox = form.Get("infobox")
-	data.Summary = form.Get("summary")
-	data.Reason = form.Get("reason")
-	data.PatchDesc = form.Get("patch_desc") // Defaults to "" if missing
-	data.CfTurnstileResponse = form.Get("cf_turnstile_response")
-	data.Nsfw = form.Get("nsfw") // Will be "on" if checked, "" otherwise
-
-	data.Reason = strings.TrimSpace(data.Reason)
-	data.PatchDesc = strings.TrimSpace(data.PatchDesc)
+	data := CreateSubjectPatch{
+		Name:                form.Get("name"),
+		Infobox:             form.Get("infobox"),
+		Summary:             form.Get("summary"),
+		Reason:              strings.TrimSpace(form.Get("reason")),
+		PatchDesc:           strings.TrimSpace(form.Get("patch_desc")),
+		CfTurnstileResponse: form.Get("cf_turnstile_response"),
+		Nsfw:                form.Get("nsfw"), // Will be "on" if checked, "" otherwise
+	}
 
 	if data.Reason == "" {
 		http.Error(w, "Validation Failed: missing suggestion description (reason)", http.StatusBadRequest)
@@ -215,13 +209,17 @@ func (h *handler) newSubjectEditPatch(w http.ResponseWriter, r *http.Request) er
 	}
 
 	user := session.GetSession(r.Context())
+	if user.UserID == 0 {
+		http.Error(w, "please login before submit any patch", http.StatusUnauthorized)
+		return nil
+	}
 	// --- Captcha Validation (if not superuser) ---
-	if !user.SuperUser() {
-		if err := h.validateCaptcha(r.Context(), data.CfTurnstileResponse); err != nil {
-			// Use StatusBadRequest as per Python's BadRequestException for captcha failure
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return nil
-		}
+	// if !user.SuperUser() {
+	if err := h.validateCaptcha(r.Context(), data.CfTurnstileResponse); err != nil {
+		// Use StatusBadRequest as per Python's BadRequestException for captcha failure
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return nil
+		// }
 	}
 
 	// --- Fetch Original Data ---
@@ -343,6 +341,7 @@ type turnstileResponse struct {
 	Action      string    `json:"action"`
 	CData       string    `json:"cdata"`
 }
+
 type CreateSubjectPatch struct {
 	Name                string
 	Infobox             string
@@ -350,56 +349,32 @@ type CreateSubjectPatch struct {
 	Reason              string
 	PatchDesc           string
 	CfTurnstileResponse string
-	// NSFW comes from form as string ("on" or empty), presence indicates true
-	Nsfw string
-}
-
-// Corresponds to Python's PartialCreateSubjectPatch
-type PartialCreateSubjectPatch struct {
-	Name      *string `json:"name"`
-	Infobox   *string `json:"infobox"`
-	Summary   *string `json:"summary"`
-	Nsfw      *bool   `json:"nsfw"`
-	Reason    string  `json:"reason"`
-	PatchDesc string  `json:"patch_desc"`
+	Nsfw                string
 }
 
 func (h *handler) validateCaptcha(ctx context.Context, turnstileResponseToken string) error {
-	formData := url.Values{}
-	formData.Set("secret", h.config.TurnstileSecretKey)
-	formData.Set("response", turnstileResponseToken)
-	// You might want to include remote IP: formData.Set("remoteip", r.RemoteAddr)
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://challenges.cloudflare.com/turnstile/v0/siteverify", strings.NewReader(formData.Encode()))
+	var result turnstileResponse
+	resp, err := h.client.R().
+		SetContext(ctx).
+		SetFormData(map[string]string{
+			"secret":   h.config.TurnstileSecretKey,
+			"response": turnstileResponseToken,
+		}).
+		SetResult(&result). // Decode into result on success (2xx)
+		Post("https://challenges.cloudflare.com/turnstile/v0/siteverify")
 	if err != nil {
-		// Log internal error
-		fmt.Printf("Error creating Turnstile request: %v\n", err)
-		return errors.New("failed to create captcha verification request")
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	resp, err := h.client.GetClient().Do(req)
-	if err != nil {
-		// Log internal error
-		fmt.Printf("Error calling Turnstile API: %v\n", err)
+		fmt.Printf("Error executing Turnstile request: %v\n", err)
 		return errors.New("failed to contact captcha verification service")
 	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode >= 300 {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		// Log error details
-		fmt.Printf("Turnstile API error: status %d, body: %s\n", resp.StatusCode, string(bodyBytes))
+	if resp.IsError() {
+		// Turnstile API returned an error status code (>= 400)
+		fmt.Printf("Turnstile API error: status %d, body: %s\n", resp.StatusCode(), resp.String())
+		// You could potentially check apiError["error-codes"] here if needed
 		return errors.New("captcha verification failed (API error)")
 	}
 
-	var result turnstileResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		// Log internal error
-		fmt.Printf("Error decoding Turnstile response: %v\n", err)
-		return errors.New("failed to parse captcha verification response")
-	}
-
+	// We got a 2xx response, now check the 'success' field in the JSON
 	if !result.Success {
 		// Log error codes if needed: fmt.Printf("Turnstile verification failed: %v\n", result.ErrorCodes)
 		return errors.New("验证码无效") // "Invalid CAPTCHA"
