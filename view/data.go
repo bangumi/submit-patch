@@ -8,6 +8,11 @@ import (
 	"app/session"
 )
 
+type Change struct {
+	Diff string
+	Name string
+}
+
 type IndexPage struct {
 	Session *session.Session
 	Patches []q.SubjectPatch

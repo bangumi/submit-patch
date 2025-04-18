@@ -13,11 +13,12 @@ templ SubjectPatchPage(
 	author q.PatchUser,
 	reviewer *q.PatchUser,
 	comments []q.GetCommentsRow,
+	changes []view.Change,
 ) {
 	@Layout(
 		"",
 		patchDetailHead(),
-		subjectPatchDetailContent(user, patch, author, reviewer, comments),
+		subjectPatchDetailContent(user, patch, author, reviewer, comments, changes),
 	)
 }
 
@@ -57,6 +58,7 @@ templ subjectPatchDetailContent(
 	author q.PatchUser,
 	reviewer *q.PatchUser,
 	comments []q.GetCommentsRow,
+	changes []view.Change,
 ) {
 	@header("", user)
 	<div class="row">
@@ -123,10 +125,13 @@ templ subjectPatchDetailContent(
 		<hr/>
 		<div class="col">
 			<h2>
-				已被 <a
-	href={ templ.SafeURL(fmt.Sprintf("/review/%d", patch.WikiUserID)) }
-	target="_blank"
->{ reviewer.Username }</a>
+				已被
+				<a
+					href={ templ.SafeURL(fmt.Sprintf("/review/%d", patch.WikiUserID)) }
+					target="_blank"
+				>
+					{ reviewer.Username }
+				</a>
 				<span class="badge bg-success">接受 </span>
 			</h2>
 			<hr/>
@@ -134,10 +139,13 @@ templ subjectPatchDetailContent(
 	} else if patch.State == 2 {
 		<div class="col">
 			<h3>
-				已被 <a
-	href={ templ.SafeURL(fmt.Sprintf("/review/%d", patch.WikiUserID)) }
-	target="_blank"
->{ reviewer.Username }</a>
+				已被
+				<a
+					href={ templ.SafeURL(fmt.Sprintf("/review/%d", patch.WikiUserID)) }
+					target="_blank"
+				>
+					{ reviewer.Username }
+				</a>
 				<span class="badge bg-danger">拒绝 </span>
 			</h3>
 			if patch.RejectReason != "" {
@@ -159,11 +167,48 @@ templ subjectPatchDetailContent(
 				class="mb-0"
 				style="overflow: visible; overflow-wrap: anywhere; white-space: pre-wrap"
 			>
-				{ patch.Reason }
-				// { view.AutoURL(patch.Reason) }
+				@templ.Raw(AutoURL(patch.Reason))
 			</p>
 		</blockquote>
 	</div>
+	if patch.PatchDesc != "" {
+		<div class="row mb-2">
+			<h2>说明</h2>
+			<blockquote class="blockquote" style="background-color: #f7f7f9">
+				<p
+					class="mb-0"
+					style="overflow: visible; overflow-wrap: anywhere; white-space: pre-wrap"
+				>
+					@templ.Raw(AutoURL(patch.PatchDesc))
+				</p>
+			</blockquote>
+		</div>
+	}
+	<h2>具体变动</h2>
+	for _, change := range changes {
+		<div class="row mb-4">
+			<div id={ change.Name + "DiffElement" } data-diff={ templ.JSONString(change.Diff) }></div>
+		</div>
+		<script>
+      (() => {
+        const targetElement = document.getElementById('{{ change.Name }}DiffElement');
+        const diffString = JSON.parse(targetElement.getAttribute('data-diff'));;
+        const configuration = {
+          drawFileList: false,
+          fileListToggle: false,
+          fileListStartVisible: false,
+          maxLineSizeInBlockForComparison: 80,
+          fileContentToggle: false,
+          matching: 'words',
+          outputFormat: isMobile ? 'line-by-line' : 'side-by-side',
+          synchronisedScroll: true,
+          renderNothingWhenEmpty: false,
+        };
+        const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+        diff2htmlUi.draw();
+      })()
+    </script>
+	}
 }
 
 templ Comment(s q.GetCommentsRow) {
@@ -174,15 +219,15 @@ templ Comment(s q.GetCommentsRow) {
 				// <small>{ view.ToUserLocalTime(s.CreatedAt) }</small>
 			</div>
 			<p class="mb-1" style="white-space: pre-wrap">
-				{ s.Text }
-				// { view.AutoURL(s.Text) }
+				@templ.Raw(AutoURL(s.Text))
 			</p>
 		</li>
 	} else {
 		<li class="list-group-item border-dark-subtle list-group-item-info">
 			<div class="d-flex w-100 justify-content-between">
-				<h5 class="mb-0">{ s.Text } </h5>
-				// <small>{ view.ToUserLocalTime(s.CreatedAt) }</small>
+				<h5 class="mb-0">
+					@templ.Raw(AutoURL(s.Text))
+				</h5>
 			</div>
 		</li>
 	}

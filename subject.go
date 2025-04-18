@@ -39,7 +39,7 @@ func (h *handler) listSubjectPatches(
 
 		for _, v := range data {
 			var reviewer *view.User
-			if v.ReviewerNickname.Valid && v.ReviewerNickname.Valid && v.ReviewerUserID.Valid {
+			if v.ReviewerNickname.Valid && v.ReviewerUserID.Valid {
 				reviewer = &view.User{
 					ID:       v.ReviewerUserID.Int32,
 					Username: v.ReviewerNickname.String,
@@ -127,5 +127,27 @@ func (h *handler) subjectPatchDetail(
 		return errgo.Wrap(err, "GetComments")
 	}
 
-	return templates.SubjectPatchPage(s, patch, author, reviewer, comments).Render(r.Context(), w)
+	var changes = make([]view.Change, 0, 4)
+
+	if patch.Name.Valid && patch.OriginalName != patch.Name.String {
+		changes = append(changes, view.Change{
+			Name: "条目名",
+			Diff: Diff("name", patch.OriginalName, patch.Name.String),
+		})
+	}
+
+	if patch.OriginalInfobox.Valid && patch.Infobox.Valid {
+		changes = append(changes, view.Change{
+			Name: "wiki",
+			Diff: Diff("wiki", patch.OriginalInfobox.String, patch.Infobox.String),
+		})
+	}
+
+	if patch.OriginalSummary.Valid && patch.Summary.Valid {
+		changes = append(changes, view.Change{
+			Name: "简介",
+			Diff: Diff("summary", patch.OriginalSummary.String, patch.Summary.String),
+		})
+	}
+	return templates.SubjectPatchPage(s, patch, author, reviewer, comments, changes).Render(r.Context(), w)
 }
