@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
+	"github.com/rs/zerolog/log"
 	"github.com/trim21/errgo"
 
 	"app/q"
@@ -71,6 +72,7 @@ func (h *handler) callback(w http.ResponseWriter, r *http.Request) error {
 	if resp.StatusCode() >= 300 {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		http.Error(w, "请求错误", http.StatusBadRequest)
+		log.Warn().Str("body", resp.String()).Msg("oauth request failed")
 		return nil
 	}
 

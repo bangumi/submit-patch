@@ -1,6 +1,6 @@
 package templates
 
-import "app/data"
+import "app/view"
 
 templ Hello(name string) {
 	<div>Hello, { name }</div>
@@ -58,7 +58,7 @@ templ Error(method, url, err, extra, detail string) {
 	</div>
 }
 
-templ header(title string, user *data.CurrentUser) {
+templ header(title string, user *view.CurrentUser) {
 	<div class="row d-flex flex-row justify-content-around header">
 		<div class="col">
 			<a href="/" class="link-underline link-underline-opacity-0">

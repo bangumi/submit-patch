@@ -13,10 +13,9 @@ import (
 
 const countSubjectPatchesByStates = `-- name: CountSubjectPatchesByStates :one
 select count(1)
-from episode_patch
+from subject_patch
 where deleted_at is null
-  and state = any($1::int[])
-order by created_at desc
+  and state = any ($1::int[])
 `
 
 func (q *Queries) CountSubjectPatchesByStates(ctx context.Context, dollar_1 []int32) (int64, error) {
@@ -65,47 +64,53 @@ func (q *Queries) GetEpisodePatch(ctx context.Context, id pgtype.UUID) (EpisodeP
 }
 
 const listSubjectPatchesByStates = `-- name: ListSubjectPatchesByStates :many
-select id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, comments_count, patch_desc, ep
-from episode_patch
+select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action
+from subject_patch
 where deleted_at is null
-  and state = any($1::int[])
+  and state = any ($1::int[])
 order by created_at desc
-limit $1
+limit $3::int8 offset $2::int8
 `
 
-func (q *Queries) ListSubjectPatchesByStates(ctx context.Context, limit int32) ([]EpisodePatch, error) {
-	rows, err := q.db.Query(ctx, listSubjectPatchesByStates, limit)
+type ListSubjectPatchesByStatesParams struct {
+	State []int32
+	Skip  int64
+	Size  int64
+}
+
+func (q *Queries) ListSubjectPatchesByStates(ctx context.Context, arg ListSubjectPatchesByStatesParams) ([]SubjectPatch, error) {
+	rows, err := q.db.Query(ctx, listSubjectPatchesByStates, arg.State, arg.Skip, arg.Size)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []EpisodePatch
+	var items []SubjectPatch
 	for rows.Next() {
-		var i EpisodePatch
+		var i SubjectPatch
 		if err := rows.Scan(
 			&i.ID,
-			&i.EpisodeID,
+			&i.SubjectID,
 			&i.State,
 			&i.FromUserID,
 			&i.WikiUserID,
 			&i.Reason,
-			&i.OriginalName,
 			&i.Name,
-			&i.OriginalNameCn,
-			&i.NameCn,
-			&i.OriginalDuration,
-			&i.Duration,
-			&i.OriginalAirdate,
-			&i.Airdate,
-			&i.OriginalDescription,
-			&i.Description,
+			&i.OriginalName,
+			&i.Infobox,
+			&i.OriginalInfobox,
+			&i.Summary,
+			&i.OriginalSummary,
+			&i.Nsfw,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.RejectReason,
+			&i.SubjectType,
 			&i.CommentsCount,
 			&i.PatchDesc,
-			&i.Ep,
+			&i.OriginalPlatform,
+			&i.Platform,
+			&i.Action,
 		); err != nil {
 			return nil, err
 		}

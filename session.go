@@ -1,15 +1,17 @@
 package main
 
 import (
-	"app/session"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/redis/rueidis"
 	"github.com/rs/zerolog/log"
+
+	"app/session"
 )
 
 type key int
@@ -57,20 +59,28 @@ func SessionMiddleware(h *handler) func(next http.Handler) http.Handler {
 			}
 
 			v, err := h.r.Do(r.Context(), h.r.B().Get().Key(SessionKeyRedisPrefix+c.Value).Build()).AsBytes()
+			if rueidis.IsRedisNil(err) {
+				next.ServeHTTP(w, r)
+				return
+			}
+
 			if err != nil {
+				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+					return
+				}
 				log.Err(err).Msg("failed to fetch session from redis")
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
-			var session session.Session
-			if err := json.Unmarshal(v, &session); err != nil {
+			var s session.Session
+			if err := json.Unmarshal(v, &s); err != nil {
 				log.Err(err).Msg("failed to decode session from redis value")
 				next.ServeHTTP(w, r)
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), sessionKey, &session)
+			ctx := context.WithValue(r.Context(), sessionKey, &s)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

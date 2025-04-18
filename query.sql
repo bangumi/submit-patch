@@ -14,15 +14,14 @@ on conflict (user_id) do update set username = excluded.username,
 
 -- name: ListSubjectPatchesByStates :many
 select *
-from episode_patch
+from subject_patch
 where deleted_at is null
-  and state = any($1::int[])
+  and state = any (@state::int[])
 order by created_at desc
-limit $1;
+limit @size::int8 offset @skip::int8;
 
 -- name: CountSubjectPatchesByStates :one
 select count(1)
-from episode_patch
+from subject_patch
 where deleted_at is null
-  and state = any($1::int[])
-order by created_at desc;
+  and state = any ($1::int[]);

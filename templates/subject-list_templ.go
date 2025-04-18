@@ -11,7 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import "app/view"
 import "net/http"
 
-func Index(r *http.Request, data view.IndexPage) templ.Component {
+func SubjectPatchList(r *http.Request, data view.SubjectPatchList) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -34,8 +34,8 @@ func Index(r *http.Request, data view.IndexPage) templ.Component {
 		ctx = templ.ClearChildren(ctx)
 		templ_7745c5c3_Err = Layout(
 			"index",
-			indexHead(),
-			indexContent(r, data),
+			subjectListHead(),
+			subjectListContent(r, data),
 		).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -44,7 +44,7 @@ func Index(r *http.Request, data view.IndexPage) templ.Component {
 	})
 }
 
-func indexHead() templ.Component {
+func subjectListHead() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -65,7 +65,7 @@ func indexHead() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<style>\n      .patch_reason {\n          white-space: nowrap;\n          order: 1;\n          flex: 0 1 auto;\n          text-wrap: nowrap;\n          overflow: hidden;\n          text-overflow: ellipsis;\n          min-width: 0;\n      }\n\n      @media screen and (min-device-width: 480px) {\n          html {\n              overflow-y: scroll;\n          }\n          .header h3 {\n              text-wrap: nowrap;\n          }\n      }\n  </style>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<style>\r\n      .patch_reason {\r\n          white-space: nowrap;\r\n          order: 1;\r\n          flex: 0 1 auto;\r\n          text-wrap: nowrap;\r\n          overflow: hidden;\r\n          text-overflow: ellipsis;\r\n          min-width: 0;\r\n      }\r\n\r\n      @media screen and (min-device-width: 480px) {\r\n          html {\r\n              overflow-y: scroll;\r\n          }\r\n          .header h3 {\r\n              text-wrap: nowrap;\r\n          }\r\n      }\r\n  </style>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -73,7 +73,7 @@ func indexHead() templ.Component {
 	})
 }
 
-func indexContent(r *http.Request, data view.IndexPage) templ.Component {
+func subjectListContent(r *http.Request, data view.SubjectPatchList) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -99,6 +99,10 @@ func indexContent(r *http.Request, data view.IndexPage) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"row pt-2 pb-2 d-flex justify-content-between\"><div class=\"col\"><div class=\"btn-group\" role=\"group\"><a type=\"button\" class=\"btn btn-primary\" href=\"/?type=subject\">条目</a> <a type=\"button\" class=\"btn btn-outline-primary\" href=\"/?type=episode\">章节</a></div></div><div class=\"col d-flex flex-row-reverse\"><div class=\"btn-group\" role=\"group\"><a type=\"button\" href=\"/?type=subject&amp;state=pending\" class=\"btn btn-primary\">待审核</a> <a type=\"button\" href=\"/?type=subject&amp;state=reviewed\" class=\"btn btn-outline-primary\">已审核</a> <a type=\"button\" href=\"/?type=subject&amp;state=all\" class=\"btn btn-outline-primary\">全部</a> <a type=\"button\" href=\"/?type=subject&amp;state=rejected\" class=\"btn btn-outline-primary\">拒绝</a> <a type=\"button\" href=\"/?type=subject&amp;state=accepted\" class=\"btn btn-outline-primary\">接受</a></div></div></div><div class=\"row m-0 mb-4\"><ul class=\"list-group p-0 m-0\"></ul></div><div class=\"row mb-2\"></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = Pagination(data.Pagination).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

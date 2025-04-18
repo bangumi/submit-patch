@@ -8,12 +8,12 @@ import (
 type Config struct {
 	BotToken string `env:"TELEGRAM_BOT_TOKEN"`
 
-	BangumiAppId     string `env:"BANGUMI_APP_ID"`
-	BangumiAppSecret string `env:"BANGUMI_APP_SECRET"`
+	BangumiAppId     string `env:"BGM_TV_APP_ID"`
+	BangumiAppSecret string `env:"BGM_TV_APP_SECRET"`
 
 	ExternalHttpAddress string `env:"EXTERNAL_HTTP_ADDRESS" default:"http://127.0.0.1:4562"`
 
-	Port uint16 `env:"PORT" default:"4096"`
+	Port uint16 `env:"PORT" default:"4562"`
 
 	RedisDsn string `env:"REDIS_DSN"`
 

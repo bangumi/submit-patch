@@ -1,9 +1,9 @@
 package templates
 
-import "app/data"
+import "app/view"
 import "net/http"
 
-templ Index(r *http.Request, data data.IndexPage) {
+templ Index(r *http.Request, data view.IndexPage) {
 	@Layout(
 		"index",
 		indexHead(),
@@ -34,7 +34,7 @@ templ indexHead() {
   </style>
 }
 
-templ indexContent(r *http.Request, data data.IndexPage) {
+templ indexContent(r *http.Request, data view.IndexPage) {
 	@header("", data.Session)
 	<div class="row pt-2 pb-2 d-flex justify-content-between">
 		<div class="col">
