@@ -6,9 +6,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
-	"github.com/gorilla/csrf"
 	"github.com/jackc/pgx/v5"
 
+	"app/csrf"
 	"app/q"
 	"app/session"
 	"app/templates"
@@ -158,7 +158,7 @@ func (h *handler) subjectPatchDetail(
 	}
 
 	return templates.SubjectPatchPage(
-		csrf.Token(r),
+		csrf.GetToken(r),
 		s,
 		patch,
 		author,

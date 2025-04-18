@@ -10,8 +10,6 @@ import (
 	"app/csrf"
 )
 
-const CsrfFieldName = "x-csrf-token"
-
 const oauthURL = "https://next.bgm.tv/oauth/authorize"
 
 func routers(h *handler, config Config) *chi.Mux {

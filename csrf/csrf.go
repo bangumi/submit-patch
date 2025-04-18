@@ -16,8 +16,10 @@ const signerKey = key(2)
 
 const CookiesName = "x-csrf-token"
 
+const FormName = "x-csrf-token"
+
 func GetToken(r *http.Request) string {
-	return r.Context().Value(CookiesName).(string)
+	return r.Context().Value(tokenKey).(string)
 }
 
 func New() func(http.Handler) http.Handler {
