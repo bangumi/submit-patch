@@ -132,22 +132,23 @@ func (h *handler) subjectPatchDetail(
 	if patch.Name.Valid && patch.OriginalName != patch.Name.String {
 		changes = append(changes, view.Change{
 			Name: "条目名",
-			Diff: Diff("name", patch.OriginalName, patch.Name.String),
+			Diff: Diff("name", EscapeInvisible(patch.OriginalName), EscapeInvisible(patch.Name.String)),
 		})
 	}
 
 	if patch.OriginalInfobox.Valid && patch.Infobox.Valid {
 		changes = append(changes, view.Change{
 			Name: "wiki",
-			Diff: Diff("wiki", patch.OriginalInfobox.String, patch.Infobox.String),
+			Diff: Diff("wiki", EscapeInvisible(patch.OriginalInfobox.String), EscapeInvisible(patch.Infobox.String)),
 		})
 	}
 
 	if patch.OriginalSummary.Valid && patch.Summary.Valid {
 		changes = append(changes, view.Change{
 			Name: "简介",
-			Diff: Diff("summary", patch.OriginalSummary.String, patch.Summary.String),
+			Diff: Diff("summary", EscapeInvisible(patch.OriginalSummary.String), EscapeInvisible(patch.Summary.String)),
 		})
 	}
+
 	return templates.SubjectPatchPage(s, patch, author, reviewer, comments, changes).Render(r.Context(), w)
 }

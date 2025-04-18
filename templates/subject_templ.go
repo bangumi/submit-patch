@@ -240,7 +240,7 @@ func subjectPatchDetailContent(
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var11 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/edit/subject/%d", patch.ID))
+				var templ_7745c5c3_Var11 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/edit/subject/%s", patch.ID))
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var11)))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -249,7 +249,7 @@ func subjectPatchDetailContent(
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var12 templ.SafeURL = templ.SafeURL(fmt.Sprint("/api/delete-subject/%d", patch.ID))
+				var templ_7745c5c3_Var12 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/api/delete-subject/%s", patch.ID))
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var12)))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -424,9 +424,44 @@ func subjectPatchDetailContent(
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "DiffElement');\n        const diffString = JSON.parse(targetElement.getAttribute('data-diff'));;\n        const configuration = {\n          drawFileList: false,\n          fileListToggle: false,\n          fileListStartVisible: false,\n          maxLineSizeInBlockForComparison: 80,\n          fileContentToggle: false,\n          matching: 'words',\n          outputFormat: isMobile ? 'line-by-line' : 'side-by-side',\n          synchronisedScroll: true,\n          renderNothingWhenEmpty: false,\n        };\n        const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);\n        diff2htmlUi.draw();\n      })()\n    </script>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "DiffElement');\n        const diffString = JSON.parse(targetElement.getAttribute('data-diff'));;\n        const configuration = {\n          drawFileList: false,\n          fileListToggle: false,\n          fileListStartVisible: false,\n          maxLineSizeInBlockForComparison: 80,\n          fileContentToggle: false,\n          matching: 'words',\n          outputFormat: isMobile ? 'line-by-line' : 'side-by-side',\n          synchronisedScroll: true,\n          renderNothingWhenEmpty: false,\n        };\n        const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);\n        diff2htmlUi.draw();\n      })()\n    </script> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
+			}
+			if patch.Nsfw.Valid {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "<div class=\"row mb-4\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				if patch.Action.Int32 == 1 {
+					if patch.Nsfw.Bool {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "<p>NSFW: ❌ -> ✅</p>")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					} else {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "<p>NSFW: ✅ -> ❌</p>")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+				} else {
+					if patch.Nsfw.Bool {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "<p>NSFW: ✅</p>")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					} else {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<p>NSFW: ❌</p>")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "</div>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
 			}
 		}
 		return nil
@@ -455,20 +490,20 @@ func Comment(s q.GetCommentsRow) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		if s.UserID != 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "<li class=\"list-group-item border-dark-subtle list-group-item-warning\"><div class=\"d-flex w-100 justify-content-between\"><h5>[")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "<li class=\"list-group-item border-dark-subtle list-group-item-warning\"><div class=\"d-flex w-100 justify-content-between\"><h5>[")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var23 string
 			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(s.Nickname)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 218, Col: 21}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 235, Col: 21}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "]: </h5></div><p class=\"mb-1\" style=\"white-space: pre-wrap\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "]: </h5></div><p class=\"mb-1\" style=\"white-space: pre-wrap\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -476,12 +511,12 @@ func Comment(s q.GetCommentsRow) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "</p></li>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "</p></li>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "<li class=\"list-group-item border-dark-subtle list-group-item-info\"><div class=\"d-flex w-100 justify-content-between\"><h5 class=\"mb-0\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "<li class=\"list-group-item border-dark-subtle list-group-item-info\"><div class=\"d-flex w-100 justify-content-between\"><h5 class=\"mb-0\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -489,7 +524,7 @@ func Comment(s q.GetCommentsRow) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "</h5></div></li>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "</h5></div></li>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

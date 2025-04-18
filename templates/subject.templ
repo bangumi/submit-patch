@@ -104,14 +104,14 @@ templ subjectPatchDetailContent(
 		if patch.FromUserID == user.UserID {
 			<div class="row mb-2">
 				<form
-					action={ templ.SafeURL(fmt.Sprintf("/edit/subject/%d", patch.ID)) }
+					action={ templ.SafeURL(fmt.Sprintf("/edit/subject/%s", patch.ID)) }
 					method="get"
 					class="col"
 				>
 					<button type="submit" class="btn btn-success">Edit</button>
 				</form>
 				<form
-					action={ templ.SafeURL(fmt.Sprint("/api/delete-subject/%d", patch.ID)) }
+					action={ templ.SafeURL(fmt.Sprintf("/api/delete-subject/%s", patch.ID)) }
 					method="post"
 					class="col"
 				>
@@ -208,6 +208,23 @@ templ subjectPatchDetailContent(
         diff2htmlUi.draw();
       })()
     </script>
+		if patch.Nsfw.Valid {
+			<div class="row mb-4">
+				if patch.Action.Int32 == 1 {
+					if patch.Nsfw.Bool {
+						<p>NSFW: ❌ -> ✅</p>
+					} else {
+						<p>NSFW: ✅ -> ❌</p>
+					}
+				} else {
+					if patch.Nsfw.Bool {
+						<p>NSFW: ✅</p>
+					} else {
+						<p>NSFW: ❌</p>
+					}
+				}
+			</div>
+		}
 	}
 }
 

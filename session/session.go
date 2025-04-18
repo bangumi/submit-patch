@@ -1,8 +1,9 @@
 package session
 
 import (
-	"fmt"
 	"time"
+
+	"github.com/samber/lo"
 )
 
 type Session struct {
@@ -23,12 +24,12 @@ func (s *Session) SuperUser() bool {
 	return s.UserID == 287622 || s.UserID == 427613
 }
 
+var defaultTZ = lo.Must(time.LoadLocation("Asia/Shanghai"))
+
 func (s *Session) LocalTime(t time.Time) string {
 	if s.UserID == 0 {
-		return t.UTC().Format("2006-01-02 15:04:05") + " UTC"
+		return t.In(defaultTZ).Format("2006-01-02 15:04:05")
 	}
-
-	fmt.Println(s.UserID, s.Tz)
 
 	return t.In(time.FixedZone("", s.Tz*3600)).Format("2006-01-02 15:04:05")
 }
