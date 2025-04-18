@@ -1,12 +1,9 @@
 package main
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
-	"app/q"
-	"app/templates"
 	"app/view"
 )
 
@@ -14,24 +11,27 @@ const defaultPageSize = 30
 
 func (h *handler) debug(w http.ResponseWriter, r *http.Request) error {
 	//s := GetSession(r.Context())
-	return h.template.DebugPage.ExecuteTemplate(w, "debug.gohtml", nil)
+	rq := r.URL.Query()
+	rawPage := rq.Get("page")
+	currentPage, err := strconv.ParseInt(rawPage, 10, 64)
+	if err != nil {
+		currentPage = 1
+	}
+	if currentPage <= 0 {
+		currentPage = 1
+	}
+
+	return h.template.Executor.ExecuteTemplate(w, "debug.gohtml", view.Pagination{URL: r.URL, TotalPage: 10, CurrentPage: currentPage})
 }
 
 func (h *handler) index(w http.ResponseWriter, r *http.Request) error {
 	s := GetSession(r.Context())
 
 	if s.UserID == 0 {
-		return h.template.LoginPage.ExecuteTemplate(w, "login.gohtml", nil)
+		return h.template.Executor.ExecuteTemplate(w, "login.gohtml", nil)
 	}
-
-	return h.template.LoginPage.ExecuteTemplate(w, "index.gohtml", nil)
 
 	rq := r.URL.Query()
-
-	t := rq.Get("type")
-	if t == "" {
-		t = string(q.PatchTypeSubject)
-	}
 
 	rawPage := rq.Get("page")
 	currentPage, err := strconv.ParseInt(rawPage, 10, 64)
@@ -46,47 +46,43 @@ func (h *handler) index(w http.ResponseWriter, r *http.Request) error {
 	var stateVals = make([]int32, 0, 5)
 	switch state {
 	case "", StateFilterPending:
+		state = StateFilterPending
 		stateVals = append(stateVals, PatchStatePending)
 	case StateFilterAll:
+		state = StateFilterAll
 		stateVals = append(stateVals, PatchStatePending, PatchStateAccepted, PatchStateRejected, PatchStateOutdated)
 	case StateFilterAccepted:
+		state = StateFilterAccepted
 		stateVals = append(stateVals, PatchStateAccepted)
 	case StateFilterRejected:
+		state = StateFilterRejected
 		stateVals = append(stateVals, PatchStateRejected)
 	case StateFilterReviewed:
+		state = StateFilterReviewed
 		stateVals = append(stateVals, PatchStateRejected, PatchStateOutdated, PatchStateAccepted)
 	default:
-		return errors.New("invalid patch state")
+		http.Error(w, "invalid patch state", http.StatusBadRequest)
+		return nil
 	}
 
-	c, err := h.q.CountSubjectPatchesByStates(r.Context(), stateVals)
-	if err != nil {
-		return err
+	t := rq.Get("type")
+	switch t {
+	case "", "subject":
+		return h.listSubjectPatches(w, r, state, stateVals, currentPage)
+	case "episode":
+		return h.listEpisodePatches(w, r, stateVals, currentPage)
 	}
 
-	var patches []q.SubjectPatch
-	if c != 0 {
-		patches, err = h.q.ListSubjectPatchesByStates(r.Context(), q.ListSubjectPatchesByStatesParams{
-			State: stateVals,
-			Size:  defaultPageSize,
-			Skip:  (currentPage - 1) * defaultPageSize,
-		})
-		if err != nil {
-			return err
-		}
-	}
+	http.Error(w, "invalid patch type", http.StatusBadRequest)
+	return nil
+}
 
-	totalPage := (c + defaultPageSize - 1) / defaultPageSize
-
-	_ = templates.SubjectPatchList(r, view.SubjectPatchList{
-		Session: GetSession(r.Context()),
-		Patches: patches,
-		Pagination: view.Pagination{
-			URL:         r.URL,
-			TotalPage:   totalPage,
-			CurrentPage: currentPage,
-		},
-	}).Render(r.Context(), w)
+func (h *handler) listEpisodePatches(
+	w http.ResponseWriter,
+	r *http.Request,
+	stateVals []int32,
+	currentPage int64,
+) error {
 	return nil
 }
 

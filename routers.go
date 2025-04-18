@@ -25,6 +25,8 @@ func routers(h *handler, config Config) *chi.Mux {
 	r.Get("/", logError(h.index))
 	r.Get("/debug", logError(h.debug))
 
+	r.Get("/subject/{patchID}", logError(h.subjectPatchDetail))
+
 	return mux
 }
 

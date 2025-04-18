@@ -112,7 +112,7 @@ async def pg_pool_startup() -> None:
             raise Exception("require pgcrypto to be available")
         await pg.execute("create extension pgcrypto;")
 
-    await pg.execute(PROJECT_PATH.joinpath("./vendor/uuidv7/uuid_generate_v7.sql").read_text())
+    await pg.execute(PROJECT_PATH.joinpath("./third-party/uuidv7/uuid_generate_v7.sql").read_text())
 
 
 Request = litestar.Request[None, User | None, Any]

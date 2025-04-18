@@ -8,6 +8,7 @@ package q
 import (
 	"context"
 
+	uuid "github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -25,6 +26,66 @@ func (q *Queries) CountSubjectPatchesByStates(ctx context.Context, dollar_1 []in
 	return count, err
 }
 
+const getComments = `-- name: GetComments :many
+select edit_suggestion.id, edit_suggestion.patch_id, edit_suggestion.patch_type, edit_suggestion.text, edit_suggestion.from_user, edit_suggestion.created_at, edit_suggestion.deleted_at, author.user_id, author.username, author.nickname
+from edit_suggestion
+         inner join patch_users as author on author.user_id = edit_suggestion.from_user
+where deleted_at is null
+  and patch_id = $1
+  and patch_type = $2
+  and deleted_at is null
+order by created_at
+`
+
+type GetCommentsParams struct {
+	PatchID   uuid.UUID
+	PatchType PatchType
+}
+
+type GetCommentsRow struct {
+	ID        uuid.UUID
+	PatchID   uuid.UUID
+	PatchType PatchType
+	Text      string
+	FromUser  int32
+	CreatedAt pgtype.Timestamptz
+	DeletedAt pgtype.Timestamptz
+	UserID    int32
+	Username  string
+	Nickname  string
+}
+
+func (q *Queries) GetComments(ctx context.Context, arg GetCommentsParams) ([]GetCommentsRow, error) {
+	rows, err := q.db.Query(ctx, getComments, arg.PatchID, arg.PatchType)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCommentsRow
+	for rows.Next() {
+		var i GetCommentsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.PatchID,
+			&i.PatchType,
+			&i.Text,
+			&i.FromUser,
+			&i.CreatedAt,
+			&i.DeletedAt,
+			&i.UserID,
+			&i.Username,
+			&i.Nickname,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getEpisodePatch = `-- name: GetEpisodePatch :one
 SELECT id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, comments_count, patch_desc, ep
 FROM episode_patch
@@ -32,7 +93,7 @@ WHERE id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetEpisodePatch(ctx context.Context, id pgtype.UUID) (EpisodePatch, error) {
+func (q *Queries) GetEpisodePatch(ctx context.Context, id uuid.UUID) (EpisodePatch, error) {
 	row := q.db.QueryRow(ctx, getEpisodePatch, id)
 	var i EpisodePatch
 	err := row.Scan(
@@ -63,9 +124,69 @@ func (q *Queries) GetEpisodePatch(ctx context.Context, id pgtype.UUID) (EpisodeP
 	return i, err
 }
 
-const listSubjectPatchesByStates = `-- name: ListSubjectPatchesByStates :many
+const getSubjectPatchByID = `-- name: GetSubjectPatchByID :one
 select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action
 from subject_patch
+where deleted_at is null
+  and id = $1
+limit 1
+`
+
+func (q *Queries) GetSubjectPatchByID(ctx context.Context, id uuid.UUID) (SubjectPatch, error) {
+	row := q.db.QueryRow(ctx, getSubjectPatchByID, id)
+	var i SubjectPatch
+	err := row.Scan(
+		&i.ID,
+		&i.SubjectID,
+		&i.State,
+		&i.FromUserID,
+		&i.WikiUserID,
+		&i.Reason,
+		&i.Name,
+		&i.OriginalName,
+		&i.Infobox,
+		&i.OriginalInfobox,
+		&i.Summary,
+		&i.OriginalSummary,
+		&i.Nsfw,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.RejectReason,
+		&i.SubjectType,
+		&i.CommentsCount,
+		&i.PatchDesc,
+		&i.OriginalPlatform,
+		&i.Platform,
+		&i.Action,
+	)
+	return i, err
+}
+
+const getUserByID = `-- name: GetUserByID :one
+select user_id, username, nickname
+from patch_users
+where user_id = $1
+`
+
+func (q *Queries) GetUserByID(ctx context.Context, userID int32) (PatchUser, error) {
+	row := q.db.QueryRow(ctx, getUserByID, userID)
+	var i PatchUser
+	err := row.Scan(&i.UserID, &i.Username, &i.Nickname)
+	return i, err
+}
+
+const listSubjectPatchesByStates = `-- name: ListSubjectPatchesByStates :many
+select subject_patch.id, subject_patch.subject_id, subject_patch.state, subject_patch.from_user_id, subject_patch.wiki_user_id, subject_patch.reason, subject_patch.name, subject_patch.original_name, subject_patch.infobox, subject_patch.original_infobox, subject_patch.summary, subject_patch.original_summary, subject_patch.nsfw, subject_patch.created_at, subject_patch.updated_at, subject_patch.deleted_at, subject_patch.reject_reason, subject_patch.subject_type, subject_patch.comments_count, subject_patch.patch_desc, subject_patch.original_platform, subject_patch.platform, subject_patch.action,
+       author.user_id    as author_user_id,
+       author.username   as author_username,
+       author.nickname   as author_nickname,
+       reviewer.user_id  as reviewer_user_id,
+       reviewer.username as reviewer_username,
+       reviewer.nickname as reviewer_nickname
+from subject_patch
+         inner join patch_users as author on author.user_id = subject_patch.from_user_id
+         left outer join patch_users as reviewer on reviewer.user_id = subject_patch.wiki_user_id
 where deleted_at is null
   and state = any ($1::int[])
 order by created_at desc
@@ -78,15 +199,47 @@ type ListSubjectPatchesByStatesParams struct {
 	Size  int64
 }
 
-func (q *Queries) ListSubjectPatchesByStates(ctx context.Context, arg ListSubjectPatchesByStatesParams) ([]SubjectPatch, error) {
+type ListSubjectPatchesByStatesRow struct {
+	ID               uuid.UUID
+	SubjectID        int32
+	State            int32
+	FromUserID       int32
+	WikiUserID       int32
+	Reason           string
+	Name             pgtype.Text
+	OriginalName     string
+	Infobox          pgtype.Text
+	OriginalInfobox  pgtype.Text
+	Summary          pgtype.Text
+	OriginalSummary  pgtype.Text
+	Nsfw             pgtype.Bool
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+	DeletedAt        pgtype.Timestamptz
+	RejectReason     string
+	SubjectType      int64
+	CommentsCount    int32
+	PatchDesc        string
+	OriginalPlatform pgtype.Int4
+	Platform         pgtype.Int4
+	Action           pgtype.Int4
+	AuthorUserID     int32
+	AuthorUsername   string
+	AuthorNickname   string
+	ReviewerUserID   pgtype.Int4
+	ReviewerUsername pgtype.Text
+	ReviewerNickname pgtype.Text
+}
+
+func (q *Queries) ListSubjectPatchesByStates(ctx context.Context, arg ListSubjectPatchesByStatesParams) ([]ListSubjectPatchesByStatesRow, error) {
 	rows, err := q.db.Query(ctx, listSubjectPatchesByStates, arg.State, arg.Skip, arg.Size)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []SubjectPatch
+	var items []ListSubjectPatchesByStatesRow
 	for rows.Next() {
-		var i SubjectPatch
+		var i ListSubjectPatchesByStatesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.SubjectID,
@@ -111,6 +264,12 @@ func (q *Queries) ListSubjectPatchesByStates(ctx context.Context, arg ListSubjec
 			&i.OriginalPlatform,
 			&i.Platform,
 			&i.Action,
+			&i.AuthorUserID,
+			&i.AuthorUsername,
+			&i.AuthorNickname,
+			&i.ReviewerUserID,
+			&i.ReviewerUsername,
+			&i.ReviewerNickname,
 		); err != nil {
 			return nil, err
 		}

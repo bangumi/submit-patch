@@ -1,0 +1,189 @@
+package templates
+
+import (
+	"app/q"
+	"app/view"
+	"fmt"
+	"time"
+)
+
+templ SubjectPatchPage(
+	user *view.CurrentUser,
+	patch q.SubjectPatch,
+	author q.PatchUser,
+	reviewer *q.PatchUser,
+	comments []q.GetCommentsRow,
+) {
+	@Layout(
+		"",
+		patchDetailHead(),
+		subjectPatchDetailContent(user, patch, author, reviewer, comments),
+	)
+}
+
+templ patchDetailHead() {
+	<title>查看修改请求</title>
+	<link
+		rel="stylesheet"
+		type="text/css"
+		href="/static/diff2html/3.4.51/bundles/css/diff2html.min.css"
+	/>
+	<script type="text/javascript" src="/static/diff2html/3.4.51/bundles/js/diff2html-ui.min.js"></script>
+	<style>
+      .diff .d2h-code-line-ctn, .diff .d2h-code-line *, .diff * {
+          font-family: Consolas, Menlo, monospace !important;
+      }
+
+
+      #summaryDiffElement {
+          .d2h-code-line-ctn {
+              white-space: pre-wrap;
+              word-break: break-all;
+          }
+
+          .d2h-code-line, .d2h-code-side-line, .d2h-code-line-ctn {
+              width: revert;
+          }
+      }
+  </style>
+	<script>
+    const isMobile = (window.innerWidth <= 800);
+  </script>
+}
+
+templ subjectPatchDetailContent(
+	user *view.CurrentUser,
+	patch q.SubjectPatch,
+	author q.PatchUser,
+	reviewer *q.PatchUser,
+	comments []q.GetCommentsRow,
+) {
+	@header("", user)
+	<div class="row">
+		<div class="col">
+			if patch.SubjectID != 0 {
+				<a href={ templ.SafeURL(fmt.Sprintf("https://bgm.tv/subject/%d", patch.SubjectID)) } target="_blank" rel="noopener">
+					<h3>条目链接</h3>
+				</a>
+			} else {
+				<h3>创建新条目</h3>
+			}
+		</div>
+		<div class="col">
+			<h3>
+				提交者:
+				<a
+					href={ templ.SafeURL(fmt.Sprintf("/contrib/%d", patch.FromUserID)) }
+					target="_blank"
+					rel="noopener"
+				>
+					{ author.Nickname }
+				</a>
+			</h3>
+		</div>
+	</div>
+	<div class="row mb-2 p-2">
+		提交时间: { time.Since(patch.CreatedAt.Time).Truncate(time.Second).String() } ago
+		({ user.LocalTime(patch.CreatedAt.Time) })
+		<br/>
+		修改时间: { time.Since(patch.UpdatedAt.Time).Truncate(time.Second).String() } ago
+		({ user.LocalTime(patch.UpdatedAt.Time) })
+	</div>
+	if len(comments) > 0 {
+		<div class="row mb-2">
+			<ul class="list-group">
+				for _, c := range comments {
+					@Comment(c)
+				}
+			</ul>
+		</div>
+	}
+	if patch.State == 0 {
+		if patch.FromUserID == user.UserID {
+			<div class="row mb-2">
+				<form
+					action={ templ.SafeURL(fmt.Sprintf("/edit/subject/%d", patch.ID)) }
+					method="get"
+					class="col"
+				>
+					<button type="submit" class="btn btn-success">Edit</button>
+				</form>
+				<form
+					action={ templ.SafeURL(fmt.Sprint("/api/delete-subject/%d", patch.ID)) }
+					method="post"
+					class="col"
+				>
+					// @view.CSRFInput()
+					<button type="submit" class="btn btn-danger">Delete</button>
+				</form>
+			</div>
+			<hr/>
+		}
+	} else if patch.State == 1 {
+		<hr/>
+		<div class="col">
+			<h2>
+				已被 <a
+	href={ templ.SafeURL(fmt.Sprintf("/review/%d", patch.WikiUserID)) }
+	target="_blank"
+>{ reviewer.Username }</a>
+				<span class="badge bg-success">接受 </span>
+			</h2>
+			<hr/>
+		</div>
+	} else if patch.State == 2 {
+		<div class="col">
+			<h3>
+				已被 <a
+	href={ templ.SafeURL(fmt.Sprintf("/review/%d", patch.WikiUserID)) }
+	target="_blank"
+>{ reviewer.Username }</a>
+				<span class="badge bg-danger">拒绝 </span>
+			</h3>
+			if patch.RejectReason != "" {
+				<h4>原因：{ patch.RejectReason }</h4>
+			}
+			<hr/>
+		</div>
+	} else if patch.State == 3 {
+		<div class="col">
+			<h2>已过期 </h2>
+			<p>{ patch.RejectReason }</p>
+			<hr/>
+		</div>
+	}
+	<div class="row mb-2">
+		<h2>修改原因</h2>
+		<blockquote class="blockquote" style="background-color: #f7f7f9">
+			<p
+				class="mb-0"
+				style="overflow: visible; overflow-wrap: anywhere; white-space: pre-wrap"
+			>
+				{ patch.Reason }
+				// { view.AutoURL(patch.Reason) }
+			</p>
+		</blockquote>
+	</div>
+}
+
+templ Comment(s q.GetCommentsRow) {
+	if s.UserID != 0 {
+		<li class="list-group-item border-dark-subtle list-group-item-warning">
+			<div class="d-flex w-100 justify-content-between">
+				<h5>[{ s.Nickname }]: </h5>
+				// <small>{ view.ToUserLocalTime(s.CreatedAt) }</small>
+			</div>
+			<p class="mb-1" style="white-space: pre-wrap">
+				{ s.Text }
+				// { view.AutoURL(s.Text) }
+			</p>
+		</li>
+	} else {
+		<li class="list-group-item border-dark-subtle list-group-item-info">
+			<div class="d-flex w-100 justify-content-between">
+				<h5 class="mb-0">{ s.Text } </h5>
+				// <small>{ view.ToUserLocalTime(s.CreatedAt) }</small>
+			</div>
+		</li>
+	}
+}

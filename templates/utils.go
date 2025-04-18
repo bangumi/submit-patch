@@ -1,16 +1,17 @@
 package templates
 
 import (
+	"fmt"
 	"net/url"
 	"strconv"
 
 	"github.com/a-h/templ"
 )
 
-func setQuery(u *url.URL, key, value string) templ.SafeURL {
+func setQuery(u *url.URL, key string, value any) templ.SafeURL {
 	q := u.Query()
 
-	q.Set(key, value)
+	q.Set(key, fmt.Sprint(value))
 
 	return templ.SafeURL(u.Path + "?" + q.Encode())
 }

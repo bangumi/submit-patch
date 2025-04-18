@@ -33,9 +33,10 @@ func (h *handler) login(w http.ResponseWriter, r *http.Request) {
 }
 
 type UserInfo struct {
-	Username  string `json:"username"`
-	Nickname  string `json:"nickname"`
-	UserGroup int    `json:"user_group"`
+	Username   string `json:"username"`
+	Nickname   string `json:"nickname"`
+	UserGroup  int    `json:"user_group"`
+	TimeOffset int    `json:"time_offset"`
 }
 
 type OAuthAccessTokenResponse struct {
@@ -43,7 +44,6 @@ type OAuthAccessTokenResponse struct {
 	AccessToken  string `json:"access_token"`
 	ExpiresIn    int64  `json:"expires_in"`
 	UserID       string `json:"user_id"`
-	TimeOffset   int    `json:"time_offset"`
 }
 
 func (h *handler) callback(w http.ResponseWriter, r *http.Request) error {
@@ -113,7 +113,7 @@ func (h *handler) callback(w http.ResponseWriter, r *http.Request) error {
 		RefreshToken:         oauthResponse.RefreshToken,
 		AccessTokenCreatedAt: now,
 		AccessTokenExpiresAt: now.Add(time.Second * time.Duration(oauthResponse.ExpiresIn)),
-		Tz:                   oauthResponse.TimeOffset,
+		Tz:                   user.TimeOffset,
 	})
 	if err != nil {
 		return errgo.Wrap(err, "failed to set session")

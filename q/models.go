@@ -8,6 +8,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 
+	uuid "github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -54,8 +55,8 @@ func (ns NullPatchType) Value() (driver.Value, error) {
 }
 
 type EditSuggestion struct {
-	ID        pgtype.UUID
-	PatchID   pgtype.UUID
+	ID        uuid.UUID
+	PatchID   uuid.UUID
 	PatchType PatchType
 	Text      string
 	FromUser  int32
@@ -64,7 +65,7 @@ type EditSuggestion struct {
 }
 
 type EpisodePatch struct {
-	ID                  pgtype.UUID
+	ID                  uuid.UUID
 	EpisodeID           int32
 	State               int32
 	FromUserID          int32
@@ -96,7 +97,7 @@ type PatchUser struct {
 }
 
 type SubjectPatch struct {
-	ID               pgtype.UUID
+	ID               uuid.UUID
 	SubjectID        int32
 	State            int32
 	FromUserID       int32
@@ -123,7 +124,7 @@ type SubjectPatch struct {
 }
 
 type ViewEpisodePatch struct {
-	ID                  pgtype.UUID
+	ID                  uuid.UUID
 	EpisodeID           int32
 	State               int32
 	FromUserID          int32
@@ -146,7 +147,7 @@ type ViewEpisodePatch struct {
 }
 
 type ViewSubjectPatch struct {
-	ID              pgtype.UUID
+	ID              uuid.UUID
 	SubjectID       int32
 	State           int32
 	FromUserID      int32

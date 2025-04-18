@@ -46,6 +46,15 @@ async def run_migration() -> None:
     if not all(x <= y for x, y in itertools.pairwise(migrations)):
         raise Exception("migration list is not sorted")
 
+    await pg.execute(
+        """
+            create table if not exists patch_db_migration(
+                key text primary key not null,
+                value text not null
+            )
+            """
+    )
+
     v = None
     try:
         v = await pg.fetchval(

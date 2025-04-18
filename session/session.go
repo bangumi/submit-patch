@@ -1,6 +1,9 @@
 package session
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Session struct {
 	UserID               int32     `json:"user_id"`
@@ -18,4 +21,14 @@ func (s *Session) AllowEdit() bool {
 
 func (s *Session) SuperUser() bool {
 	return s.UserID == 287622 || s.UserID == 427613
+}
+
+func (s *Session) LocalTime(t time.Time) string {
+	if s.UserID == 0 {
+		return t.UTC().Format("2006-01-02 15:04:05") + " UTC"
+	}
+
+	fmt.Println(s.UserID, s.Tz)
+
+	return t.In(time.FixedZone("", s.Tz*3600)).Format("2006-01-02 15:04:05")
 }
