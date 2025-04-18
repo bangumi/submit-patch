@@ -8,13 +8,14 @@ import (
 	"app/q"
 )
 
-func newHandler(db *pgxpool.Pool, r rueidis.Client, q *q.Queries, config Config) *handler {
+func newHandler(db *pgxpool.Pool, r rueidis.Client, q *q.Queries, config Config, template Template) *handler {
 	return &handler{
-		db:     db,
-		r:      r,
-		config: config,
-		q:      q,
-		client: resty.New().SetHeader("User-Agent", "trim21/submit-patch"),
+		db:       db,
+		r:        r,
+		config:   config,
+		q:        q,
+		client:   resty.New().SetHeader("User-Agent", "trim21/submit-patch"),
+		template: template,
 		//tmpl:   tmpl,
 	}
 }
@@ -26,5 +27,5 @@ type handler struct {
 	r      rueidis.Client
 	client *resty.Client
 
-	//tmpl *template.Template
+	template Template
 }

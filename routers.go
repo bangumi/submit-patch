@@ -23,6 +23,7 @@ func routers(h *handler, config Config) *chi.Mux {
 	r.Get("/callback", logError(h.callback))
 
 	r.Get("/", logError(h.index))
+	r.Get("/debug", logError(h.debug))
 
 	return mux
 }

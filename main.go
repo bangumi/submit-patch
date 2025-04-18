@@ -36,6 +36,7 @@ func main() {
 				return q.New(p)
 			},
 			newHandler,
+			loadTemplates,
 			routers,
 			func(config Config) (rueidis.Client, error) {
 				redisDSN := lo.Must(url.Parse(config.RedisDsn))

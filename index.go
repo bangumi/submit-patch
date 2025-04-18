@@ -12,13 +12,19 @@ import (
 
 const defaultPageSize = 30
 
+func (h *handler) debug(w http.ResponseWriter, r *http.Request) error {
+	//s := GetSession(r.Context())
+	return h.template.DebugPage.ExecuteTemplate(w, "debug.gohtml", nil)
+}
+
 func (h *handler) index(w http.ResponseWriter, r *http.Request) error {
 	s := GetSession(r.Context())
 
 	if s.UserID == 0 {
-		_ = templates.Login().Render(r.Context(), w)
-		return nil
+		return h.template.LoginPage.ExecuteTemplate(w, "login.gohtml", nil)
 	}
+
+	return h.template.LoginPage.ExecuteTemplate(w, "index.gohtml", nil)
 
 	rq := r.URL.Query()
 
