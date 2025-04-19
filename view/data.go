@@ -26,6 +26,13 @@ type SubjectPatchList struct {
 	Pagination         Pagination
 }
 
+type EpisodePatchList struct {
+	Session            *session.Session
+	CurrentStateFilter string
+	Patches            []EpisodePatchListItem
+	Pagination         Pagination
+}
+
 type CurrentUser = session.Session
 
 type Pagination struct {
@@ -55,6 +62,22 @@ type SubjectPatchListItem struct {
 
 	Name        string
 	SubjectType int64
+}
+
+type EpisodePatchListItem struct {
+	ID            string
+	Reason        string
+	UpdatedAt     time.Time
+	CreatedAt     time.Time
+	CommentsCount int32
+
+	State  int32
+	Action int32
+
+	Author   User
+	Reviewer *User
+
+	Name string
 }
 
 type SubjectPatchEdit struct {

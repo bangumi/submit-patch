@@ -12,6 +12,27 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const acceptEpisodePatch = `-- name: AcceptEpisodePatch :exec
+update episode_patch
+set wiki_user_id = $1,
+    state        = $2,
+    updated_at   = current_timestamp
+where id = $3
+  and deleted_at is null
+  and state = 0
+`
+
+type AcceptEpisodePatchParams struct {
+	WikiUserID int32
+	State      int32
+	ID         uuid.UUID
+}
+
+func (q *Queries) AcceptEpisodePatch(ctx context.Context, arg AcceptEpisodePatchParams) error {
+	_, err := q.db.Exec(ctx, acceptEpisodePatch, arg.WikiUserID, arg.State, arg.ID)
+	return err
+}
+
 const acceptSubjectPatch = `-- name: AcceptSubjectPatch :exec
 update subject_patch
 set wiki_user_id = $1,
@@ -31,6 +52,20 @@ type AcceptSubjectPatchParams struct {
 func (q *Queries) AcceptSubjectPatch(ctx context.Context, arg AcceptSubjectPatchParams) error {
 	_, err := q.db.Exec(ctx, acceptSubjectPatch, arg.WikiUserID, arg.State, arg.ID)
 	return err
+}
+
+const countEpisodePatchesByStates = `-- name: CountEpisodePatchesByStates :one
+select count(1)
+from episode_patch
+where deleted_at is null
+  and state = any ($1::int[])
+`
+
+func (q *Queries) CountEpisodePatchesByStates(ctx context.Context, dollar_1 []int32) (int64, error) {
+	row := q.db.QueryRow(ctx, countEpisodePatchesByStates, dollar_1)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const countSubjectPatchesByStates = `-- name: CountSubjectPatchesByStates :one
@@ -217,6 +252,84 @@ func (q *Queries) GetEpisodePatch(ctx context.Context, id uuid.UUID) (EpisodePat
 	return i, err
 }
 
+const getEpisodePatchByID = `-- name: GetEpisodePatchByID :one
+select id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, comments_count, patch_desc, ep
+from episode_patch
+where deleted_at is null
+  and id = $1
+limit 1
+`
+
+func (q *Queries) GetEpisodePatchByID(ctx context.Context, id uuid.UUID) (EpisodePatch, error) {
+	row := q.db.QueryRow(ctx, getEpisodePatchByID, id)
+	var i EpisodePatch
+	err := row.Scan(
+		&i.ID,
+		&i.EpisodeID,
+		&i.State,
+		&i.FromUserID,
+		&i.WikiUserID,
+		&i.Reason,
+		&i.OriginalName,
+		&i.Name,
+		&i.OriginalNameCn,
+		&i.NameCn,
+		&i.OriginalDuration,
+		&i.Duration,
+		&i.OriginalAirdate,
+		&i.Airdate,
+		&i.OriginalDescription,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.RejectReason,
+		&i.CommentsCount,
+		&i.PatchDesc,
+		&i.Ep,
+	)
+	return i, err
+}
+
+const getEpisodePatchByIDForUpdate = `-- name: GetEpisodePatchByIDForUpdate :one
+select id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, comments_count, patch_desc, ep
+from episode_patch
+where deleted_at is null
+  and id = $1
+limit 1 for update
+`
+
+func (q *Queries) GetEpisodePatchByIDForUpdate(ctx context.Context, id uuid.UUID) (EpisodePatch, error) {
+	row := q.db.QueryRow(ctx, getEpisodePatchByIDForUpdate, id)
+	var i EpisodePatch
+	err := row.Scan(
+		&i.ID,
+		&i.EpisodeID,
+		&i.State,
+		&i.FromUserID,
+		&i.WikiUserID,
+		&i.Reason,
+		&i.OriginalName,
+		&i.Name,
+		&i.OriginalNameCn,
+		&i.NameCn,
+		&i.OriginalDuration,
+		&i.Duration,
+		&i.OriginalAirdate,
+		&i.Airdate,
+		&i.OriginalDescription,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.RejectReason,
+		&i.CommentsCount,
+		&i.PatchDesc,
+		&i.Ep,
+	)
+	return i, err
+}
+
 const getSubjectPatchByID = `-- name: GetSubjectPatchByID :one
 select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action
 from subject_patch
@@ -308,8 +421,95 @@ func (q *Queries) GetUserByID(ctx context.Context, userID int32) (PatchUser, err
 	return i, err
 }
 
+const listEpisodePatchesByStates = `-- name: ListEpisodePatchesByStates :many
+select episode_patch.id,
+       episode_patch.original_name,
+       episode_patch.state,
+       episode_patch.created_at,
+       episode_patch.updated_at,
+       episode_patch.comments_count,
+       episode_patch.reason,
+       author.user_id    as author_user_id,
+       author.username   as author_username,
+       author.nickname   as author_nickname,
+       reviewer.user_id  as reviewer_user_id,
+       reviewer.username as reviewer_username,
+       reviewer.nickname as reviewer_nickname
+from episode_patch
+         inner join patch_users as author on author.user_id = episode_patch.from_user_id
+         left outer join patch_users as reviewer on reviewer.user_id = episode_patch.wiki_user_id
+where deleted_at is null
+  and state = any ($1::int[])
+order by created_at desc
+limit $3::int8 offset $2::int8
+`
+
+type ListEpisodePatchesByStatesParams struct {
+	State []int32
+	Skip  int64
+	Size  int64
+}
+
+type ListEpisodePatchesByStatesRow struct {
+	ID               uuid.UUID
+	OriginalName     pgtype.Text
+	State            int32
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+	CommentsCount    int32
+	Reason           string
+	AuthorUserID     int32
+	AuthorUsername   string
+	AuthorNickname   string
+	ReviewerUserID   pgtype.Int4
+	ReviewerUsername pgtype.Text
+	ReviewerNickname pgtype.Text
+}
+
+func (q *Queries) ListEpisodePatchesByStates(ctx context.Context, arg ListEpisodePatchesByStatesParams) ([]ListEpisodePatchesByStatesRow, error) {
+	rows, err := q.db.Query(ctx, listEpisodePatchesByStates, arg.State, arg.Skip, arg.Size)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListEpisodePatchesByStatesRow
+	for rows.Next() {
+		var i ListEpisodePatchesByStatesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OriginalName,
+			&i.State,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.CommentsCount,
+			&i.Reason,
+			&i.AuthorUserID,
+			&i.AuthorUsername,
+			&i.AuthorNickname,
+			&i.ReviewerUserID,
+			&i.ReviewerUsername,
+			&i.ReviewerNickname,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listSubjectPatchesByStates = `-- name: ListSubjectPatchesByStates :many
-select subject_patch.id, subject_patch.subject_id, subject_patch.state, subject_patch.from_user_id, subject_patch.wiki_user_id, subject_patch.reason, subject_patch.name, subject_patch.original_name, subject_patch.infobox, subject_patch.original_infobox, subject_patch.summary, subject_patch.original_summary, subject_patch.nsfw, subject_patch.created_at, subject_patch.updated_at, subject_patch.deleted_at, subject_patch.reject_reason, subject_patch.subject_type, subject_patch.comments_count, subject_patch.patch_desc, subject_patch.original_platform, subject_patch.platform, subject_patch.action,
+select subject_patch.id,
+       subject_patch.original_name,
+       subject_patch.state,
+       subject_patch.action,
+       subject_patch.created_at,
+       subject_patch.updated_at,
+       subject_patch.comments_count,
+       subject_patch.reason,
+       subject_patch.subject_type,
        author.user_id    as author_user_id,
        author.username   as author_username,
        author.nickname   as author_nickname,
@@ -333,28 +533,14 @@ type ListSubjectPatchesByStatesParams struct {
 
 type ListSubjectPatchesByStatesRow struct {
 	ID               uuid.UUID
-	SubjectID        int32
-	State            int32
-	FromUserID       int32
-	WikiUserID       int32
-	Reason           string
-	Name             pgtype.Text
 	OriginalName     string
-	Infobox          pgtype.Text
-	OriginalInfobox  pgtype.Text
-	Summary          pgtype.Text
-	OriginalSummary  pgtype.Text
-	Nsfw             pgtype.Bool
+	State            int32
+	Action           pgtype.Int4
 	CreatedAt        pgtype.Timestamptz
 	UpdatedAt        pgtype.Timestamptz
-	DeletedAt        pgtype.Timestamptz
-	RejectReason     string
-	SubjectType      int64
 	CommentsCount    int32
-	PatchDesc        string
-	OriginalPlatform pgtype.Int4
-	Platform         pgtype.Int4
-	Action           pgtype.Int4
+	Reason           string
+	SubjectType      int64
 	AuthorUserID     int32
 	AuthorUsername   string
 	AuthorNickname   string
@@ -374,28 +560,14 @@ func (q *Queries) ListSubjectPatchesByStates(ctx context.Context, arg ListSubjec
 		var i ListSubjectPatchesByStatesRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.SubjectID,
-			&i.State,
-			&i.FromUserID,
-			&i.WikiUserID,
-			&i.Reason,
-			&i.Name,
 			&i.OriginalName,
-			&i.Infobox,
-			&i.OriginalInfobox,
-			&i.Summary,
-			&i.OriginalSummary,
-			&i.Nsfw,
+			&i.State,
+			&i.Action,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.DeletedAt,
-			&i.RejectReason,
-			&i.SubjectType,
 			&i.CommentsCount,
-			&i.PatchDesc,
-			&i.OriginalPlatform,
-			&i.Platform,
-			&i.Action,
+			&i.Reason,
+			&i.SubjectType,
 			&i.AuthorUserID,
 			&i.AuthorUsername,
 			&i.AuthorNickname,
@@ -413,12 +585,40 @@ func (q *Queries) ListSubjectPatchesByStates(ctx context.Context, arg ListSubjec
 	return items, nil
 }
 
+const rejectEpisodePatch = `-- name: RejectEpisodePatch :exec
+update episode_patch
+set wiki_user_id  = $1,
+    state         = $2,
+    reject_reason = $3,
+    updated_at    = current_timestamp
+where id = $4
+  and deleted_at is null
+  and state = 0
+`
+
+type RejectEpisodePatchParams struct {
+	WikiUserID   int32
+	State        int32
+	RejectReason string
+	ID           uuid.UUID
+}
+
+func (q *Queries) RejectEpisodePatch(ctx context.Context, arg RejectEpisodePatchParams) error {
+	_, err := q.db.Exec(ctx, rejectEpisodePatch,
+		arg.WikiUserID,
+		arg.State,
+		arg.RejectReason,
+		arg.ID,
+	)
+	return err
+}
+
 const rejectSubjectPatch = `-- name: RejectSubjectPatch :exec
 update subject_patch
-set wiki_user_id = $1,
-    state        = $2,
+set wiki_user_id  = $1,
+    state         = $2,
     reject_reason = $3,
-    updated_at   = current_timestamp
+    updated_at    = current_timestamp
 where id = $4
   and deleted_at is null
   and state = 0
@@ -438,6 +638,22 @@ func (q *Queries) RejectSubjectPatch(ctx context.Context, arg RejectSubjectPatch
 		arg.RejectReason,
 		arg.ID,
 	)
+	return err
+}
+
+const updateEpisodePatchCommentCount = `-- name: UpdateEpisodePatchCommentCount :exec
+update episode_patch
+set comments_count = (select count(1)
+                      from edit_suggestion
+                      where patch_type = 'episode'
+                        and patch_id = $1
+                        and edit_suggestion.from_user != 0)
+where id = $1
+  and deleted_at is null
+`
+
+func (q *Queries) UpdateEpisodePatchCommentCount(ctx context.Context, patchID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, updateEpisodePatchCommentCount, patchID)
 	return err
 }
 

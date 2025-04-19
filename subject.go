@@ -1,13 +1,11 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
@@ -213,13 +211,10 @@ func (h *handler) newSubjectEditPatch(w http.ResponseWriter, r *http.Request) er
 		http.Error(w, "please login before submit any patch", http.StatusUnauthorized)
 		return nil
 	}
-	// --- Captcha Validation (if not superuser) ---
-	// if !user.SuperUser() {
+
 	if err := h.validateCaptcha(r.Context(), data.CfTurnstileResponse); err != nil {
-		// Use StatusBadRequest as per Python's BadRequestException for captcha failure
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return nil
-		// }
 	}
 
 	// --- Fetch Original Data ---
@@ -323,23 +318,7 @@ func (h *handler) newSubjectEditPatch(w http.ResponseWriter, r *http.Request) er
 
 // Placeholder: Replace with your actual validation logic
 func checkInvalidInputStr(inputs ...string) error {
-	for _, s := range inputs {
-		// Add your validation logic here (e.g., check for forbidden characters)
-		if strings.Contains(s, "<script>") {
-			return fmt.Errorf("invalid characters found in input: %s", s)
-		}
-	}
 	return nil
-}
-
-// Placeholder: Implement Captcha Validation
-type turnstileResponse struct {
-	Success     bool      `json:"success"`
-	ChallengeTS time.Time `json:"challenge_ts"`
-	Hostname    string    `json:"hostname"`
-	ErrorCodes  []string  `json:"error-codes"`
-	Action      string    `json:"action"`
-	CData       string    `json:"cdata"`
 }
 
 type CreateSubjectPatch struct {
@@ -350,35 +329,4 @@ type CreateSubjectPatch struct {
 	PatchDesc           string
 	CfTurnstileResponse string
 	Nsfw                string
-}
-
-func (h *handler) validateCaptcha(ctx context.Context, turnstileResponseToken string) error {
-	var result turnstileResponse
-	resp, err := h.client.R().
-		SetContext(ctx).
-		SetFormData(map[string]string{
-			"secret":   h.config.TurnstileSecretKey,
-			"response": turnstileResponseToken,
-		}).
-		SetResult(&result). // Decode into result on success (2xx)
-		Post("https://challenges.cloudflare.com/turnstile/v0/siteverify")
-	if err != nil {
-		fmt.Printf("Error executing Turnstile request: %v\n", err)
-		return errors.New("failed to contact captcha verification service")
-	}
-
-	if resp.IsError() {
-		// Turnstile API returned an error status code (>= 400)
-		fmt.Printf("Turnstile API error: status %d, body: %s\n", resp.StatusCode(), resp.String())
-		// You could potentially check apiError["error-codes"] here if needed
-		return errors.New("captcha verification failed (API error)")
-	}
-
-	// We got a 2xx response, now check the 'success' field in the JSON
-	if !result.Success {
-		// Log error codes if needed: fmt.Printf("Turnstile verification failed: %v\n", result.ErrorCodes)
-		return errors.New("验证码无效") // "Invalid CAPTCHA"
-	}
-
-	return nil
 }

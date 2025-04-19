@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/redis/rueidis"
 	"github.com/rs/zerolog/log"
 
@@ -16,17 +15,19 @@ import (
 
 const SessionKeyRedisPrefix = "patch:session:"
 
-func (h *handler) NetSession(ctx context.Context, w http.ResponseWriter, s session.Session) error {
-	state := uuid.Must(uuid.NewV4()).String()
+func (h *handler) NewSession(ctx context.Context, w http.ResponseWriter, s session.Session) error {
+	return h.setSession(ctx, w, &s)
+}
 
-	err := h.r.Do(ctx, h.r.B().Set().Key(SessionKeyRedisPrefix+state).Value(rueidis.JSON(s)).Ex(time.Hour*24*30).Build()).Error()
+func (h *handler) setSession(ctx context.Context, w http.ResponseWriter, s *session.Session) error {
+	err := h.r.Do(ctx, h.r.B().Set().Key(SessionKeyRedisPrefix+s.Key).Value(rueidis.JSON(s)).Ex(time.Hour*24*30).Build()).Error()
 	if err != nil {
 		return err
 	}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     session.CookieName,
-		Value:    state,
+		Value:    s.Key,
 		HttpOnly: true,
 		Expires:  time.Now().Add(time.Hour * 24 * 30),
 	})

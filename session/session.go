@@ -15,6 +15,9 @@ type Session struct {
 	AccessTokenCreatedAt time.Time `json:"access_token_created_at"`
 	AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
 	Tz                   int       `json:"tz"`
+
+	// key of this session
+	Key string `json:"key"`
 }
 
 func (s *Session) AllowEdit() bool {
@@ -23,6 +26,18 @@ func (s *Session) AllowEdit() bool {
 
 func (s *Session) SuperUser() bool {
 	return s.UserID == 287622 || s.UserID == 427613
+}
+
+func (s *Session) TokenFresh() bool {
+	if s.AccessToken == "" {
+		return false
+	}
+
+	if s.AccessTokenExpiresAt.IsZero() {
+		return false
+	}
+
+	return s.AccessTokenExpiresAt.After(time.Now().Add(time.Hour))
 }
 
 var defaultTZ = lo.Must(time.LoadLocation("Asia/Shanghai"))

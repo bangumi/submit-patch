@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -28,6 +29,7 @@ func routers(h *handler, config Config) *chi.Mux {
 	r.Get("/debug", logError(h.debug))
 
 	r.Get("/subject/{patchID}", logError(h.subjectPatchDetail))
+	r.Get("/episode/{patchID}", logError(h.episodePatchDetail))
 
 	r.Post("/api/review/{patch_type}/{patch_id}", logError(h.handleReview))
 	r.Get("/suggest", logError(h.newEditPatch))
@@ -41,6 +43,10 @@ func logError(fn func(w http.ResponseWriter, r *http.Request) error) http.Handle
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := fn(w, r)
 		if err != nil {
+			if errors.Is(err, ErrLoginRequired) {
+				return
+			}
+
 			log.Error().Err(err).Msg("error")
 			http.Error(w, "unexpected error", http.StatusInternalServerError)
 		}

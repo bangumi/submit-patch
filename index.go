@@ -27,7 +27,6 @@ func (h *handler) debug(w http.ResponseWriter, r *http.Request) error {
 
 func (h *handler) index(w http.ResponseWriter, r *http.Request) error {
 	s := session.GetSession(r.Context())
-
 	if s.UserID == 0 {
 		return h.template.Login.Execute(w, nil)
 	}
@@ -71,19 +70,10 @@ func (h *handler) index(w http.ResponseWriter, r *http.Request) error {
 	case "", "subject":
 		return h.listSubjectPatches(w, r, state, stateVals, currentPage)
 	case "episode":
-		return h.listEpisodePatches(w, r, stateVals, currentPage)
+		return h.listEpisodePatches(w, r, state, stateVals, currentPage)
 	}
 
 	http.Error(w, "invalid patch type", http.StatusBadRequest)
-	return nil
-}
-
-func (h *handler) listEpisodePatches(
-	w http.ResponseWriter,
-	r *http.Request,
-	stateVals []int32,
-	currentPage int64,
-) error {
 	return nil
 }
 

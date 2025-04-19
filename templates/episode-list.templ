@@ -8,15 +8,15 @@ import (
 	"net/http"
 )
 
-templ SubjectPatchList(r *http.Request, data view.SubjectPatchList) {
+templ EpisodePatchList(r *http.Request, data view.EpisodePatchList) {
 	@Layout(
-		"subjects",
-		subjectListHead(),
-		subjectListContent(r, data),
+		"episodes",
+		episodeListHead(),
+		episodeListContent(r, data),
 	)
 }
 
-templ subjectListHead() {
+templ episodeListHead() {
 	<style>
       .patch_reason {
           white-space: nowrap;
@@ -39,13 +39,13 @@ templ subjectListHead() {
   </style>
 }
 
-templ subjectListContent(r *http.Request, data view.SubjectPatchList) {
+templ episodeListContent(r *http.Request, data view.EpisodePatchList) {
 	@header("", data.Session)
 	@listFilter(r.URL, data.CurrentStateFilter)
 	<div class="row m-0 mb-4">
 		<ul class="list-group p-0 m-0">
 			for _, patch := range data.Patches {
-				@subjectPatch(patch)
+				@episodePatch(patch)
 			}
 		</ul>
 	</div>
@@ -53,17 +53,17 @@ templ subjectListContent(r *http.Request, data view.SubjectPatchList) {
 	@Pagination(data.Pagination)
 }
 
-templ subjectPatch(patch view.SubjectPatchListItem) {
+templ episodePatch(patch view.EpisodePatchListItem) {
 	<a
-		href={ templ.SafeURL("/subject/" + patch.ID) }
+		href={ templ.SafeURL("/episode/" + patch.ID) }
 		id={ patch.ID }
 		rel="noopener"
 		class="list-group-item list-group-item-action flex-column align-items-start"
 	>
 		<div class="d-flex align-content-start mb-1 flex-wrap">
-			if patch.Action == 2 {
-				<h5 class="me-2"><span class="badge bg-success">新条目</span></h5>
-			}
+			// if patch.Action == 2 {
+			// 	<h5 class="me-2"><span class="badge bg-success">新条目</span></h5>
+			// }
 			switch  patch.State {
 				case 0:
 					<h5 class="me-2"><span class="badge bg-primary">待审核</span></h5>
@@ -91,23 +91,23 @@ templ subjectPatch(patch view.SubjectPatchListItem) {
 					<span class="badge bg-light text-dark border border-info">{ time.Since( patch.UpdatedAt).Truncate(time.Second).String() } ago</span>
 				}
 			</div>
-			<div class="me-2 d-flex">
-				<p class="mb-0 pe-2" style="white-space: nowrap">分类</p>
-				<span class="badge bg-light text-dark border border-info">
-					switch patch.SubjectType {
-						case 1:
-							书籍
-						case 2:
-							动画
-						case 3:
-							音乐
-						case 4:
-							游戏
-						case 6:
-							三次元
-					}
-				</span>
-			</div>
+			// <div class="me-2 d-flex">
+			// 	<p class="mb-0 pe-2" style="white-space: nowrap">分类</p>
+			// <span class="badge bg-light text-dark border border-info">
+			// 	switch patch.SubjectType {
+			// 		case 1:
+			// 			书籍
+			// 		case 2:
+			// 			动画
+			// 		case 3:
+			// 			音乐
+			// 		case 4:
+			// 			游戏
+			// 		case 6:
+			// 			三次元
+			// 	}
+			// </span>
+			// </div>
 			<div class="d-flex pe-2">
 				<p class="mb-0 pe-2" style="white-space: nowrap">条目名</p>
 				<span class="badge bg-light text-dark border border-info" style="max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{ patch.Name }</span>

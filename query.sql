@@ -13,7 +13,15 @@ on conflict (user_id) do update set username = excluded.username,
 
 
 -- name: ListSubjectPatchesByStates :many
-select subject_patch.*,
+select subject_patch.id,
+       subject_patch.original_name,
+       subject_patch.state,
+       subject_patch.action,
+       subject_patch.created_at,
+       subject_patch.updated_at,
+       subject_patch.comments_count,
+       subject_patch.reason,
+       subject_patch.subject_type,
        author.user_id    as author_user_id,
        author.username   as author_username,
        author.nickname   as author_nickname,
@@ -34,6 +42,33 @@ from subject_patch
 where deleted_at is null
   and state = any ($1::int[]);
 
+-- name: ListEpisodePatchesByStates :many
+select episode_patch.id,
+       episode_patch.original_name,
+       episode_patch.state,
+       episode_patch.created_at,
+       episode_patch.updated_at,
+       episode_patch.comments_count,
+       episode_patch.reason,
+       author.user_id    as author_user_id,
+       author.username   as author_username,
+       author.nickname   as author_nickname,
+       reviewer.user_id  as reviewer_user_id,
+       reviewer.username as reviewer_username,
+       reviewer.nickname as reviewer_nickname
+from episode_patch
+         inner join patch_users as author on author.user_id = episode_patch.from_user_id
+         left outer join patch_users as reviewer on reviewer.user_id = episode_patch.wiki_user_id
+where deleted_at is null
+  and state = any (@state::int[])
+order by created_at desc
+limit @size::int8 offset @skip::int8;
+
+-- name: CountEpisodePatchesByStates :one
+select count(1)
+from episode_patch
+where deleted_at is null
+  and state = any ($1::int[]);
 
 -- name: GetSubjectPatchByID :one
 select *
@@ -49,6 +84,20 @@ where deleted_at is null
   and id = $1
 limit 1 for update;
 
+-- name: GetEpisodePatchByIDForUpdate :one
+select *
+from episode_patch
+where deleted_at is null
+  and id = $1
+limit 1 for update;
+
+
+-- name: GetEpisodePatchByID :one
+select *
+from episode_patch
+where deleted_at is null
+  and id = $1
+limit 1;
 
 -- name: GetUserByID :one
 select *
@@ -79,10 +128,10 @@ values ($1, $2, $3, $4, $5, current_timestamp, null);
 
 -- name: RejectSubjectPatch :exec
 update subject_patch
-set wiki_user_id = $1,
-    state        = $2,
+set wiki_user_id  = $1,
+    state         = $2,
     reject_reason = $3,
-    updated_at   = current_timestamp
+    updated_at    = current_timestamp
 where id = $4
   and deleted_at is null
   and state = 0;
@@ -107,9 +156,39 @@ set comments_count = (select count(1)
 where id = $1
   and deleted_at is null;
 
+-- name: RejectEpisodePatch :exec
+update episode_patch
+set wiki_user_id  = $1,
+    state         = $2,
+    reject_reason = $3,
+    updated_at    = current_timestamp
+where id = $4
+  and deleted_at is null
+  and state = 0;
+
+-- name: UpdateEpisodePatchCommentCount :exec
+update episode_patch
+set comments_count = (select count(1)
+                      from edit_suggestion
+                      where patch_type = 'episode'
+                        and patch_id = $1
+                        and edit_suggestion.from_user != 0)
+where id = $1
+  and deleted_at is null;
 
 -- name: CreateSubjectEditPatch :exec
 INSERT INTO subject_patch
 (id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
  original_name, original_infobox, original_summary, subject_type, patch_desc)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
+
+
+
+-- name: AcceptEpisodePatch :exec
+update episode_patch
+set wiki_user_id = $1,
+    state        = $2,
+    updated_at   = current_timestamp
+where id = $3
+  and deleted_at is null
+  and state = 0;

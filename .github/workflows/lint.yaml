@@ -20,5 +20,18 @@ jobs:
         with:
           cache-namespace: lint
 
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: task gen
+
+      - run: task gen:template
+
+      - run: go mod tidy
+
       - run: gofmt -s -w .
+
       - run: git diff --exit-code

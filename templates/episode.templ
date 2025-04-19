@@ -7,10 +7,10 @@ import (
 	"time"
 )
 
-templ SubjectPatchPage(
+templ EpisodePatchPage(
 	csrfToken string,
 	user *view.CurrentUser,
-	patch q.SubjectPatch,
+	patch q.EpisodePatch,
 	author q.PatchUser,
 	reviewer *q.PatchUser,
 	comments []q.GetCommentsRow,
@@ -19,44 +19,14 @@ templ SubjectPatchPage(
 	@Layout(
 		"",
 		patchDetailHead(),
-		subjectPatchDetailContent(csrfToken, user, patch, author, reviewer, comments, changes),
+		episodePatchDetailContent(csrfToken, user, patch, author, reviewer, comments, changes),
 	)
 }
 
-templ patchDetailHead() {
-	<title>查看修改请求</title>
-	<link
-		rel="stylesheet"
-		type="text/css"
-		href="/static/diff2html/3.4.51/bundles/css/diff2html.min.css"
-	/>
-	<script type="text/javascript" src="/static/diff2html/3.4.51/bundles/js/diff2html-ui.min.js"></script>
-	<style>
-      .diff .d2h-code-line-ctn, .diff .d2h-code-line *, .diff * {
-          font-family: Consolas, Menlo, monospace !important;
-      }
-
-
-      #summaryDiffElement {
-          .d2h-code-line-ctn {
-              white-space: pre-wrap;
-              word-break: break-all;
-          }
-
-          .d2h-code-line, .d2h-code-side-line, .d2h-code-line-ctn {
-              width: revert;
-          }
-      }
-  </style>
-	<script>
-    const isMobile = (window.innerWidth <= 800);
-  </script>
-}
-
-templ subjectPatchDetailContent(
+templ episodePatchDetailContent(
 	csrfToken string,
 	user *view.CurrentUser,
-	patch q.SubjectPatch,
+	patch q.EpisodePatch,
 	author q.PatchUser,
 	reviewer *q.PatchUser,
 	comments []q.GetCommentsRow,
@@ -65,8 +35,8 @@ templ subjectPatchDetailContent(
 	@header("", user)
 	<div class="row">
 		<div class="col">
-			if patch.SubjectID != 0 {
-				<a href={ templ.SafeURL(fmt.Sprintf("https://bgm.tv/subject/%d", patch.SubjectID)) } target="_blank" rel="noopener">
+			if patch.EpisodeID != 0 {
+				<a href={ templ.SafeURL(fmt.Sprintf("https://bgm.tv/ep/%d", patch.EpisodeID)) } target="_blank" rel="noopener">
 					<h3>条目链接</h3>
 				</a>
 			} else {
@@ -217,24 +187,24 @@ templ subjectPatchDetailContent(
       })()
     </script>
 	}
-	if patch.Nsfw.Valid {
-		<div class="row mb-4">
-			if patch.Action.Int32 == 1 {
-				if patch.Nsfw.Bool {
-					<p>NSFW: ❌ -> ✅</p>
-				} else {
-					<p>NSFW: ✅ -> ❌</p>
-				}
-			} else {
-				if patch.Nsfw.Bool {
-					<p>NSFW: ✅</p>
-				} else {
-					<p>NSFW: ❌</p>
-				}
-			}
-		</div>
-	}
+	// if patch.Nsfw.Valid {
+	// 	<div class="row mb-4">
+	// 		if patch.Action.Int32 == 1 {
+	// 			if patch.Nsfw.Bool {
+	// 				<p>NSFW: ❌ -> ✅</p>
+	// 			} else {
+	// 				<p>NSFW: ✅ -> ❌</p>
+	// 			}
+	// 		} else {
+	// 			if patch.Nsfw.Bool {
+	// 				<p>NSFW: ✅</p>
+	// 			} else {
+	// 				<p>NSFW: ❌</p>
+	// 			}
+	// 		}
+	// 	</div>
+	// }
 	if patch.State == 0 {
-		@review("subject", user, patch.ID.String(), csrfToken)
+		@review("episode", user, patch.ID.String(), csrfToken)
 	}
 }
