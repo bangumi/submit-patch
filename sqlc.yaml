@@ -18,8 +18,8 @@ sql:
               type: "UUID"
     rules:
       - debug
-      - postgresql-query-too-costly
       - no-delete
+      - has-index
 
 rules:
   - name: debug
@@ -33,3 +33,8 @@ rules:
     message: "don't use delete statements"
     rule: |
       query.sql.contains("DELETE")
+
+  - name: has-index
+    rule: >
+      query.sql.startsWith("SELECT") &&
+      !(postgresql.explain.plan.plans.all(p, has(p.index_name) || p.plans.all(p, has(p.index_name))))
