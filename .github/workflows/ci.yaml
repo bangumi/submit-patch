@@ -40,6 +40,8 @@ jobs:
 
       - run: sqlc diff
 
+      - run: env
+
       - run: sqlc vet
         env:
           PG_DSN: postgresql://pg-user:pg-password@postgres:5432/db_test?sslmode=disable
