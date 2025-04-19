@@ -51,7 +51,10 @@ func (h *handler) badge(w http.ResponseWriter, r *http.Request) {
 
 	err = h.r.Do(ctx, h.r.B().Set().Key(cacheKey).Value(string(badge)).Ex(10*time.Second).Build()).NonRedisError()
 	if err != nil {
-		fmt.Printf("Warning: failed to cache pending count badge in redis (key: %s): %v\n", cacheKey, err)
+		log.Warn().
+			Str("cacheKey", cacheKey).
+			Err(err).
+			Msg("failed to cache pending count badge in redis")
 	}
 
 	writeBadgeResponse(w, badge)
