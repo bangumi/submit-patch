@@ -20,7 +20,11 @@ jobs:
         with:
           cache-namespace: test
 
-      - run: go test ./...
+      - run: |
+          wget https://github.com/gotestyourself/gotestsum/releases/download/v1.12.1/gotestsum_1.12.1_linux_amd64.tar.gz -O ~/gotestsum_1.12.1_linux_amd64.tar.gz
+          tar xf ~/gotestsum_1.12.1_linux_amd64.tar.gz -C ~/go/bin/
+
+      - run: gotestsum --hide-summary=skipped
 
   sqlc:
     runs-on: ubuntu-latest
