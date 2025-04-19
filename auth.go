@@ -88,7 +88,7 @@ func (h *handler) callback(w http.ResponseWriter, r *http.Request) error {
 		SetResult(&user).
 		Get("https://api.bgm.tv/v0/me")
 	if err != nil {
-		fmt.Println(err, "failed to get user info")
+		log.Error().Err(err).Msg("failed to get user info")
 		return errgo.Wrap(err, "failed to get user info")
 	}
 	if resp.StatusCode() >= 300 {
