@@ -5,7 +5,7 @@ sql:
     queries: "db/query.sql"
     schema: "db/schema.sql"
     database:
-      uri: '${VET_PG_DSN}'
+      uri: '${PG_DSN}'
     gen:
       go:
         package: "q"
