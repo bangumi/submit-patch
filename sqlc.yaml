@@ -33,7 +33,9 @@ rules:
 
   - name: postgresql-query-too-costly
     message: "Query cost estimate is too high"
-    rule: "postgresql.explain.plan.total_cost > 30.0"
+    rule: |
+      postgresql.explain.plan.total_cost > 30.0
 
   - name: postgresql-no-seq-scan
-    rule: "postgresql.explain.plan.node_type == 'Seq Scan'"
+    rule: |
+      postgresql.explain.plan.node_type == 'Seq Scan'
