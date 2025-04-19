@@ -1,6 +1,6 @@
 version: "3"
 
-dotenv: [.env]
+dotenv: [ .env ]
 
 tasks:
   build:
@@ -15,6 +15,17 @@ tasks:
     cmds:
       - go tool templ generate -path templates/
       - go build -tags dev -o dist/app.exe
+
+  migrate:
+    dotenv:
+      - .env
+    cmds:
+      - migrate -database {{ .PG_DSN }} -path db/migrations force 1
+      - migrate -database {{ .PG_DSN }} -path db/migrations -verbose up
+
+  new-migrate:
+    - migrate create -ext sql -dir db/migrations -seq {{ .NAME }}
+
 
   dev:
     deps:
@@ -32,12 +43,6 @@ tasks:
       - "templates/*.templ"
     cmds:
       - go tool templ generate -path templates/
-
-  py:
-    dotenv:
-      - .env
-    cmds:
-      - watchexec -r -e py --shell=none -- uvicorn server.app:app --no-access-log --port=4562
 
   gen:
     cmds:

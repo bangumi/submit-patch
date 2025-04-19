@@ -1,6 +1,9 @@
 package main
 
 import (
+	"database/sql"
+	"embed"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -8,6 +11,10 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/pgx/v5"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/rueidis"
 	"github.com/rs/zerolog"
@@ -54,9 +61,48 @@ func main() {
 		panic(err)
 	}
 
+	if err := runMigration(c); err != nil {
+		log.Err(err).Msg("migration failed")
+		panic(err)
+	}
+
 	log.Info().Msgf("start listen http://127.0.0.1:%d/", c.Port)
 	err = http.ListenAndServe(fmt.Sprintf(":%d", c.Port), m)
 	if err != nil {
 		panic(err)
 	}
+}
+
+//go:embed db/migrations
+var migrations embed.FS
+
+func runMigration(config Config) error {
+	log.Info().Msg("start migration")
+	db, err := sql.Open("pgx", config.PgDsn)
+	if err != nil {
+		return err
+	}
+
+	driver, err := pgx.WithInstance(db, &pgx.Config{
+		MigrationsTable: "patch_tables_migrations",
+	})
+	if err != nil {
+		return err
+	}
+
+	m, err := migrate.NewWithInstance(
+		"embed", lo.Must(iofs.New(migrations, "db/migrations")),
+		"pgx", driver,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = m.Up()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return err
+	}
+
+	log.Info().Msg("migration done")
+	return nil
 }
