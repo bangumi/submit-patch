@@ -17,8 +17,8 @@ jobs:
         image: postgres
         # Provide the password for postgres
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: pg-user
+          POSTGRES_PASSWORD: pg-password
           POSTGRES_DB: db_test
         ports:
           # Maps tcp port 5432 on service container to the host
@@ -42,4 +42,4 @@ jobs:
 
       - run: sqlc vet
         env:
-          POSTGRESQL_SERVER_URI: postgres://postgres:postgres@postgres:5432/db_test?sslmode=disable
+          PG_DSN: postgresql://pg-user:pg-password@postgres:5432/db_test?sslmode=disable

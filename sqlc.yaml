@@ -4,6 +4,8 @@ sql:
   - engine: "postgresql"
     queries: "db/query.sql"
     schema: "db/schema.sql"
+    database:
+      uri: '${PG_DSN}'
     gen:
       go:
         package: "q"
@@ -14,8 +16,6 @@ sql:
             go_type:
               import: "github.com/gofrs/uuid/v5"
               type: "UUID"
-    database:
-      uri: '${POSTGRESQL_SERVER_URI}'
     rules:
       - debug
       - postgresql-query-too-costly
