@@ -1,17 +1,5 @@
 create type patch_type as enum ('subject', 'episode');
 
-alter type patch_type owner to postgres;
-
-create table patch_db_migration
-(
-    key   text not null
-        primary key,
-    value text not null
-);
-
-alter table patch_db_migration
-    owner to postgres;
-
 create table patch_users
 (
     user_id  integer      not null
@@ -20,8 +8,6 @@ create table patch_users
     nickname varchar(255) not null
 );
 
-alter table patch_users
-    owner to postgres;
 
 create table subject_patch
 (
@@ -52,9 +38,6 @@ create table subject_patch
 );
 
 comment on column subject_patch.action is '1 for update 2 for create';
-
-alter table subject_patch
-    owner to postgres;
 
 create index idx_subject_id
     on subject_patch (subject_id);
@@ -103,9 +86,6 @@ create table episode_patch
     ep                   integer
 );
 
-alter table episode_patch
-    owner to postgres;
-
 create index episode_patch_state_idx
     on episode_patch (state);
 
@@ -139,28 +119,5 @@ create table edit_suggestion
     deleted_at timestamp with time zone
 );
 
-alter table edit_suggestion
-    owner to postgres;
-
 create index idx_edit_patch_lookup
     on edit_suggestion (created_at, patch_id, patch_type);
-
-create table schema_migrations
-(
-    version bigint  not null
-        primary key,
-    dirty   boolean not null
-);
-
-alter table schema_migrations
-    owner to postgres;
-
-create table patch_tables_migrations
-(
-    version bigint  not null
-        primary key,
-    dirty   boolean not null
-);
-
-alter table patch_tables_migrations
-    owner to postgres;

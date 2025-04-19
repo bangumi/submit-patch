@@ -91,25 +91,10 @@ type EpisodePatch struct {
 	Ep                  pgtype.Int4
 }
 
-type PatchDbMigration struct {
-	Key   string
-	Value string
-}
-
-type PatchTablesMigration struct {
-	Version int64
-	Dirty   bool
-}
-
 type PatchUser struct {
 	UserID   int32
 	Username string
 	Nickname string
-}
-
-type SchemaMigration struct {
-	Version int64
-	Dirty   bool
 }
 
 type SubjectPatch struct {
