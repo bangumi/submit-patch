@@ -20,9 +20,10 @@ jobs:
         with:
           cache-namespace: test
 
-      - run: |
-          wget https://github.com/gotestyourself/gotestsum/releases/download/v1.12.1/gotestsum_1.12.1_linux_amd64.tar.gz -O ~/gotestsum_1.12.1_linux_amd64.tar.gz
-          tar xf ~/gotestsum_1.12.1_linux_amd64.tar.gz -C ~/go/bin/
+      - uses: sigoden/install-binary@v1
+        with:
+          repo: gotestyourself/gotestsum
+          tag: v1.12.1
 
       - run: gotestsum --hide-summary=skipped
 
