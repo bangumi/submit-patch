@@ -26,7 +26,9 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: wget  https://downloads.sqlc.dev/sqlc_1.29.0_linux_amd64.tar.gz -O- | tar xf - -C ~/.local/bin/
+      - run: |
+          wget https://downloads.sqlc.dev/sqlc_1.29.0_linux_amd64.tar.gz -O ~/sqlc_1.29.0_linux_amd64.tar.gz
+          tar xf ~/sqlc_1.29.0_linux_amd64.tar.gz -C ~/.local/bin/
 
       - run: task gen
 
