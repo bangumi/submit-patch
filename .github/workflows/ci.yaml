@@ -9,6 +9,19 @@ on:
       - master
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          submodules: "true"
+
+      - uses: trim21/actions/setup-go@master
+        with:
+          cache-namespace: test
+
+      - run: go test ./...
+
   sqlc:
     runs-on: ubuntu-latest
     services:
