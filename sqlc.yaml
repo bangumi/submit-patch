@@ -14,7 +14,8 @@ sql:
             go_type:
               import: "github.com/gofrs/uuid/v5"
               type: "UUID"
-
+    database:
+      uri: '${POSTGRESQL_SERVER_URI}'
     rules:
       - debug
       - postgresql-query-too-costly
