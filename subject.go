@@ -433,6 +433,7 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 	http.Redirect(w, r, fmt.Sprintf("/subject/%s", pk), http.StatusFound)
 	return nil
 }
+
 func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request) error {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, fmt.Sprintf("Failed to parse form data: %v", err), http.StatusBadRequest)

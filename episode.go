@@ -494,3 +494,201 @@ func (h *handler) editEpisodePatchView(w http.ResponseWriter, r *http.Request) e
 		TurnstileSiteKey: h.config.TurnstileSiteKey,
 	})
 }
+
+func (h *handler) updateEpisodeEditPatch(w http.ResponseWriter, r *http.Request) error {
+	patchID, err := uuid.FromString(chi.URLParam(r, "patch-id"))
+	if err != nil {
+		http.Error(w, "Invalid patch-id", http.StatusBadRequest)
+		return nil
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to parse form data: %v", err), http.StatusBadRequest)
+		return nil
+	}
+
+	form := r.PostForm
+
+	reason := form.Get("reason")
+	patchDesc := form.Get("patch_desc")
+	if err := checkInvalidInputStr(reason, patchDesc); err != nil {
+		http.Error(w, fmt.Sprintf("Validation Failed: %v", err), http.StatusBadRequest)
+		return nil
+	}
+
+	patch, err := h.q.GetEpisodePatchByID(r.Context(), patchID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Error(w, "Patch not found", http.StatusNotFound)
+			return nil
+		}
+		return err
+	}
+
+	user := session.GetSession(r.Context())
+	if user.UserID == 0 {
+		http.Error(w, "please login before submit any patch", http.StatusUnauthorized)
+		return nil
+	}
+
+	if err := h.validateCaptcha(r.Context(), form.Get("cf_turnstile_response")); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return nil
+	}
+
+	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/ep/%d", patch.EpisodeID)
+	var originalWiki api.WikiEpisode
+	resp, err := h.client.R().
+		SetContext(r.Context()).
+		SetResult(&originalWiki).
+		Get(fetchURL)
+	if err != nil {
+		fmt.Printf("Error executing request to fetch original wiki: %v\n", err)
+		http.Error(w, "Failed to communicate with wiki service", http.StatusBadGateway)
+		return nil
+	}
+
+	if resp.IsError() {
+		fmt.Printf("Error fetching original wiki (%s): status %d, body: %s\n",
+			fetchURL, resp.StatusCode(), resp.String())
+		if resp.StatusCode() == http.StatusNotFound {
+			http.Error(w, "Original subject not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Failed to fetch original subject data", http.StatusBadGateway)
+		}
+		return nil
+	}
+
+	var changed bool
+	var param = q.UpdateEpisodePatchParams{
+		ID:                  patchID,
+		Reason:              reason,
+		PatchDesc:           patchDesc,
+		OriginalName:        pgtype.Text{},
+		Name:                pgtype.Text{},
+		OriginalNameCn:      pgtype.Text{},
+		NameCn:              pgtype.Text{},
+		OriginalDuration:    pgtype.Text{},
+		Duration:            pgtype.Text{},
+		OriginalAirdate:     pgtype.Text{},
+		Airdate:             pgtype.Text{},
+		OriginalDescription: pgtype.Text{},
+		Description:         pgtype.Text{},
+	}
+
+	name := form.Get("name")
+	if name != originalWiki.Name {
+		param.OriginalName = pgtype.Text{
+			String: originalWiki.Name,
+			Valid:  true,
+		}
+		param.Name = pgtype.Text{
+			String: name,
+			Valid:  true,
+		}
+		changed = true
+	}
+
+	nameCN := form.Get("name_cn")
+	if nameCN != originalWiki.NameCN {
+		param.OriginalNameCn = pgtype.Text{
+			String: originalWiki.NameCN,
+			Valid:  true,
+		}
+		param.NameCn = pgtype.Text{
+			String: nameCN,
+			Valid:  true,
+		}
+		changed = true
+	}
+
+	duration := form.Get("duration")
+	if duration != originalWiki.Duration {
+		param.OriginalDuration = pgtype.Text{
+			String: originalWiki.Duration,
+			Valid:  true,
+		}
+		param.Duration = pgtype.Text{
+			String: duration,
+			Valid:  true,
+		}
+		changed = true
+	}
+
+	date := form.Get("date")
+	if date != originalWiki.Date {
+		param.OriginalAirdate = pgtype.Text{
+			String: originalWiki.Date,
+			Valid:  true,
+		}
+		param.Airdate = pgtype.Text{
+			String: date,
+			Valid:  true,
+		}
+		changed = true
+	}
+
+	summary := form.Get("summary")
+	if summary != originalWiki.Summary {
+		param.OriginalDescription = pgtype.Text{
+			String: originalWiki.Summary,
+			Valid:  true,
+		}
+		param.Description = pgtype.Text{
+			String: summary,
+			Valid:  true,
+		}
+		changed = true
+	}
+
+	if reason != patch.Reason {
+		changed = true
+	}
+
+	if patchDesc != patch.PatchDesc {
+		changed = true
+	}
+
+	if !changed {
+		http.Error(w, "No changes found", http.StatusBadRequest)
+		return nil
+	}
+
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), time.Second*10)
+	defer cancel()
+
+	err = h.tx(ctx, func(tx pgx.Tx) error {
+		qx := h.q.WithTx(tx)
+		p, err := qx.GetEpisodePatchByIDForUpdate(ctx, patchID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				http.Error(w, "patch not found", http.StatusNotFound)
+				return nil
+			}
+			return err
+		}
+		if p.State != PatchStatePending {
+			http.Error(w, "patch is not pending", http.StatusBadRequest)
+			return nil
+		}
+
+		if p.FromUserID != user.UserID {
+			http.Error(w, "this it not your patch", http.StatusUnauthorized)
+			return nil
+		}
+
+		err = qx.UpdateEpisodePatch(ctx, param)
+		if err != nil {
+			return errgo.Wrap(err, "failed to update subject patch")
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/episode/%s", patch.ID), http.StatusSeeOther)
+	return nil
+}

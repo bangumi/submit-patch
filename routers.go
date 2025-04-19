@@ -58,7 +58,7 @@ func routers(h *handler, config Config) *chi.Mux {
 	r.Post("/edit/episode/{episode-id}", logError(h.createEpisodeEditPatch))
 
 	r.Get("/edit/patch/episode/{patch-id}", logError(h.editEpisodePatchView))
-	r.Post("/edit/patch/episode/{patch-id}", logError(h.updateSubjectEditPatch))
+	r.Post("/edit/patch/episode/{patch-id}", logError(h.updateEpisodeEditPatch))
 
 	r.Post("/api/delete/patch/episode/{patch-id}", logError(h.deleteEpisodePatch))
 

@@ -1,10 +1,3 @@
--- name: GetEpisodePatch :one
-SELECT *
-FROM episode_patch
-WHERE id = $1
-LIMIT 1;
-
-
 -- name: UpsertUser :exec
 insert into patch_users (user_id, username, nickname)
 VALUES ($1, $2, $3)
@@ -33,6 +26,7 @@ from subject_patch
          left outer join patch_users as reviewer on reviewer.user_id = subject_patch.wiki_user_id
 where deleted_at is null
   and state = any (@state::int[])
+  and action = 1
 order by created_at desc
 limit @size::int8 offset @skip::int8;
 
@@ -40,7 +34,8 @@ limit @size::int8 offset @skip::int8;
 select count(1)
 from subject_patch
 where deleted_at is null
-  and state = any ($1::int[]);
+  and state = any ($1::int[])
+  and action = 1;
 
 -- name: ListEpisodePatchesByStates :many
 select episode_patch.id,
@@ -177,9 +172,11 @@ where id = $1
   and deleted_at is null;
 
 -- name: CreateSubjectEditPatch :exec
-INSERT INTO subject_patch
-(id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
- original_name, original_infobox, original_summary, subject_type, patch_desc)
+INSERT INTO subject_patch (id,
+                           subject_id, from_user_id, reason, name, infobox,
+                           summary, nsfw,
+                           original_name, original_infobox,
+                           original_summary, subject_type, patch_desc)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
 
 -- name: CreateEpisodePatch :exec
@@ -208,6 +205,23 @@ set original_name    = $2,
     reason           = $9,
     patch_desc       = $10,
     updated_at       = current_timestamp
+where id = $1;
+
+-- name: UpdateEpisodePatch :exec
+update episode_patch
+set reason               = $2,
+    patch_desc           = $3,
+    updated_at           = current_timestamp,
+    original_name        = $4,
+    name                 = $5,
+    original_name_cn     = $6,
+    name_cn              = $7,
+    original_duration    = $8,
+    duration             = $9,
+    original_airdate     = $10,
+    airdate              = $11,
+    original_description = $12,
+    description          = $13
 where id = $1;
 
 
