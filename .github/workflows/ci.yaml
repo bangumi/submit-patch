@@ -25,7 +25,7 @@ jobs:
           repo: gotestyourself/gotestsum
           tag: v1.12.1
 
-      - run: gotestsum --hide-summary=skipped
+      - run: gotestsum --hide-summary=skipped --format-hide-empty-pkg --format=testname
 
   sqlc:
     runs-on: ubuntu-latest
