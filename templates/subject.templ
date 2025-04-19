@@ -81,7 +81,7 @@ templ subjectPatchDetailContent(
 					target="_blank"
 					rel="noopener"
 				>
-					{ author.Nickname }
+					{ author.Username }
 				</a>
 			</h3>
 		</div>
@@ -157,8 +157,14 @@ templ subjectPatchDetailContent(
 		</div>
 	} else if patch.State == 3 {
 		<div class="col">
-			<h2>已过期 </h2>
-			<p>{ patch.RejectReason }</p>
+			<h2>已过期</h2>
+			<pre
+				style="overflow: visible; overflow-wrap: anywhere; white-space: pre-wrap;background-color: #f7f7f9"
+			>
+				<code>
+					{ patch.RejectReason }
+				</code>
+			</pre>
 			<hr/>
 		</div>
 	}
@@ -280,7 +286,7 @@ templ Comment(u *view.CurrentUser, s q.GetCommentsRow) {
 	if s.UserID.Valid {
 		<li class="list-group-item border-dark-subtle list-group-item-warning">
 			<div class="d-flex w-100 justify-content-between">
-				<h5>[{ s.Nickname.String }]: </h5>
+				<h5>[{ s.Username.String }]: </h5>
 				<small>{ u.LocalTime(s.CreatedAt.Time) }</small>
 			</div>
 			<p class="mb-1" style="white-space: pre-wrap">

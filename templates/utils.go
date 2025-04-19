@@ -42,13 +42,13 @@ func AutoURL(s string) string {
 	for _, matchIndices := range matches {
 		startIndex := matchIndices[0]
 		endIndex := matchIndices[1]
-		url := s[startIndex:endIndex]
+		u := s[startIndex:endIndex]
 
 		// Append escaped text before the URL.
 		builder.WriteString(html.EscapeString(s[lastIndex:startIndex]))
 
 		// Append the anchor tag for the URL.
-		escapedURL := html.EscapeString(url)
+		escapedURL := html.EscapeString(u)
 		builder.WriteString(fmt.Sprintf(`<a href="%s" target="_blank">%s</a>`, escapedURL, escapedURL))
 
 		lastIndex = endIndex

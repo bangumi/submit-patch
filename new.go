@@ -11,6 +11,8 @@ import (
 	"app/view"
 )
 
+const cookieBackTo = "backTo"
+
 func (h *handler) newEditPatch(w http.ResponseWriter, r *http.Request) error {
 	rq := r.URL.Query()
 
@@ -23,7 +25,7 @@ func (h *handler) newEditPatch(w http.ResponseWriter, r *http.Request) error {
 	s := session.GetSession(r.Context())
 	if s.UserID == 0 {
 		http.SetCookie(w, &http.Cookie{
-			Name:  "backTo",
+			Name:  cookieBackTo,
 			Value: fmt.Sprintf("/suggest-subject?subject_id=%d", sid),
 		})
 

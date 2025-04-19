@@ -13,12 +13,12 @@ require (
 	github.com/gofrs/uuid/v5 v5.3.2
 	github.com/gorilla/securecookie v1.1.2
 	github.com/jackc/pgx/v5 v5.7.4
-	github.com/puzpuzpuz/xsync/v4 v4.0.0
 	github.com/redis/rueidis v1.0.57
 	github.com/rs/zerolog v1.34.0
 	github.com/samber/lo v1.49.1
 	github.com/stretchr/testify v1.10.0
 	github.com/trim21/errgo v0.0.3
+	github.com/trim21/pkg v0.0.4
 	github.com/valyala/bytebufferpool v1.0.0
 	go-simpler.org/env v0.12.0
 	go.uber.org/fx v1.23.0

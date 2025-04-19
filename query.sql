@@ -81,6 +81,16 @@ values ($1, $2, $3, $4, $5, current_timestamp, null);
 update subject_patch
 set wiki_user_id = $1,
     state        = $2,
+    reject_reason = $3,
+    updated_at   = current_timestamp
+where id = $4
+  and deleted_at is null
+  and state = 0;
+
+-- name: AcceptSubjectPatch :exec
+update subject_patch
+set wiki_user_id = $1,
+    state        = $2,
     updated_at   = current_timestamp
 where id = $3
   and deleted_at is null

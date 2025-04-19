@@ -1,13 +1,17 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
+	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 	"github.com/trim21/errgo"
 
@@ -83,7 +87,7 @@ func (h *handler) handleSubjectReview(w http.ResponseWriter, r *http.Request, pa
 		case "comment":
 			return h.handleSubjectComment(w, r, qx, p, text, s)
 		case "approve":
-			return h.handleSubjectApprove(w, r, p, s)
+			return h.handleSubjectApprove(w, r, qx, p, s)
 		case "reject":
 			return h.handleSubjectReject(w, r, p, s)
 		default:
@@ -145,8 +149,10 @@ type ApiPatchSubject struct {
 	} `json:"subject"`
 }
 
-func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, patch q.SubjectPatch, s *session.Session) error {
-	var body ApiPatchSubject
+func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, qx *q.Queries, patch q.SubjectPatch, s *session.Session) error {
+	var body = ApiPatchSubject{
+		CommieMessage: fmt.Sprintf("%s [https://patch.bgm38.tv/subject/%s]", patch.Reason, patch.ID),
+	}
 
 	body.ExpectedRevision.Infobox = patch.OriginalInfobox.String
 	body.ExpectedRevision.Summary = patch.OriginalSummary.String
@@ -161,6 +167,11 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, p
 		body.Subject.Nsfw = lo.ToPtr(patch.Nsfw.Bool)
 	}
 
+	enc := json.NewEncoder(os.Stderr)
+	enc.SetIndent("  ", "  ")
+	enc.SetEscapeHTML(false)
+	enc.Encode(body)
+
 	resp, err := h.client.R().
 		SetHeader("cf-ray", r.Header.Get("cf-ray")).
 		SetHeader("Authorization", "Bearer "+s.AccessToken).
@@ -170,11 +181,73 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, p
 		return errgo.Wrap(err, "failed to submit patch")
 	}
 
-	if resp.StatusCode() >= 300 {
+	if resp.StatusCode() >= 500 {
+		log.Warn().Int("code", resp.StatusCode()).Msg("failed to submit patch")
+		http.Error(w, "failed to submit patch", http.StatusBadGateway)
+		return nil
+	}
 
+	if resp.StatusCode() >= 300 {
+		var errRes ApiErrorResponse
+		if err = json.Unmarshal(resp.Body(), &errRes); err != nil {
+			return errgo.Wrap(err, "failed to submit patch")
+		}
+
+		if errRes.Code == ErrCodeInvalidToken {
+			http.SetCookie(w, &http.Cookie{
+				Name:  cookieBackTo,
+				Value: fmt.Sprintf("/subject/%s", patch.ID),
+			})
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return nil
+		}
+
+		if errRes.Code == ErrCodeInvalidWikiSyntax {
+			err = qx.RejectSubjectPatch(r.Context(), q.RejectSubjectPatchParams{
+				WikiUserID:   s.UserID,
+				State:        PatchStateRejected,
+				ID:           patch.ID,
+				RejectReason: fmt.Sprintf("建议包含语法错误，已经自动拒绝:\n %s", errRes.Message),
+			})
+			if err != nil {
+				return errgo.Wrap(err, "failed to reject patch")
+			}
+
+			http.Redirect(w, r, "/subject/"+patch.ID.String(), http.StatusSeeOther)
+			return nil
+		}
+
+		if errRes.Code == ErrCodeWikiChanged {
+			err = qx.RejectSubjectPatch(r.Context(), q.RejectSubjectPatchParams{
+				WikiUserID:   s.UserID,
+				State:        PatchStateOutdated,
+				ID:           patch.ID,
+				RejectReason: fmt.Sprintf("已过期\n%s", errRes.Message),
+			})
+			if err != nil {
+				return errgo.Wrap(err, "failed to reject patch")
+			}
+
+			http.Redirect(w, r, "/subject/"+patch.ID.String(), http.StatusSeeOther)
+			return nil
+		}
+
+		log.Error().Msg("unexpected response from submit patch")
+		return errors.New("failed to submit patch")
+	}
+
+	err = qx.AcceptSubjectPatch(context.WithoutCancel(r.Context()), q.AcceptSubjectPatchParams{
+		WikiUserID: s.UserID,
+		State:      PatchStateAccepted,
+		ID:         patch.ID,
+	})
+
+	if err != nil {
+		return errgo.Wrap(err, "failed to accept patch")
 	}
 
 	// Implement subject approval logic here
+	http.Redirect(w, r, "/subject/"+patch.ID.String(), http.StatusSeeOther)
 	return nil
 }
 
@@ -201,3 +274,12 @@ func (h *handler) handleEpisodeReject(w http.ResponseWriter, r *http.Request, pa
 	// Implement episode rejection logic here
 	return nil
 }
+
+type ApiErrorResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+const ErrCodeWikiChanged = "WIKI_CHANGED"
+const ErrCodeInvalidWikiSyntax = "INVALID_SYNTAX_ERROR"
+const ErrCodeInvalidToken = "TOKEN_INVALID"

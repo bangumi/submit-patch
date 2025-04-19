@@ -156,7 +156,7 @@ func subjectPatchDetailContent(
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
-		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(author.Nickname)
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(author.Username)
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 84, Col: 22}
 		}
@@ -339,20 +339,20 @@ func subjectPatchDetailContent(
 				return templ_7745c5c3_Err
 			}
 		} else if patch.State == 3 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<div class=\"col\"><h2>已过期 </h2><p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<div class=\"col\"><h2>已过期</h2><pre style=\"overflow: visible; overflow-wrap: anywhere; white-space: pre-wrap;background-color: #f7f7f9\"><code>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(patch.RejectReason)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 161, Col: 26}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 165, Col: 25}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "</p><hr></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "</code></pre><hr></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -395,7 +395,7 @@ func subjectPatchDetailContent(
 			var templ_7745c5c3_Var19 string
 			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(change.Name + "DiffElement")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 192, Col: 40}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 198, Col: 40}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -408,7 +408,7 @@ func subjectPatchDetailContent(
 			var templ_7745c5c3_Var20 string
 			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(templ.JSONString(change.Diff))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 192, Col: 84}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 198, Col: 84}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {
@@ -420,7 +420,7 @@ func subjectPatchDetailContent(
 			}
 			templ_7745c5c3_Var21, templ_7745c5c3_Err := templruntime.ScriptContentInsideStringLiteral(change.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 196, Col: 69}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 202, Col: 69}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var21)
 			if templ_7745c5c3_Err != nil {
@@ -484,7 +484,7 @@ func subjectPatchDetailContent(
 				var templ_7745c5c3_Var23 string
 				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(csrfToken)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 240, Col: 62}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 246, Col: 62}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 				if templ_7745c5c3_Err != nil {
@@ -511,7 +511,7 @@ func subjectPatchDetailContent(
 			var templ_7745c5c3_Var25 string
 			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(csrfToken)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 260, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 266, Col: 62}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {
@@ -553,9 +553,9 @@ func Comment(u *view.CurrentUser, s q.GetCommentsRow) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var27 string
-			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(s.Nickname.String)
+			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(s.Username.String)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 283, Col: 28}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 289, Col: 28}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
@@ -568,7 +568,7 @@ func Comment(u *view.CurrentUser, s q.GetCommentsRow) templ.Component {
 			var templ_7745c5c3_Var28 string
 			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(u.LocalTime(s.CreatedAt.Time))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 284, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 290, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 			if templ_7745c5c3_Err != nil {
@@ -602,7 +602,7 @@ func Comment(u *view.CurrentUser, s q.GetCommentsRow) templ.Component {
 			var templ_7745c5c3_Var29 string
 			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(u.LocalTime(s.CreatedAt.Time))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 296, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject.templ`, Line: 302, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 			if templ_7745c5c3_Err != nil {

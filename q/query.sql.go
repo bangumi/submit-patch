@@ -12,6 +12,27 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const acceptSubjectPatch = `-- name: AcceptSubjectPatch :exec
+update subject_patch
+set wiki_user_id = $1,
+    state        = $2,
+    updated_at   = current_timestamp
+where id = $3
+  and deleted_at is null
+  and state = 0
+`
+
+type AcceptSubjectPatchParams struct {
+	WikiUserID int32
+	State      int32
+	ID         uuid.UUID
+}
+
+func (q *Queries) AcceptSubjectPatch(ctx context.Context, arg AcceptSubjectPatchParams) error {
+	_, err := q.db.Exec(ctx, acceptSubjectPatch, arg.WikiUserID, arg.State, arg.ID)
+	return err
+}
+
 const countSubjectPatchesByStates = `-- name: CountSubjectPatchesByStates :one
 select count(1)
 from subject_patch
@@ -396,20 +417,27 @@ const rejectSubjectPatch = `-- name: RejectSubjectPatch :exec
 update subject_patch
 set wiki_user_id = $1,
     state        = $2,
+    reject_reason = $3,
     updated_at   = current_timestamp
-where id = $3
+where id = $4
   and deleted_at is null
   and state = 0
 `
 
 type RejectSubjectPatchParams struct {
-	WikiUserID int32
-	State      int32
-	ID         uuid.UUID
+	WikiUserID   int32
+	State        int32
+	RejectReason string
+	ID           uuid.UUID
 }
 
 func (q *Queries) RejectSubjectPatch(ctx context.Context, arg RejectSubjectPatchParams) error {
-	_, err := q.db.Exec(ctx, rejectSubjectPatch, arg.WikiUserID, arg.State, arg.ID)
+	_, err := q.db.Exec(ctx, rejectSubjectPatch,
+		arg.WikiUserID,
+		arg.State,
+		arg.RejectReason,
+		arg.ID,
+	)
 	return err
 }
 

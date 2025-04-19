@@ -5,6 +5,7 @@ dotenv: [.env]
 tasks:
   build:
     sources:
+      - 'go.mod'
       - "templates/**/*.templ"
       - "templates/*.templ"
       - "**/*.go"
