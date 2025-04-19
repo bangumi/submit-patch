@@ -85,15 +85,31 @@ type EpisodePatch struct {
 	UpdatedAt           pgtype.Timestamptz
 	DeletedAt           pgtype.Timestamptz
 	RejectReason        string
+	SubjectID           int32
 	CommentsCount       int32
 	PatchDesc           string
 	Ep                  pgtype.Int4
+}
+
+type PatchDbMigration struct {
+	Key   string
+	Value string
+}
+
+type PatchTablesMigration struct {
+	Version int64
+	Dirty   bool
 }
 
 type PatchUser struct {
 	UserID   int32
 	Username string
 	Nickname string
+}
+
+type SchemaMigration struct {
+	Version int64
+	Dirty   bool
 }
 
 type SubjectPatch struct {
@@ -121,48 +137,4 @@ type SubjectPatch struct {
 	Platform         pgtype.Int4
 	// 1 for update 2 for create
 	Action pgtype.Int4
-}
-
-type ViewEpisodePatch struct {
-	ID                  uuid.UUID
-	EpisodeID           int32
-	State               int32
-	FromUserID          int32
-	WikiUserID          int32
-	Reason              string
-	OriginalName        pgtype.Text
-	Name                pgtype.Text
-	OriginalNameCn      pgtype.Text
-	NameCn              pgtype.Text
-	OriginalDuration    pgtype.Text
-	Duration            pgtype.Text
-	OriginalAirdate     pgtype.Text
-	Airdate             pgtype.Text
-	OriginalDescription pgtype.Text
-	Description         pgtype.Text
-	CreatedAt           pgtype.Timestamptz
-	UpdatedAt           pgtype.Timestamptz
-	DeletedAt           pgtype.Timestamptz
-	RejectReason        string
-}
-
-type ViewSubjectPatch struct {
-	ID              uuid.UUID
-	SubjectID       int32
-	State           int32
-	FromUserID      int32
-	WikiUserID      int32
-	Reason          string
-	Name            pgtype.Text
-	OriginalName    string
-	Infobox         pgtype.Text
-	OriginalInfobox pgtype.Text
-	Summary         pgtype.Text
-	OriginalSummary pgtype.Text
-	Nsfw            pgtype.Bool
-	CreatedAt       pgtype.Timestamptz
-	UpdatedAt       pgtype.Timestamptz
-	DeletedAt       pgtype.Timestamptz
-	RejectReason    string
-	SubjectType     int64
 }

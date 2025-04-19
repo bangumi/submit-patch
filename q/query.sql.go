@@ -301,7 +301,7 @@ func (q *Queries) GetComments(ctx context.Context, arg GetCommentsParams) ([]Get
 }
 
 const getEpisodePatchByID = `-- name: GetEpisodePatchByID :one
-select id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, comments_count, patch_desc, ep
+select id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, subject_id, comments_count, patch_desc, ep
 from episode_patch
 where deleted_at is null
   and id = $1
@@ -332,6 +332,7 @@ func (q *Queries) GetEpisodePatchByID(ctx context.Context, id uuid.UUID) (Episod
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.RejectReason,
+		&i.SubjectID,
 		&i.CommentsCount,
 		&i.PatchDesc,
 		&i.Ep,
@@ -340,7 +341,7 @@ func (q *Queries) GetEpisodePatchByID(ctx context.Context, id uuid.UUID) (Episod
 }
 
 const getEpisodePatchByIDForUpdate = `-- name: GetEpisodePatchByIDForUpdate :one
-select id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, comments_count, patch_desc, ep
+select id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, subject_id, comments_count, patch_desc, ep
 from episode_patch
 where deleted_at is null
   and id = $1
@@ -371,6 +372,7 @@ func (q *Queries) GetEpisodePatchByIDForUpdate(ctx context.Context, id uuid.UUID
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.RejectReason,
+		&i.SubjectID,
 		&i.CommentsCount,
 		&i.PatchDesc,
 		&i.Ep,
