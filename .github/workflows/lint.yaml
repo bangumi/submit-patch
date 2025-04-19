@@ -28,7 +28,7 @@ jobs:
 
       - run: |
           wget https://downloads.sqlc.dev/sqlc_1.29.0_linux_amd64.tar.gz -O ~/sqlc_1.29.0_linux_amd64.tar.gz
-          tar xf ~/sqlc_1.29.0_linux_amd64.tar.gz -C ~/.local/bin/
+          tar xf ~/sqlc_1.29.0_linux_amd64.tar.gz -C ~/go/bin/
 
       - run: task gen
 
