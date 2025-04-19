@@ -37,14 +37,14 @@ jobs:
       - run: env
 
       - run: sudo apt install postgresql-client -y
-      - run: psql -h postgres -U pg-user -d db_test -a -f myInsertFile
+      - run: psql -h 127.0.0.1 -U pg-user -d db_test -a -f myInsertFile
         env:
           PGPASSWORD: pg-passwordg
 
       - run: sqlc diff
         env:
-          PG_DSN: postgresql://pg-user:pg-password@postgres:5432/db_test?sslmode=disable
+          PG_DSN: postgresql://pg-user:pg-password@127.0.0.1:5432/db_test?sslmode=disable
 
       - run: sqlc vet
         env:
-          PG_DSN: postgresql://pg-user:pg-password@postgres:5432/db_test?sslmode=disable
+          PG_DSN: postgresql://pg-user:pg-password@127.0.0.1:5432/db_test?sslmode=disable
