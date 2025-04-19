@@ -14,3 +14,9 @@ sql:
             go_type:
               import: "github.com/gofrs/uuid/v5"
               type: "UUID"
+
+
+rules:
+  - name: postgresql-query-too-costly
+    message: "Query cost estimate is too high"
+    rule: "postgresql.explain.plan.total_cost > 1.0"
