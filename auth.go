@@ -19,7 +19,7 @@ import (
 	"app/session"
 )
 
-func (h *handler) login(w http.ResponseWriter, r *http.Request) {
+func (h *handler) loginView(w http.ResponseWriter, r *http.Request) {
 	query := url.Values{}
 	query.Add("client_id", h.config.BangumiAppId)
 	query.Add("response_type", "code")

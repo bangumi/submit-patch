@@ -19,7 +19,8 @@ func loadTemplates(config Config) (Template, error) {
 	if config.Debug {
 		return Template{
 			NewSubjectPatch: &devPage[view.SubjectPatchEdit]{name: "subject-edit.gohtml"},
-			Debug:           &devPage[any]{name: "debug.gohtml"},
+			EditEpisode:     &devPage[view.EpisodePatchEdit]{name: "episode-edit.gohtml"},
+			Debug:           &devPage[any]{name: "debugView.gohtml"},
 			Login:           &devPage[any]{name: "login.gohtml"},
 		}, nil
 	}
@@ -31,7 +32,8 @@ func loadTemplates(config Config) (Template, error) {
 
 	return Template{
 		NewSubjectPatch: loadProdPage[view.SubjectPatchEdit](base, "subject-edit.gohtml"),
-		Debug:           loadProdPage[any](base, "debug.gohtml"),
+		EditEpisode:     loadProdPage[view.EpisodePatchEdit](base, "episode-edit.gohtml"),
+		Debug:           loadProdPage[any](base, "debugView.gohtml"),
 		Login:           loadProdPage[any](base, "login.gohtml"),
 	}, nil
 }
@@ -49,6 +51,7 @@ func loadProdPage[T any](base *template.Template, name string) *prodPage[T] {
 
 type Template struct {
 	NewSubjectPatch Page[view.SubjectPatchEdit]
+	EditEpisode     Page[view.EpisodePatchEdit]
 	Debug           Page[any]
 	Login           Page[any]
 }

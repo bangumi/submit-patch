@@ -112,6 +112,65 @@ func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) er
 	return err
 }
 
+const createEpisodePatch = `-- name: CreateEpisodePatch :exec
+insert into episode_patch (created_at, updated_at, id, episode_id, state, from_user_id,
+                           wiki_user_id, reason,
+                           original_name, name,
+                           original_name_cn, name_cn,
+                           original_duration, duration,
+                           original_airdate, airdate,
+                           original_description, description,
+                           patch_desc, ep)
+values (current_timestamp, current_timestamp,
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
+        $13, $14, $15, $16, $17, $18)
+`
+
+type CreateEpisodePatchParams struct {
+	ID                  uuid.UUID
+	EpisodeID           int32
+	State               int32
+	FromUserID          int32
+	WikiUserID          int32
+	Reason              string
+	OriginalName        pgtype.Text
+	Name                pgtype.Text
+	OriginalNameCn      pgtype.Text
+	NameCn              pgtype.Text
+	OriginalDuration    pgtype.Text
+	Duration            pgtype.Text
+	OriginalAirdate     pgtype.Text
+	Airdate             pgtype.Text
+	OriginalDescription pgtype.Text
+	Description         pgtype.Text
+	PatchDesc           string
+	Ep                  pgtype.Int4
+}
+
+func (q *Queries) CreateEpisodePatch(ctx context.Context, arg CreateEpisodePatchParams) error {
+	_, err := q.db.Exec(ctx, createEpisodePatch,
+		arg.ID,
+		arg.EpisodeID,
+		arg.State,
+		arg.FromUserID,
+		arg.WikiUserID,
+		arg.Reason,
+		arg.OriginalName,
+		arg.Name,
+		arg.OriginalNameCn,
+		arg.NameCn,
+		arg.OriginalDuration,
+		arg.Duration,
+		arg.OriginalAirdate,
+		arg.Airdate,
+		arg.OriginalDescription,
+		arg.Description,
+		arg.PatchDesc,
+		arg.Ep,
+	)
+	return err
+}
+
 const createSubjectEditPatch = `-- name: CreateSubjectEditPatch :exec
 INSERT INTO subject_patch
 (id, subject_id, from_user_id, reason, name, infobox, summary, nsfw,
@@ -151,6 +210,30 @@ func (q *Queries) CreateSubjectEditPatch(ctx context.Context, arg CreateSubjectE
 		arg.SubjectType,
 		arg.PatchDesc,
 	)
+	return err
+}
+
+const deleteEpisodePatch = `-- name: DeleteEpisodePatch :exec
+update episode_patch
+set deleted_at = current_timestamp
+where id = $1
+  and deleted_at is null
+`
+
+func (q *Queries) DeleteEpisodePatch(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteEpisodePatch, id)
+	return err
+}
+
+const deleteSubjectPatch = `-- name: DeleteSubjectPatch :exec
+update subject_patch
+set deleted_at = current_timestamp
+where id = $1
+  and deleted_at is null
+`
+
+func (q *Queries) DeleteSubjectPatch(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteSubjectPatch, id)
 	return err
 }
 
@@ -654,6 +737,50 @@ where id = $1
 
 func (q *Queries) UpdateEpisodePatchCommentCount(ctx context.Context, patchID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, updateEpisodePatchCommentCount, patchID)
+	return err
+}
+
+const updateSubjectPatch = `-- name: UpdateSubjectPatch :exec
+update subject_patch
+set original_name    = $2,
+    name             = $3,
+    original_infobox = $4,
+    infobox          = $5,
+    original_summary = $6,
+    summary          = $7,
+    nsfw             = $8,
+    reason           = $9,
+    patch_desc       = $10,
+    updated_at       = current_timestamp
+where id = $1
+`
+
+type UpdateSubjectPatchParams struct {
+	ID              uuid.UUID
+	OriginalName    string
+	Name            pgtype.Text
+	OriginalInfobox pgtype.Text
+	Infobox         pgtype.Text
+	OriginalSummary pgtype.Text
+	Summary         pgtype.Text
+	Nsfw            pgtype.Bool
+	Reason          string
+	PatchDesc       string
+}
+
+func (q *Queries) UpdateSubjectPatch(ctx context.Context, arg UpdateSubjectPatchParams) error {
+	_, err := q.db.Exec(ctx, updateSubjectPatch,
+		arg.ID,
+		arg.OriginalName,
+		arg.Name,
+		arg.OriginalInfobox,
+		arg.Infobox,
+		arg.OriginalSummary,
+		arg.Summary,
+		arg.Nsfw,
+		arg.Reason,
+		arg.PatchDesc,
+	)
 	return err
 }
 

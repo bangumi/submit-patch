@@ -1,4 +1,4 @@
-{{- /* gotype: app/view.SubjectPatchEdit */ -}}
+{{- /* gotype: app/view.EpisodePatchEdit */ -}}
 
 {{ template "layout.gohtml" .}}
 
@@ -18,39 +18,41 @@
   </div>
   <form method="post"
           {{if .PatchID}}
-            action="/edit/patch/subject/{{.PatchID}}"
+            action="/edit/episode/{{.PatchID}}"
           {{else}}
-            action="/edit/subject/{{.SubjectID}}"
+            action="/edit/episode/{{.EpisodeID}}"
           {{end}}
         enctype="application/x-www-form-urlencoded">
     <input type="hidden" name="x-csrf-token" value="{{.CsrfToken}}">
 
     <div class="form-group">
-      <label for="name">条目名称</label>
+      <label for="name">标题</label>
       <input class="form-control" id="name" name="name" value="{{.Data.Name}}">
     </div>
 
     <div class="form-group">
-      <label for="infobox">Infobox</label>
-      <textarea rows="30"
-                class="form-control"
-                id="infobox"
-                name="infobox">{{.Data.Infobox}}</textarea>
+      <label for="name_cn">简体中文标题 </label>
+      <input class="form-control" id="name_cn" name="name_cn" value="{{.Data.NameCN}}">
     </div>
 
     <div class="form-group">
-      <label for="summary">简介</label>
-      <textarea rows="10" class="form-control" id="summary"
-                name="summary">{{.Data.Summary}}</textarea>
+      <label for="duration">时长 </label>
+      <input class="form-control" id="duration" name="duration" value="{{.Data.Duration}}">
     </div>
 
-    <div class="form-check">
-      <label class="form-check-label" for="exampleCheck1">NSFW</label>
-      <input type="checkbox" name="nsfw" class="form-check-input"
-              {{if .Data.Nsfw}}
-                checked
-              {{end}}
-             id="exampleCheck1">
+    <div class="form-group">
+      <label for="date">放送日期 </label>
+      <input class="form-control" id="date" name="date" value="{{.Data.Date}}">
+    </div>
+
+    <div class="form-group">
+      <label for="summary">简介 </label>
+      <textarea
+              rows="5"
+              class="form-control"
+              id="summary"
+              name="summary"
+      >{{.Data.Summary}}</textarea>
     </div>
 
     <hr>

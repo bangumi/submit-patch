@@ -8,14 +8,22 @@ templ listFilter(u *url.URL, currentStateFilter string) {
 			<div class="btn-group" role="group">
 				<a
 					type="button"
-					class="btn btn-primary"
+					if u.Query().Get("type") == "subject" {
+						class="btn btn-primary"
+					} else {
+						class="btn btn-outline-primary"
+					}
 					href={ setQuery(u, "type", "subject") }
 				>
 					条目
 				</a>
 				<a
 					type="button"
-					class="btn btn-outline-primary"
+					if u.Query().Get("type") == "episode" {
+						class="btn btn-primary"
+					} else {
+						class="btn btn-outline-primary"
+					}
 					href={ setQuery(u, "type", "episode") }
 				>
 					章节

@@ -182,6 +182,33 @@ INSERT INTO subject_patch
  original_name, original_infobox, original_summary, subject_type, patch_desc)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
 
+-- name: CreateEpisodePatch :exec
+insert into episode_patch (created_at, updated_at, id, episode_id, state, from_user_id,
+                           wiki_user_id, reason,
+                           original_name, name,
+                           original_name_cn, name_cn,
+                           original_duration, duration,
+                           original_airdate, airdate,
+                           original_description, description,
+                           patch_desc, ep)
+values (current_timestamp, current_timestamp,
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
+        $13, $14, $15, $16, $17, $18);
+
+
+-- name: UpdateSubjectPatch :exec
+update subject_patch
+set original_name    = $2,
+    name             = $3,
+    original_infobox = $4,
+    infobox          = $5,
+    original_summary = $6,
+    summary          = $7,
+    nsfw             = $8,
+    reason           = $9,
+    patch_desc       = $10,
+    updated_at       = current_timestamp
+where id = $1;
 
 
 -- name: AcceptEpisodePatch :exec
@@ -192,3 +219,15 @@ set wiki_user_id = $1,
 where id = $3
   and deleted_at is null
   and state = 0;
+
+-- name: DeleteSubjectPatch :exec
+update subject_patch
+set deleted_at = current_timestamp
+where id = $1
+  and deleted_at is null;
+
+-- name: DeleteEpisodePatch :exec
+update episode_patch
+set deleted_at = current_timestamp
+where id = $1
+  and deleted_at is null;

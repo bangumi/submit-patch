@@ -1,20 +1,206 @@
 package main
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/trim21/errgo"
 
+	"app/api"
 	"app/csrf"
 	"app/q"
 	"app/session"
 	"app/templates"
 	"app/view"
 )
+
+func (h *handler) editEpisodeView(w http.ResponseWriter, r *http.Request) error {
+	eid, err := strconv.ParseUint(chi.URLParam(r, "episode-id"), 10, 64)
+	if err != nil || eid <= 0 {
+		http.Error(w, "episode-id must be a positive integer", http.StatusBadRequest)
+		return nil
+	}
+
+	s := session.GetSession(r.Context())
+	if s.UserID == 0 {
+		http.SetCookie(w, &http.Cookie{
+			Name:  cookieBackTo,
+			Value: fmt.Sprintf("/suggest-episode?episode_id=%d", eid),
+		})
+
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return nil
+	}
+
+	var episode api.WikiEpisode
+	resp, err := h.client.R().SetResult(&episode).Get(fmt.Sprintf("https://next.bgm.tv/p1/wiki/ep/%d", eid))
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode() >= 300 {
+		http.NotFound(w, r)
+		return nil
+	}
+
+	return h.template.EditEpisode.Execute(w, view.EpisodePatchEdit{
+		PatchID:          "",
+		CsrfToken:        csrf.GetToken(r),
+		Reason:           "",
+		EpisodeID:        int32(eid),
+		Description:      "",
+		Data:             episode,
+		TurnstileSiteKey: h.config.TurnstileSiteKey,
+	})
+}
+
+func (h *handler) createEpisodeEditPatch(w http.ResponseWriter, r *http.Request) error {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to parse form data: %v", err), http.StatusBadRequest)
+		return nil
+	}
+
+	episodeID, err := strconv.ParseInt(chi.URLParam(r, "episode-id"), 10, 32)
+	if err != nil || episodeID <= 0 {
+		http.Error(w, "Invalid or missing episode-id parameter", http.StatusBadRequest)
+		return nil
+	}
+
+	form := r.PostForm
+
+	reason := form.Get("reason")
+	patchDesc := form.Get("patch_desc")
+	if err := checkInvalidInputStr(reason, patchDesc); err != nil {
+		http.Error(w, fmt.Sprintf("Validation Failed: %v", err), http.StatusBadRequest)
+		return nil
+	}
+
+	user := session.GetSession(r.Context())
+	if user.UserID == 0 {
+		http.Error(w, "please login before submit any patch", http.StatusUnauthorized)
+		return nil
+	}
+
+	cfTurnstileResponse := form.Get("cf_turnstile_response")
+	if err := h.validateCaptcha(r.Context(), cfTurnstileResponse); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return nil
+	}
+
+	// --- Fetch Original Data ---
+	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/ep/%d", episodeID)
+	var originalWiki api.WikiEpisode
+	resp, err := h.client.R().
+		SetContext(r.Context()).
+		SetResult(&originalWiki).
+		Get(fetchURL)
+	if err != nil {
+		fmt.Printf("Error executing request to fetch original wiki: %v\n", err)
+		http.Error(w, "Failed to communicate with wiki service", http.StatusBadGateway)
+		return nil
+	}
+
+	if resp.IsError() {
+		// The request was sent, but the server returned an error status code (>= 400)
+		fmt.Printf("Error fetching original wiki (%s): status %d, body: %s\n", fetchURL, resp.StatusCode(), resp.String())
+		if resp.StatusCode() == http.StatusNotFound {
+			http.Error(w, "Original subject not found", http.StatusNotFound)
+		} else {
+			// You might want to return a more specific error message based on apiError if it was populated
+			http.Error(w, "Failed to fetch original subject data", http.StatusBadGateway)
+		}
+		return nil
+	}
+
+	name := form.Get("name")
+	nameCN := form.Get("name_cn")
+	duration := form.Get("duration")
+	date := form.Get("date")
+	summary := form.Get("summary")
+
+	pk := uuid.Must(uuid.NewV7())
+	var param = q.CreateEpisodePatchParams{
+		ID:         pk,
+		EpisodeID:  int32(episodeID),
+		State:      PatchStatePending,
+		FromUserID: user.UserID,
+		WikiUserID: 0,
+		Reason:     reason,
+		PatchDesc:  patchDesc,
+	}
+
+	if name != originalWiki.Name {
+		param.OriginalName = pgtype.Text{
+			String: originalWiki.Name,
+			Valid:  true,
+		}
+		param.Name = pgtype.Text{
+			String: name,
+			Valid:  true,
+		}
+	}
+
+	if nameCN != originalWiki.NameCN {
+		param.OriginalNameCn = pgtype.Text{
+			String: originalWiki.NameCN,
+			Valid:  true,
+		}
+		param.NameCn = pgtype.Text{
+			String: nameCN,
+			Valid:  true,
+		}
+	}
+
+	if duration != originalWiki.Duration {
+		param.OriginalDuration = pgtype.Text{
+			String: originalWiki.Duration,
+			Valid:  true,
+		}
+		param.Duration = pgtype.Text{
+			String: duration,
+			Valid:  true,
+		}
+	}
+
+	if date != originalWiki.Date {
+		param.OriginalAirdate = pgtype.Text{
+			String: originalWiki.Date,
+			Valid:  true,
+		}
+		param.Airdate = pgtype.Text{
+			String: date,
+			Valid:  true,
+		}
+	}
+
+	if summary != originalWiki.Summary {
+		param.OriginalDescription = pgtype.Text{
+			String: originalWiki.Summary,
+			Valid:  true,
+		}
+		param.Description = pgtype.Text{
+			String: summary,
+			Valid:  true,
+		}
+	}
+
+	err = h.q.CreateEpisodePatch(r.Context(), param)
+	if err != nil {
+		fmt.Printf("Error inserting subject patch: %v\n", err)
+		http.Error(w, "Failed to save suggestion", http.StatusInternalServerError)
+		return nil
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/episode/%s", pk), http.StatusFound)
+	return nil
+}
 
 func (h *handler) listEpisodePatches(
 	w http.ResponseWriter,
@@ -82,7 +268,7 @@ func (h *handler) listEpisodePatches(
 	return nil
 }
 
-func (h *handler) episodePatchDetail(
+func (h *handler) episodePatchDetailView(
 	w http.ResponseWriter,
 	r *http.Request,
 ) error {
@@ -183,4 +369,128 @@ func (h *handler) episodePatchDetail(
 		comments,
 		changes,
 	).Render(r.Context(), w)
+}
+
+func (h *handler) deleteEpisodePatch(w http.ResponseWriter, r *http.Request) error {
+	patchID, err := uuid.FromString(chi.URLParam(r, "patch-id"))
+	if err != nil {
+		http.Error(w, "invalid patch id, must be uuid", http.StatusBadRequest)
+		return nil
+	}
+
+	user := session.GetSession(r.Context())
+	if user.UserID == 0 {
+		http.Error(w, "please login before submit any patch", http.StatusUnauthorized)
+		return nil
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "must be a valid form", http.StatusBadRequest)
+		return nil
+	}
+
+	if !csrf.Verify(r, r.PostForm.Get(csrf.FormName)) {
+		http.Error(w, "csrf failed", http.StatusBadRequest)
+		return nil
+	}
+
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), time.Second*5)
+	defer cancel()
+
+	return h.tx(ctx, func(tx pgx.Tx) error {
+		qx := h.q.WithTx(tx)
+		p, err := qx.GetEpisodePatchByIDForUpdate(ctx, patchID)
+		if err != nil {
+			return err
+		}
+		if p.State != PatchStatePending {
+			http.Error(w, "patch is not pending", http.StatusBadRequest)
+			return nil
+		}
+
+		if p.FromUserID != user.UserID {
+			http.Error(w, "this it not your patch", http.StatusUnauthorized)
+			return nil
+		}
+
+		err = qx.DeleteEpisodePatch(ctx, patchID)
+		if err != nil {
+			return errgo.Wrap(err, "failed to delete subject patch")
+		}
+
+		http.Redirect(w, r, "/", http.StatusFound)
+		return nil
+	})
+}
+
+func (h *handler) editEpisodePatchView(w http.ResponseWriter, r *http.Request) error {
+	patchID, err := uuid.FromString(chi.URLParam(r, "patch-id"))
+	if err != nil {
+		http.Error(w, "patch-id must be a valid uuid", http.StatusBadRequest)
+		return nil
+	}
+
+	s := session.GetSession(r.Context())
+	if s.UserID == 0 {
+		needLogin(w, r, r.URL.Path)
+		return nil
+	}
+
+	patch, err := h.q.GetEpisodePatchByID(r.Context(), patchID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.NotFound(w, r)
+			return nil
+		}
+
+		return err
+	}
+
+	if patch.FromUserID != s.UserID {
+		http.Error(w, "this is not your patch", http.StatusUnauthorized)
+		return nil
+	}
+
+	if patch.State != PatchStatePending {
+		http.Error(w, "patch must be a pending state", http.StatusBadRequest)
+		return nil
+	}
+
+	var episode api.WikiEpisode
+	resp, err := h.client.R().
+		SetResult(&episode).
+		Get(fmt.Sprintf("https://next.bgm.tv/p1/wiki/ep/%d", patch.EpisodeID))
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode() >= 300 {
+		http.NotFound(w, r)
+		return nil
+	}
+
+	if patch.Name.Valid {
+		episode.Name = patch.Name.String
+	}
+
+	if patch.NameCn.Valid {
+		episode.NameCN = patch.NameCn.String
+	}
+
+	if patch.Duration.Valid {
+		episode.Duration = patch.Duration.String
+	}
+
+	if patch.Airdate.Valid {
+		episode.Date = patch.Airdate.String
+	}
+
+	return h.template.EditEpisode.Execute(w, view.EpisodePatchEdit{
+		PatchID:          patch.ID.String(),
+		EpisodeID:        patch.EpisodeID,
+		CsrfToken:        csrf.GetToken(r),
+		Reason:           patch.Reason,
+		Description:      patch.PatchDesc,
+		Data:             episode,
+		TurnstileSiteKey: h.config.TurnstileSiteKey,
+	})
 }

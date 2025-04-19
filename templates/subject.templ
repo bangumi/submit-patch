@@ -106,18 +106,18 @@ templ subjectPatchDetailContent(
 		if patch.FromUserID == user.UserID {
 			<div class="row mb-2">
 				<form
-					action={ templ.SafeURL(fmt.Sprintf("/edit/subject/%s", patch.ID)) }
+					action={ templ.SafeURL(fmt.Sprintf("/edit/patch/subject/%s", patch.ID)) }
 					method="get"
 					class="col"
 				>
 					<button type="submit" class="btn btn-success">Edit</button>
 				</form>
 				<form
-					action={ templ.SafeURL(fmt.Sprintf("/api/delete-subject/%s", patch.ID)) }
+					action={ templ.SafeURL(fmt.Sprintf("/api/delete/patch/subject/%s", patch.ID)) }
 					method="post"
 					class="col"
 				>
-					// @view.CSRFInput()
+					<input type="hidden" name="x-csrf-token" value={ csrfToken }/>
 					<button type="submit" class="btn btn-danger">Delete</button>
 				</form>
 			</div>

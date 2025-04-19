@@ -82,13 +82,26 @@ type EpisodePatchListItem struct {
 
 type SubjectPatchEdit struct {
 	PatchID   string
-	SubjectID uint64
+	SubjectID int32
 	CsrfToken string
 
 	Reason      string
 	Description string
 
 	Data api.WikiSubject
+
+	TurnstileSiteKey string
+}
+
+type EpisodePatchEdit struct {
+	PatchID   string
+	EpisodeID int32
+	CsrfToken string
+
+	Reason      string
+	Description string
+
+	Data api.WikiEpisode
 
 	TurnstileSiteKey string
 }

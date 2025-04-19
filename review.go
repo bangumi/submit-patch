@@ -15,6 +15,7 @@ func (h *handler) handleReview(w http.ResponseWriter, r *http.Request) error {
 		http.Error(w, "must be a valid form", http.StatusBadRequest)
 		return nil
 	}
+
 	if !csrf.Verify(r, r.PostForm.Get(csrf.FormName)) {
 		http.Error(w, "csrf failed", http.StatusBadRequest)
 		return nil

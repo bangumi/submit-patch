@@ -10,7 +10,7 @@ import (
 
 const defaultPageSize = 30
 
-func (h *handler) debug(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) debugView(w http.ResponseWriter, r *http.Request) error {
 	//s := GetSession(r.Context())
 	rq := r.URL.Query()
 	rawPage := rq.Get("page")
@@ -25,7 +25,7 @@ func (h *handler) debug(w http.ResponseWriter, r *http.Request) error {
 	return h.template.Debug.Execute(w, view.Pagination{URL: r.URL, TotalPage: 10, CurrentPage: currentPage})
 }
 
-func (h *handler) index(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) indexView(w http.ResponseWriter, r *http.Request) error {
 	s := session.GetSession(r.Context())
 	if s.UserID == 0 {
 		return h.template.Login.Execute(w, nil)
