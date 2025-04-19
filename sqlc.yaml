@@ -32,5 +32,4 @@ rules:
 
   - name: has-index
     rule: >
-      query.sql.startsWith("SELECT") &&
       !(postgresql.explain.plan.plans.all(p, has(p.index_name) || p.plans.all(p, has(p.index_name))))
