@@ -17,7 +17,9 @@ jobs:
         image: postgres
         # Provide the password for postgres
         env:
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: db_test
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
@@ -35,4 +37,4 @@ jobs:
 
       - run: sqlc vet
         env:
-          POSTGRESQL_SERVER_URI: postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable
+          POSTGRESQL_SERVER_URI: postgres://postgres:postgres@postgres:5432/db_test?sslmode=disable
