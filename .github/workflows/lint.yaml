@@ -20,18 +20,11 @@ jobs:
         with:
           cache-namespace: lint
 
-      - run: |
-          wget https://downloads.sqlc.dev/sqlc_1.29.0_linux_amd64.tar.gz -O ~/sqlc_1.29.0_linux_amd64.tar.gz
-          tar xf ~/sqlc_1.29.0_linux_amd64.tar.gz -C ~/go/bin/
-
       - name: Install Task
         uses: arduino/setup-task@v2
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - run: task gen
-      - run: git diff --exit-code
 
       - run: task gen:template
       - run: git diff --exit-code

@@ -9,16 +9,30 @@ on:
       - master
 
 jobs:
-  test:
+  sqlc:
     runs-on: ubuntu-latest
-    if: "${{ false }}"
+    services:
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           submodules: "true"
 
-      - uses: trim21/actions/setup-go@master
+      - uses: sqlc-dev/setup-sqlc@v3
         with:
-          cache-namespace: lint
+          sqlc-version: '1.29.0'
 
-      - run: go build ./...
+      - run: sqlc vet
+        env:
+          POSTGRESQL_SERVER_URI: postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable
