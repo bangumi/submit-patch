@@ -39,7 +39,7 @@ from server.config import (
 from server.router import Router
 
 
-CALLBACK_URL = f"{SERVER_BASE_URL}/oauth_callback"
+CALLBACK_URL = f"{SERVER_BASE_URL}/callback"
 
 router = Router()
 
@@ -148,7 +148,7 @@ def login() -> Redirect:
 
 
 @router
-@litestar.get("/oauth_callback")
+@litestar.get("/callback")
 async def callback(code: str, request: Request) -> Redirect:
     res = await http_client.post(
         "https://next.bgm.tv/oauth/access_token",

@@ -1,0 +1,63 @@
+package templates
+
+import "app/view"
+
+templ Pagination(page view.Pagination) {
+	if page.TotalPage  != 0 {
+		<nav aria-label="..." class="d-flex justify-content-center">
+			<ul class="pagination">
+				<li class="page-item">
+					<a
+						class="page-link"
+						href={ setQuery(page.URL, "page", "1") }
+					>&laquo;</a>
+				</li>
+				if page.CurrentPage  > 1 {
+					<li class="page-item">
+						<a
+							class="page-link"
+							href={ setQuery(page.URL, "page", itoa(page.CurrentPage-1)) }
+						>&lt;</a>
+					</li>
+				}
+				if page.CurrentPage - 2 > 1 {
+					<span class="ms-3 me-3">...</span>
+				}
+				for index := max(1, page.CurrentPage - 2); index < min(page.CurrentPage+ 3, page.TotalPage+ 1); index++ {
+					if index == page.CurrentPage {
+						<li class="page-item active">
+							<a
+								class="page-link"
+								href={ setQuery(page.URL, "page", itoa(index)) }
+							>{ itoa(index) }</a>
+						</li>
+					} else {
+						<li class="page-item">
+							<a
+								class="page-link"
+								href={ setQuery(page.URL, "page", itoa(index)) }
+							>{ itoa(index) }</a>
+						</li>
+					}
+				}
+				if page.CurrentPage +2 < page.TotalPage {
+					<span class="ms-3 me-3">...</span>
+				}
+				if page.CurrentPage < page.TotalPage {
+					<li class="page-item">
+						<a
+							class="page-link"
+							href={ setQuery(page.URL, "page", itoa(page.CurrentPage+1)) }
+						>&gt;</a>
+					</li>
+				}
+				<li class="page-item">
+					<a
+						class="page-link"
+						href={ setQuery(page.URL, "page", itoa(page.TotalPage)) }
+					>&raquo;</a>
+				</li>
+			</ul>
+		</nav>
+	}
+}

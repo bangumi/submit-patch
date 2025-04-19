@@ -1,0 +1,9 @@
+{{- /* gotype: app/view.SubjectPatchList*/ -}}
+
+{{ template "layout.gohtml" .}}
+
+{{ define "content" }}
+  <a> this is the index page</a>
+
+  {{ block "pagination" .Pagination }}{{end}}
+{{ end }}

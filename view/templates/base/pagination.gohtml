@@ -1,0 +1,78 @@
+{{- /* gotype: app/view.Pagination */ -}}
+
+{{ define "pagination" }}
+    {{ if ne .TotalPage 0 }}
+      <nav aria-label="..." class="d-flex justify-content-between">
+        <ul class="pagination">
+            {{ if ne .CurrentPage 1 }}
+              <li class="page-item">
+                <a class="page-link"
+                   href='{{ setQuery .URL "page" "1" }}'
+                >&laquo;</a>
+              </li>
+            {{ end }}
+
+            {{ if gt .CurrentPage 1 }}
+              <li class="page-item">
+                <a
+                        class="page-link"
+                        href='{{ setQuery .URL "page" (add .CurrentPage  -1) }}'
+                >&lt;</a>
+              </li>
+            {{ end }}
+
+        </ul>
+
+          {{/*          {{ if gt .CurrentPage  3  }}*/}}
+          {{/*            <span class="ms-3 me-3">...</span>*/}}
+          {{/*          {{ end }}*/}}
+
+        <ul class="pagination">
+            {{ $start := max (add .CurrentPage -3) 1 }}
+            {{ $end := min (add .CurrentPage 4) (add .TotalPage 1) }}
+            {{ $url := .URL }}
+            {{ range $index := seq64 $start $end }}
+                {{ if eq $index $.CurrentPage }}
+                  <li class="page-item active">
+                    <a
+                            class="page-link"
+                            href='{{ setQuery $url "page" $index }}'
+                    >{{ $index }}</a>
+                  </li>
+                {{ else }}
+                  <li class="page-item">
+                    <a
+                            class="page-link"
+                            href='{{ setQuery $url "page" $index }}'
+                    >{{ $index }}</a>
+                  </li>
+                {{ end }}
+            {{ end }}
+        </ul>
+
+          {{/*          {{ if lt .CurrentPage (add .TotalPage -2) }}*/}}
+          {{/*            <span class="ms-3 me-3">...</span>*/}}
+          {{/*          {{ end }}*/}}
+
+        <ul class="pagination">
+            {{ if lt .CurrentPage .TotalPage }}
+              <li class="page-item">
+                <a
+                        class="page-link"
+                        href='{{ setQuery .URL "page" (add .CurrentPage 1)   }}'
+                >&gt;</a>
+              </li>
+            {{ end }}
+
+            {{ if ne .CurrentPage .TotalPage }}
+              <li class="page-item">
+                <a
+                        class="page-link"
+                        href='{{ setQuery .URL "page" .TotalPage   }}'
+                >&raquo;</a>
+              </li>
+            {{ end }}
+        </ul>
+      </nav>
+    {{ end }}
+{{ end }}

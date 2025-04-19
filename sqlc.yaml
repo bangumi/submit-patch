@@ -1,0 +1,16 @@
+version: "2"
+
+sql:
+  - engine: "postgresql"
+    queries: "query.sql"
+    schema: "server/sql/*.sql"
+    gen:
+      go:
+        package: "q"
+        out: "q"
+        sql_package: "pgx/v5"
+        overrides:
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/gofrs/uuid/v5"
+              type: "UUID"
