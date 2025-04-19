@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "net/url"
 
-func listFilter(u *url.URL, currentStateFilter string) templ.Component {
+func listFilter(u *url.URL, currentTypeFilter string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -35,7 +35,7 @@ func listFilter(u *url.URL, currentStateFilter string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if u.Query().Get("type") == "subject" {
+		if currentTypeFilter == "subject" {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " class=\"btn btn-primary\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -59,7 +59,7 @@ func listFilter(u *url.URL, currentStateFilter string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if u.Query().Get("type") == "episode" {
+		if currentTypeFilter == "episode" {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " class=\"btn btn-primary\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -84,7 +84,7 @@ func listFilter(u *url.URL, currentStateFilter string) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		for _, filter := range allReadableStateFilter {
-			if currentStateFilter == filter.Enum {
+			if currentTypeFilter == filter.Enum {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<a type=\"button\" href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err

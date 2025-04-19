@@ -41,7 +41,7 @@ templ episodeListHead() {
 
 templ episodeListContent(r *http.Request, data view.EpisodePatchList) {
 	@header("", data.Session)
-	@listFilter(r.URL, data.CurrentStateFilter)
+	@listFilter(r.URL, "episode")
 	<div class="row m-0 mb-4">
 		<ul class="list-group p-0 m-0">
 			for _, patch := range data.Patches {

@@ -103,7 +103,7 @@ func episodeListContent(r *http.Request, data view.EpisodePatchList) templ.Compo
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = listFilter(r.URL, data.CurrentStateFilter).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = listFilter(r.URL, "episode").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

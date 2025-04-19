@@ -2,13 +2,13 @@ package templates
 
 import "net/url"
 
-templ listFilter(u *url.URL, currentStateFilter string) {
+templ listFilter(u *url.URL, currentTypeFilter string) {
 	<div class="row pt-2 pb-2 d-flex justify-content-between">
 		<div class="col">
 			<div class="btn-group" role="group">
 				<a
 					type="button"
-					if u.Query().Get("type") == "subject" {
+					if currentTypeFilter == "subject" {
 						class="btn btn-primary"
 					} else {
 						class="btn btn-outline-primary"
@@ -19,7 +19,7 @@ templ listFilter(u *url.URL, currentStateFilter string) {
 				</a>
 				<a
 					type="button"
-					if u.Query().Get("type") == "episode" {
+					if currentTypeFilter == "episode" {
 						class="btn btn-primary"
 					} else {
 						class="btn btn-outline-primary"
@@ -33,7 +33,7 @@ templ listFilter(u *url.URL, currentStateFilter string) {
 		<div class="col d-flex flex-row-reverse">
 			<div class="btn-group" role="group">
 				for _, filter := range allReadableStateFilter {
-					if currentStateFilter == filter.Enum {
+					if currentTypeFilter == filter.Enum {
 						<a
 							type="button"
 							href={ setQuery(u, "state", filter.Enum) }
