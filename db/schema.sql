@@ -49,6 +49,9 @@ create index idx_subject_patch_list
 create index idx_subject_patch_list2
     on subject_patch (updated_at, state, deleted_at);
 
+create index idx_subject_patch_list3
+    on subject_patch (deleted_at, state, created_at);
+
 create index idx_subject_count
     on subject_patch (state, deleted_at);
 
@@ -92,6 +95,9 @@ create index idx_episode_patch_list
 
 create index idx_episode_patch_list2
     on episode_patch (updated_at, state, deleted_at);
+
+create index idx_episode_patch_list3
+    on episode_patch (deleted_at, state, created_at);
 
 create index idx_episode_count
     on episode_patch (state, deleted_at);
