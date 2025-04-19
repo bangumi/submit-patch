@@ -19,7 +19,8 @@ sql:
     rules:
       - debug
       - no-delete
-      - has-index
+      - postgresql-query-too-costly
+      - postgresql-no-seq-scan
 
 rules:
   - name: debug
@@ -28,8 +29,11 @@ rules:
   - name: no-delete
     message: "don't use delete statements"
     rule: |
-      query.sql.contains("DELETE")
+      query.sql.lowerAscii().contains("delete ")
 
-  - name: has-index
-    rule: >
-      !(postgresql.explain.plan.plans.all(p, has(p.index_name) || p.plans.all(p, has(p.index_name))))
+  - name: postgresql-query-too-costly
+    message: "Query cost estimate is too high"
+    rule: "postgresql.explain.plan.total_cost > 30.0"
+
+  - name: postgresql-no-seq-scan
+    rule: "postgresql.explain.plan.node_type == 'Seq Scan'"

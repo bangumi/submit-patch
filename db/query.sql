@@ -247,6 +247,6 @@ where id = $1
   and deleted_at is null;
 
 -- name: TestDelete :exec
-delete
+DELETE
 from edit_suggestion
 where id = $1;
