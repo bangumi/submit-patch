@@ -40,9 +40,6 @@ comment on column subject_patch.action is '1 for update 2 for create';
 create index idx_subject_id
     on subject_patch (subject_id);
 
-create index idx_subject_deleted_at
-    on subject_patch (deleted_at);
-
 create index idx_subject_patch_list
     on subject_patch (created_at, state, deleted_at);
 
@@ -107,9 +104,6 @@ create index idx_episode_subject_id
 
 create index idx_episode_episode_id
     on episode_patch (episode_id, state);
-
-create index idx_episode_deleted_at
-    on episode_patch (deleted_at);
 
 create table edit_suggestion
 (
