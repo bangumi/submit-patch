@@ -48,16 +48,19 @@ func New() func(http.Handler) http.Handler {
 			}
 
 			encoded, err := signer.Encode(CookiesName, cookieValue{UserID: s.UserID})
-			if err == nil {
+			if err != nil {
 				log.Err(err).Msg("failed to generate csrf token")
-				http.SetCookie(w, &http.Cookie{
-					Name:     CookiesName,
-					Value:    encoded,
-					Path:     "/",
-					Secure:   true,
-					HttpOnly: true,
-				})
+				next.ServeHTTP(w, r)
+				return
 			}
+
+			http.SetCookie(w, &http.Cookie{
+				Name:     CookiesName,
+				Value:    encoded,
+				Path:     "/",
+				Secure:   true,
+				HttpOnly: true,
+			})
 
 			next.ServeHTTP(w, r.WithContext(
 				context.WithValue(context.WithValue(r.Context(), signerKey, signer), tokenKey, encoded),
