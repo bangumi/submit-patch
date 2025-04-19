@@ -47,7 +47,7 @@ func (h *handler) handleEpisodeComment(w http.ResponseWriter, r *http.Request, t
 	err := tx.CreateComment(r.Context(), q.CreateCommentParams{
 		ID:        uuid.Must(uuid.NewV7()),
 		PatchID:   patch.ID,
-		PatchType: q.PatchTypeEpisode,
+		PatchType: PatchTypeEpisode,
 		Text:      text,
 		FromUser:  s.UserID,
 	})

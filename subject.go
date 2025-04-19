@@ -248,7 +248,7 @@ func (h *handler) subjectPatchDetailView(
 
 	comments, err := h.q.GetComments(r.Context(), q.GetCommentsParams{
 		PatchID:   id,
-		PatchType: q.PatchTypeSubject,
+		PatchType: PatchTypeSubject,
 	})
 	if err != nil {
 		return errgo.Wrap(err, "GetComments")

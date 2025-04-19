@@ -5,59 +5,14 @@
 package q
 
 import (
-	"database/sql/driver"
-	"fmt"
-
 	uuid "github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type PatchType string
-
-const (
-	PatchTypeSubject PatchType = "subject"
-	PatchTypeEpisode PatchType = "episode"
-)
-
-func (e *PatchType) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = PatchType(s)
-	case string:
-		*e = PatchType(s)
-	default:
-		return fmt.Errorf("unsupported scan type for PatchType: %T", src)
-	}
-	return nil
-}
-
-type NullPatchType struct {
-	PatchType PatchType
-	Valid     bool // Valid is true if PatchType is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullPatchType) Scan(value interface{}) error {
-	if value == nil {
-		ns.PatchType, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.PatchType.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullPatchType) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.PatchType), nil
-}
-
 type EditSuggestion struct {
 	ID        uuid.UUID
 	PatchID   uuid.UUID
-	PatchType PatchType
+	PatchType string
 	Text      string
 	FromUser  int32
 	CreatedAt pgtype.Timestamptz

@@ -175,7 +175,7 @@ func (h *handler) handleSubjectComment(w http.ResponseWriter, r *http.Request, t
 	err := tx.CreateComment(r.Context(), q.CreateCommentParams{
 		ID:        uuid.Must(uuid.NewV7()),
 		PatchID:   patch.ID,
-		PatchType: q.PatchTypeSubject,
+		PatchType: PatchTypeSubject,
 		Text:      text,
 		FromUser:  s.UserID,
 	})

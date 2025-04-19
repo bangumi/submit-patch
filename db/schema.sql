@@ -1,5 +1,3 @@
-create type patch_type as enum ('subject', 'episode');
-
 create table patch_users
 (
     user_id  integer      not null
@@ -112,7 +110,7 @@ create table edit_suggestion
     id         uuid                                               not null
         primary key,
     patch_id   uuid                                               not null,
-    patch_type patch_type                                         not null,
+    patch_type varchar(64)                                         not null,
     text       text                                               not null,
     from_user  integer                                            not null,
     created_at timestamp with time zone default CURRENT_TIMESTAMP not null,

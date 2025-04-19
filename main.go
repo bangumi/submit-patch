@@ -98,11 +98,25 @@ func runMigration(config Config) error {
 		return err
 	}
 
+	v, d, err := m.Version()
+	if err != nil {
+		return err
+	}
+
+	log.Info().Msgf("before migration: version=%d (dirty=%v)", v, d)
+
 	err = m.Up()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return err
 	}
 
 	log.Info().Msg("migration done")
+
+	v, d, err = m.Version()
+	if err != nil {
+		return err
+	}
+
+	log.Info().Msgf("after migration: version=%d (dirty=%v)", v, d)
 	return nil
 }

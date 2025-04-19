@@ -97,7 +97,7 @@ values ($1, $2, $3, $4, $5, current_timestamp, null)
 type CreateCommentParams struct {
 	ID        uuid.UUID
 	PatchID   uuid.UUID
-	PatchType PatchType
+	PatchType string
 	Text      string
 	FromUser  int32
 }
@@ -253,13 +253,13 @@ order by created_at
 
 type GetCommentsParams struct {
 	PatchID   uuid.UUID
-	PatchType PatchType
+	PatchType string
 }
 
 type GetCommentsRow struct {
 	ID        uuid.UUID
 	PatchID   uuid.UUID
-	PatchType PatchType
+	PatchType string
 	Text      string
 	FromUser  int32
 	CreatedAt pgtype.Timestamptz
