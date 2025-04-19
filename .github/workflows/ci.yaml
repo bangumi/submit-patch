@@ -44,4 +44,4 @@ jobs:
 
       - run: sqlc vet
         env:
-          PG_DSN: postgresql://pg-user:pg-password@postgres:5432/db_test?sslmode=disable
+          VET_PG_DSN: postgresql://pg-user:pg-password@postgres:5432/db_test?sslmode=disable
