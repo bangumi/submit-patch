@@ -22,3 +22,8 @@ rules:
   - name: postgresql-query-too-costly
     message: "Query cost estimate is too high"
     rule: "postgresql.explain.plan.total_cost > 1.0"
+
+  - name: no-delete
+    message: "don't use delete statements"
+    rule: |
+      query.sql.contains("DELETE")

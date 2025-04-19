@@ -692,6 +692,17 @@ func (q *Queries) RejectSubjectPatch(ctx context.Context, arg RejectSubjectPatch
 	return err
 }
 
+const testDelete = `-- name: TestDelete :exec
+delete
+from edit_suggestion
+where id = $1
+`
+
+func (q *Queries) TestDelete(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, testDelete, id)
+	return err
+}
+
 const updateEpisodePatch = `-- name: UpdateEpisodePatch :exec
 update episode_patch
 set reason               = $2,
