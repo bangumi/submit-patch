@@ -13,17 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        # Docker Hub image
         image: postgres
-        # Provide the password for postgres
         env:
           POSTGRES_USER: pg-user
           POSTGRES_PASSWORD: pg-password
           POSTGRES_DB: db_test
         ports:
-          # Maps tcp port 5432 on service container to the host
           - '5432:5432'
-        # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
