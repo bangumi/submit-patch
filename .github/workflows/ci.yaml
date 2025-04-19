@@ -39,7 +39,7 @@ jobs:
       - run: sudo apt install postgresql-client -y
       - run: psql -h 127.0.0.1 -U pg-user -d db_test -a -f myInsertFile
         env:
-          PGPASSWORD: pg-passwordg
+          PGPASSWORD: pg-password
 
       - run: sqlc diff
         env:
