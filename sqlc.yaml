@@ -15,6 +15,11 @@ sql:
               import: "github.com/gofrs/uuid/v5"
               type: "UUID"
 
+    rules:
+      - debug
+      - postgresql-query-too-costly
+      - no-delete
+
 rules:
   - name: debug
     rule: "!has(postgresql.explain)" # A dummy rule to trigger explain
