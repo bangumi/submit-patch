@@ -828,43 +828,35 @@ func (q *Queries) ListEpisodePatchesByStatesReviewedByUser(ctx context.Context, 
 }
 
 const listPendingEpisodePatches = `-- name: ListPendingEpisodePatches :many
-select id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, subject_id, comments_count, patch_desc, ep from episode_patch where state = 0
+select id, episode_id, created_at, updated_at, from_user_id
+from episode_patch
+where state = 0
+  and deleted_at is not null
 `
 
-func (q *Queries) ListPendingEpisodePatches(ctx context.Context) ([]EpisodePatch, error) {
+type ListPendingEpisodePatchesRow struct {
+	ID         uuid.UUID
+	EpisodeID  int32
+	CreatedAt  pgtype.Timestamptz
+	UpdatedAt  pgtype.Timestamptz
+	FromUserID int32
+}
+
+func (q *Queries) ListPendingEpisodePatches(ctx context.Context) ([]ListPendingEpisodePatchesRow, error) {
 	rows, err := q.db.Query(ctx, listPendingEpisodePatches)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []EpisodePatch
+	var items []ListPendingEpisodePatchesRow
 	for rows.Next() {
-		var i EpisodePatch
+		var i ListPendingEpisodePatchesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.EpisodeID,
-			&i.State,
-			&i.FromUserID,
-			&i.WikiUserID,
-			&i.Reason,
-			&i.OriginalName,
-			&i.Name,
-			&i.OriginalNameCn,
-			&i.NameCn,
-			&i.OriginalDuration,
-			&i.Duration,
-			&i.OriginalAirdate,
-			&i.Airdate,
-			&i.OriginalDescription,
-			&i.Description,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.DeletedAt,
-			&i.RejectReason,
-			&i.SubjectID,
-			&i.CommentsCount,
-			&i.PatchDesc,
-			&i.Ep,
+			&i.FromUserID,
 		); err != nil {
 			return nil, err
 		}
@@ -877,42 +869,35 @@ func (q *Queries) ListPendingEpisodePatches(ctx context.Context) ([]EpisodePatch
 }
 
 const listPendingSubjectPatches = `-- name: ListPendingSubjectPatches :many
-select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action from subject_patch where state = 0
+select id, subject_id, created_at, updated_at, from_user_id
+from subject_patch
+where state = 0
+  and deleted_at is not null
 `
 
-func (q *Queries) ListPendingSubjectPatches(ctx context.Context) ([]SubjectPatch, error) {
+type ListPendingSubjectPatchesRow struct {
+	ID         uuid.UUID
+	SubjectID  int32
+	CreatedAt  pgtype.Timestamptz
+	UpdatedAt  pgtype.Timestamptz
+	FromUserID int32
+}
+
+func (q *Queries) ListPendingSubjectPatches(ctx context.Context) ([]ListPendingSubjectPatchesRow, error) {
 	rows, err := q.db.Query(ctx, listPendingSubjectPatches)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []SubjectPatch
+	var items []ListPendingSubjectPatchesRow
 	for rows.Next() {
-		var i SubjectPatch
+		var i ListPendingSubjectPatchesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.SubjectID,
-			&i.State,
-			&i.FromUserID,
-			&i.WikiUserID,
-			&i.Reason,
-			&i.Name,
-			&i.OriginalName,
-			&i.Infobox,
-			&i.OriginalInfobox,
-			&i.Summary,
-			&i.OriginalSummary,
-			&i.Nsfw,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.DeletedAt,
-			&i.RejectReason,
-			&i.SubjectType,
-			&i.CommentsCount,
-			&i.PatchDesc,
-			&i.OriginalPlatform,
-			&i.Platform,
-			&i.Action,
+			&i.FromUserID,
 		); err != nil {
 			return nil, err
 		}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gofrs/uuid/v5"
 	"github.com/rs/zerolog/log"
 
 	"app/csrf"
@@ -76,16 +77,20 @@ func routers(h *handler, config Config) *chi.Mux {
 		}
 
 		type Res struct {
-			SubjectID int32 `json:"subject_id"`
-			CreatedAt int64 `json:"created_at"`
-			UpdatedAt int64 `json:"updated_at"`
+			ID        uuid.UUID `json:"id"`
+			SubjectID int32     `json:"subject_id"`
+			FromUser  int32     `json:"from_user"`
+			CreatedAt int64     `json:"created_at"`
+			UpdatedAt int64     `json:"updated_at"`
 		}
 
 		var res = make([]Res, 0, len(rows))
 
 		for _, row := range rows {
 			res = append(res, Res{
+				ID:        row.ID,
 				SubjectID: row.SubjectID,
+				FromUser:  row.FromUserID,
 				CreatedAt: row.CreatedAt.Time.Unix(),
 				UpdatedAt: row.UpdatedAt.Time.Unix(),
 			})
@@ -105,16 +110,20 @@ func routers(h *handler, config Config) *chi.Mux {
 		}
 
 		type Res struct {
-			EpisodeID int32 `json:"episode_id"`
-			CreatedAt int64 `json:"created_at"`
-			UpdatedAt int64 `json:"updated_at"`
+			ID        uuid.UUID `json:"id"`
+			EpisodeID int32     `json:"episode_id"`
+			FromUser  int32     `json:"from_user"`
+			CreatedAt int64     `json:"created_at"`
+			UpdatedAt int64     `json:"updated_at"`
 		}
 
 		var res = make([]Res, 0, len(rows))
 
 		for _, row := range rows {
 			res = append(res, Res{
+				ID:        row.ID,
 				EpisodeID: row.EpisodeID,
+				FromUser:  row.FromUserID,
 				CreatedAt: row.CreatedAt.Time.Unix(),
 				UpdatedAt: row.UpdatedAt.Time.Unix(),
 			})
