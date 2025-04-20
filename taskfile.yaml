@@ -1,17 +1,49 @@
-version: 3
+version: "3"
+
+dotenv: [ .env ]
 
 tasks:
-  default:
-    - ruff check . --fix --fixable=ALL
-    - black .
-    - mypy .
+  build:
+    sources:
+      - 'go.mod'
+      - "templates/**/*.templ"
+      - "templates/*.templ"
+      - "**/*.go"
+      - exclude: "templates/*.go"
+    generates:
+      - ./dist/app.exe
+    cmds:
+      - go tool templ generate -path templates/
+      - go build -tags dev -o dist/app.exe
 
-  dev:
+  migrate:
     dotenv:
       - .env
     cmds:
-      - watchexec -r -e py --shell=none -- uvicorn server.app:app --no-access-log
+      - migrate -database {{ .PG_DSN }} -path db/migrations force 1
+      - migrate -database {{ .PG_DSN }} -path db/migrations -verbose up
 
-  build:
-    - python scripts/build-common.py
-    - python scripts/fetch-static-files.py
+  new-migrate:
+    - migrate create -ext sql -dir db/migrations -seq {{ .NAME }}
+
+
+  dev:
+    deps:
+      - build
+    cmd: ./dist/app.exe
+
+  format:
+    cmds:
+      - gofmt -s -w .
+      - go tool templ fmt templates/
+
+  gen:template:
+    sources:
+      - "templates/**/*.templ"
+      - "templates/*.templ"
+    cmds:
+      - go tool templ generate -path templates/
+
+  gen:
+    cmds:
+      - sqlc generate

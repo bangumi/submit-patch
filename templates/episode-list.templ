@@ -1,0 +1,129 @@
+package templates
+
+import (
+	"fmt"
+	"time"
+
+	"app/view"
+	"net/http"
+)
+
+templ EpisodePatchList(r *http.Request, data view.EpisodePatchList) {
+	@Layout(
+		"episodes",
+		episodeListHead(),
+		episodeListContent(r, data),
+	)
+}
+
+templ episodeListHead() {
+	<style>
+      .patch_reason {
+          white-space: nowrap;
+          order: 1;
+          flex: 0 1 auto;
+          text-wrap: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          min-width: 0;
+      }
+
+      @media screen and (min-device-width: 480px) {
+          html {
+              overflow-y: scroll;
+          }
+          .header h3 {
+              text-wrap: nowrap;
+          }
+      }
+  </style>
+}
+
+templ episodeListContent(r *http.Request, data view.EpisodePatchList) {
+	@header("", data.Session)
+	@listFilter(r.URL, "episode", data.CurrentStateFilter)
+	<div class="row m-0 mb-4">
+		<ul class="list-group p-0 m-0">
+			for _, patch := range data.Patches {
+				@episodePatch(patch)
+			}
+		</ul>
+	</div>
+	<div class="row mb-2"></div>
+	@Pagination(data.Pagination)
+}
+
+templ episodePatch(patch view.EpisodePatchListItem) {
+	<a
+		href={ templ.SafeURL("/episode/" + patch.ID) }
+		id={ patch.ID }
+		rel="noopener"
+		class="list-group-item list-group-item-action flex-column align-items-start"
+	>
+		<div class="d-flex align-content-start mb-1 flex-wrap">
+			// if patch.Action == 2 {
+			// 	<h5 class="me-2"><span class="badge bg-success">新条目</span></h5>
+			// }
+			switch  patch.State {
+				case 0:
+					<h5 class="me-2"><span class="badge bg-primary">待审核</span></h5>
+				case 1:
+					<h5 class="me-2"><span class="badge bg-success">Accepted</span></h5>
+				case 2:
+					<h5 class="me-2"><span class="badge bg-danger">Rejected</span></h5>
+				case 3:
+					<h5 class="me-2"><span class="badge bg-secondary">Outdated</span></h5>
+			}
+			<p class="patch_reason">{ patch.Reason }</p>
+			if patch.CommentsCount > 0 {
+				<h5 class="me-2">
+					<span class="badge bg-warning text-dark d-none d-sm-block">{ fmt.Sprint(patch.CommentsCount) } comments</span>
+				</h5>
+			}
+		</div>
+		<div class="d-block d-sm-flex w-100 flex-wrap">
+			<div class="d-none d-sm-flex pe-2 flex-row">
+				if patch.State == 0 {
+					<p class="mb-0 pe-2" style="white-space: nowrap">created</p>
+					<span class="badge bg-light text-dark border border-info">{ time.Since( patch.CreatedAt).Truncate(time.Second).String() }</span>
+				} else {
+					<p class="mb-0 pe-2" style="white-space: nowrap">reviewed</p>
+					<span class="badge bg-light text-dark border border-info">{ time.Since( patch.UpdatedAt).Truncate(time.Second).String() } ago</span>
+				}
+			</div>
+			// <div class="me-2 d-flex">
+			// 	<p class="mb-0 pe-2" style="white-space: nowrap">分类</p>
+			// <span class="badge bg-light text-dark border border-info">
+			// 	switch patch.SubjectType {
+			// 		case 1:
+			// 			书籍
+			// 		case 2:
+			// 			动画
+			// 		case 3:
+			// 			音乐
+			// 		case 4:
+			// 			游戏
+			// 		case 6:
+			// 			三次元
+			// 	}
+			// </span>
+			// </div>
+			<div class="d-flex pe-2">
+				<p class="mb-0 pe-2" style="white-space: nowrap">条目名</p>
+				<span class="badge bg-light text-dark border border-info" style="max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{ patch.Name }</span>
+			</div>
+			<div class="d-none d-sm-block me-2">
+				<small>
+					from
+					<span class="badge bg-light text-dark border border-info">{ patch.Author.Username }</span>
+				</small>
+				if patch.Reviewer != nil {
+					<small>
+						reviewed by
+						<span class="badge bg-light text-dark border border-info">{ patch.Reviewer.Username }</span>
+					</small>
+				}
+			</div>
+		</div>
+	</a>
+}

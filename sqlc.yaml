@@ -1,0 +1,41 @@
+version: "2"
+
+sql:
+  - engine: "postgresql"
+    queries: "db/query.sql"
+    schema: "db/schema.sql"
+    database:
+      uri: '${PG_DSN}'
+    gen:
+      go:
+        package: "q"
+        out: "q"
+        sql_package: "pgx/v5"
+        overrides:
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/gofrs/uuid/v5"
+              type: "UUID"
+    rules:
+      - debug
+      - no-delete
+      - postgresql-query-too-costly
+      - postgresql-no-seq-scan
+
+rules:
+  - name: debug
+    rule: "!has(postgresql.explain)" # A dummy rule to trigger explain
+
+  - name: no-delete
+    message: "don't use delete statements"
+    rule: |
+      query.sql.lowerAscii().contains("delete ")
+
+  - name: postgresql-query-too-costly
+    message: "Query cost estimate is too high"
+    rule: |
+      postgresql.explain.plan.total_cost > 30.0
+
+  - name: postgresql-no-seq-scan
+    rule: |
+      postgresql.explain.plan.node_type == 'Seq Scan'

@@ -1,0 +1,83 @@
+{{- /* gotype: app/view.EpisodePatchEdit */ -}}
+
+{{ template "layout.gohtml" .}}
+
+{{define "title"}}提交修改请求{{end}}
+
+{{define "head"}}
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{{end}}
+
+{{define "content"}}
+  <div class="row m-1">
+    <p>
+      <a href="https://bgm.tv/group/wiki" target="_blank">
+        <h1>提交前请先阅读置顶了解常见错误</h1>
+      </a>
+    </p>
+  </div>
+  <form method="post"
+          {{if .PatchID}}
+            action="/edit/patch/episode/{{.PatchID}}"
+          {{else}}
+            action="/edit/episode/{{.EpisodeID}}"
+          {{end}}
+        enctype="application/x-www-form-urlencoded">
+    <input type="hidden" name="x-csrf-token" value="{{.CsrfToken}}">
+
+    <div class="form-group">
+      <label for="name">标题</label>
+      <input class="form-control" id="name" name="name" value="{{.Data.Name}}">
+    </div>
+
+    <div class="form-group">
+      <label for="name_cn">简体中文标题 </label>
+      <input class="form-control" id="name_cn" name="name_cn" value="{{.Data.NameCN}}">
+    </div>
+
+    <div class="form-group">
+      <label for="duration">时长 </label>
+      <input class="form-control" id="duration" name="duration" value="{{.Data.Duration}}">
+    </div>
+
+    <div class="form-group">
+      <label for="date">放送日期 </label>
+      <input class="form-control" id="date" name="date" value="{{.Data.Date}}">
+    </div>
+
+    <div class="form-group">
+      <label for="summary">简介 </label>
+      <textarea
+              rows="5"
+              class="form-control"
+              id="summary"
+              name="summary"
+      >{{.Data.Summary}}</textarea>
+    </div>
+
+    <hr>
+
+    <div class="form-group">
+      <label for="reason" class="mb-2">原因</label>
+      <input class="form-control mb-2"
+             id="reason"
+             required
+             placeholder="原因"
+             name="reason" value="{{.Reason}}">
+
+      <textarea rows="5"
+                class="form-control mb-2"
+                id="patch_desc"
+                placeholder="详细说明"
+                name="patch_desc">{{.Description}}</textarea>
+    </div>
+
+    <div class="cf-turnstile m-1" data-theme="light"
+         data-response-field-name="cf_turnstile_response"
+         data-sitekey="{{.TurnstileSiteKey}}"></div>
+
+    <p>请等待验证码通过再进行提交</p>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+{{end}}
