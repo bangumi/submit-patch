@@ -2,7 +2,7 @@ package templates
 
 import "net/url"
 
-templ listFilter(u *url.URL, currentTypeFilter string) {
+templ listFilter(u *url.URL, currentTypeFilter string, currentStateFilter string) {
 	<div class="row pt-2 pb-2 d-flex justify-content-between">
 		<div class="col">
 			<div class="btn-group" role="group">
@@ -33,7 +33,7 @@ templ listFilter(u *url.URL, currentTypeFilter string) {
 		<div class="col d-flex flex-row-reverse">
 			<div class="btn-group" role="group">
 				for _, filter := range allReadableStateFilter {
-					if currentTypeFilter == filter.Enum {
+					if currentStateFilter  == filter.Enum {
 						<a
 							type="button"
 							href={ setQuery(u, "state", filter.Enum) }

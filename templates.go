@@ -20,7 +20,7 @@ func loadTemplates(config Config) (Template, error) {
 		return Template{
 			NewSubjectPatch: &devPage[view.SubjectPatchEdit]{name: "subject-edit.gohtml"},
 			EditEpisode:     &devPage[view.EpisodePatchEdit]{name: "episode-edit.gohtml"},
-			Debug:           &devPage[any]{name: "debugView.gohtml"},
+			Debug:           &devPage[any]{name: "debug.gohtml"},
 			Login:           &devPage[any]{name: "login.gohtml"},
 		}, nil
 	}
@@ -33,7 +33,7 @@ func loadTemplates(config Config) (Template, error) {
 	return Template{
 		NewSubjectPatch: loadProdPage[view.SubjectPatchEdit](base, "subject-edit.gohtml"),
 		EditEpisode:     loadProdPage[view.EpisodePatchEdit](base, "episode-edit.gohtml"),
-		Debug:           loadProdPage[any](base, "debugView.gohtml"),
+		Debug:           loadProdPage[any](base, "debug.gohtml"),
 		Login:           loadProdPage[any](base, "login.gohtml"),
 	}, nil
 }
