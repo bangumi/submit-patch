@@ -19,8 +19,6 @@ func routers(h *handler, config Config) *chi.Mux {
 
 	mux.Use(middleware.Recoverer)
 
-	mux.Mount("/static/", http.FileServer(http.FS(staticFiles)))
-
 	r := mux.With(SessionMiddleware(h), csrf.New())
 
 	r.Get("/login", h.loginView)
