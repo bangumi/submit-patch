@@ -191,10 +191,19 @@ func (h *handler) listSubjectPatches(
 
 	totalPage := (c + defaultPageSize - 1) / defaultPageSize
 
+	pendingCount, err := h.q.CountPendingPatch(r.Context())
+	if err != nil {
+		return err
+	}
+
 	_ = templates.SubjectPatchList(r, view.SubjectPatchList{
 		Session:            session.GetSession(r.Context()),
 		Patches:            patches,
 		CurrentStateFilter: patchStateFilter,
+		PendingCount: view.PendingPatchCount{
+			Subject: pendingCount.SubjectPatchCount,
+			Episode: pendingCount.EpisodePatchCount,
+		},
 		Pagination: view.Pagination{
 			URL:         r.URL,
 			TotalPage:   totalPage,

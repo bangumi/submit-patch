@@ -252,15 +252,15 @@ from edit_suggestion
 where id = $1;
 
 
--- name: CountPendingPatchesForUser :many
+-- name: CountPendingPatch :one
 select (select count(1)
         from subject_patch
         where deleted_at is null
-          and from_user_id = $1::int) as subject_patch_count,
+          and state = 0) as subject_patch_count,
        (select count(1)
         from episode_patch
         where deleted_at is null
-          and from_user_id = $1::int) as episode_patch_count;
+          and state = 0) as episode_patch_count;
 
 -- name: ListSubjectPatchesByStatesFromUser :many
 select subject_patch.id,

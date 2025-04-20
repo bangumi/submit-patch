@@ -1,8 +1,12 @@
 package templates
 
-import "net/url"
+import (
+	"app/view"
+	"fmt"
+	"net/url"
+)
 
-templ listFilter(u *url.URL, currentTypeFilter string, currentStateFilter string) {
+templ listFilter(u *url.URL, currentTypeFilter string, currentStateFilter string, pendingCount view.PendingPatchCount) {
 	<div class="row pt-2 pb-2 d-flex justify-content-between">
 		<div class="col">
 			<div class="btn-group" role="group">
@@ -16,6 +20,9 @@ templ listFilter(u *url.URL, currentTypeFilter string, currentStateFilter string
 					href={ setQuery(u, "type", "subject") }
 				>
 					条目
+					if pendingCount.Subject > 0 {
+						<span class="badge rounded-pill bg-danger">{ fmt.Sprint(pendingCount.Subject) }</span>
+					}
 				</a>
 				<a
 					type="button"
@@ -27,6 +34,9 @@ templ listFilter(u *url.URL, currentTypeFilter string, currentStateFilter string
 					href={ setQuery(u, "type", "episode") }
 				>
 					章节
+					if pendingCount.Episode > 0 {
+						<span class="badge rounded-pill bg-danger">{ fmt.Sprint(pendingCount.Episode) }</span>
+					}
 				</a>
 			</div>
 		</div>

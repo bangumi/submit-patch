@@ -27,8 +27,7 @@ func (h *handler) indexView(w http.ResponseWriter, r *http.Request) error {
 		currentPage = 1
 	}
 
-	state := rq.Get("state")
-	stateVals, state, err := readableStateToDBValues(state, StateFilterPending)
+	stateVals, state, err := readableStateToDBValues(rq.Get("state"), StateFilterPending)
 	if err != nil {
 		return err
 	}

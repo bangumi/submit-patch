@@ -108,40 +108,27 @@ func (q *Queries) CountEpisodePatchesByStatesReviewedByUser(ctx context.Context,
 	return count, err
 }
 
-const countPendingPatchesForUser = `-- name: CountPendingPatchesForUser :many
+const countPendingPatch = `-- name: CountPendingPatch :one
 select (select count(1)
         from subject_patch
         where deleted_at is null
-          and from_user_id = $1::int) as subject_patch_count,
+          and state = 0) as subject_patch_count,
        (select count(1)
         from episode_patch
         where deleted_at is null
-          and from_user_id = $1::int) as episode_patch_count
+          and state = 0) as episode_patch_count
 `
 
-type CountPendingPatchesForUserRow struct {
+type CountPendingPatchRow struct {
 	SubjectPatchCount int64
 	EpisodePatchCount int64
 }
 
-func (q *Queries) CountPendingPatchesForUser(ctx context.Context, dollar_1 int32) ([]CountPendingPatchesForUserRow, error) {
-	rows, err := q.db.Query(ctx, countPendingPatchesForUser, dollar_1)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []CountPendingPatchesForUserRow
-	for rows.Next() {
-		var i CountPendingPatchesForUserRow
-		if err := rows.Scan(&i.SubjectPatchCount, &i.EpisodePatchCount); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) CountPendingPatch(ctx context.Context) (CountPendingPatchRow, error) {
+	row := q.db.QueryRow(ctx, countPendingPatch)
+	var i CountPendingPatchRow
+	err := row.Scan(&i.SubjectPatchCount, &i.EpisodePatchCount)
+	return i, err
 }
 
 const countSubjectPatchesByStates = `-- name: CountSubjectPatchesByStates :one

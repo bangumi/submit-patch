@@ -22,14 +22,21 @@ type IndexPage struct {
 type SubjectPatchList struct {
 	Title              string
 	Session            *session.Session
+	PendingCount       PendingPatchCount
 	CurrentStateFilter string
 	Patches            []SubjectPatchListItem
 	Pagination         Pagination
 }
 
+type PendingPatchCount struct {
+	Subject int64
+	Episode int64
+}
+
 type EpisodePatchList struct {
 	Title              string
 	Session            *session.Session
+	PendingCount       PendingPatchCount
 	CurrentStateFilter string
 	Patches            []EpisodePatchListItem
 	Pagination         Pagination

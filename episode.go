@@ -255,17 +255,25 @@ func (h *handler) listEpisodePatches(
 
 	totalPage := (c + defaultPageSize - 1) / defaultPageSize
 
-	_ = templates.EpisodePatchList(r, view.EpisodePatchList{
+	pendingCount, err := h.q.CountPendingPatch(r.Context())
+	if err != nil {
+		return err
+	}
+
+	return templates.EpisodePatchList(r, view.EpisodePatchList{
 		Session:            session.GetSession(r.Context()),
 		Patches:            patches,
 		CurrentStateFilter: patchStateFilter,
+		PendingCount: view.PendingPatchCount{
+			Subject: pendingCount.SubjectPatchCount,
+			Episode: pendingCount.EpisodePatchCount,
+		},
 		Pagination: view.Pagination{
 			URL:         r.URL,
 			TotalPage:   totalPage,
 			CurrentPage: currentPage,
 		},
 	}).Render(r.Context(), w)
-	return nil
 }
 
 func (h *handler) episodePatchDetailView(
