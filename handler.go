@@ -2,14 +2,18 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/rueidis"
+	"github.com/trim21/errgo"
 
 	"app/q"
 )
@@ -56,25 +60,49 @@ func (h *handler) validateCaptcha(ctx context.Context, turnstileResponseToken st
 			"secret":   h.config.TurnstileSecretKey,
 			"response": turnstileResponseToken,
 		}).
-		SetResult(&result). // Decode into result on success (2xx)
+		SetResult(&result).
 		Post("https://challenges.cloudflare.com/turnstile/v0/siteverify")
 	if err != nil {
-		fmt.Printf("Error executing Turnstile request: %v\n", err)
 		return errors.New("failed to contact captcha verification service")
 	}
 
-	if resp.IsError() {
-		// Turnstile API returned an error status code (>= 400)
-		fmt.Printf("Turnstile API error: status %d, body: %s\n", resp.StatusCode(), resp.String())
-		// You could potentially check apiError["error-codes"] here if needed
+	if resp.StatusCode() >= 300 {
 		return errors.New("captcha verification failed (API error)")
 	}
 
-	// We got a 2xx response, now check the 'success' field in the JSON
 	if !result.Success {
-		// Log error codes if needed: fmt.Printf("Turnstile verification failed: %v\n", result.ErrorCodes)
-		return errors.New("验证码无效") // "Invalid CAPTCHA"
+		return errors.New("验证码无效")
 	}
 
 	return nil
+}
+
+func (h *handler) userContributionView(w http.ResponseWriter, r *http.Request) error {
+	userID, err := strconv.ParseInt(r.PathValue("user-id"), 10, 32)
+	if err != nil || userID <= 0 {
+		http.Error(w, "invalid user id", http.StatusBadRequest)
+		return nil
+	}
+
+	count, err := h.q.CountPendingPatchesForUser(r.Context(), int32(userID))
+	if err != nil {
+		return errgo.Wrap(err, "failed to count patches")
+	}
+
+	return json.NewEncoder(w).Encode(count)
+}
+
+func (h *handler) userReviewView(w http.ResponseWriter, r *http.Request) error {
+	userID, err := strconv.ParseInt(r.PathValue("user-id"), 10, 32)
+	if err != nil || userID <= 0 {
+		http.Error(w, "invalid user id", http.StatusBadRequest)
+		return nil
+	}
+
+	count, err := h.q.CountPendingPatchesForUser(r.Context(), int32(userID))
+	if err != nil {
+		return errgo.Wrap(err, "failed to count patches")
+	}
+
+	return json.NewEncoder(w).Encode(count)
 }

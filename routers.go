@@ -30,6 +30,8 @@ func routers(h *handler, config Config) *chi.Mux {
 
 	r.Get("/subject/{patchID}", logError(h.subjectPatchDetailView))
 	r.Get("/episode/{patchID}", logError(h.episodePatchDetailView))
+	r.Get("/contrib/{user-id}", logError(h.userContributionView))
+	r.Get("/review/{user-id}", logError(h.userReviewView))
 
 	r.Post("/api/review/{patch_type}/{patch_id}", logError(h.handleReview))
 

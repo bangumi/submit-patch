@@ -250,3 +250,8 @@ where id = $1
 delete
 from edit_suggestion
 where id = $1;
+
+
+-- name: CountPendingPatchesForUser :many
+select (select count(1) from subject_patch where deleted_at is null and from_user_id = $1::int) as subject_patch_count,
+       (select count(1) from episode_patch where deleted_at is null and from_user_id = $1::int) as episode_patch_count;
