@@ -43,6 +43,9 @@ func routers(h *handler, config Config) *chi.Mux {
 	r.Get("/edit/subject/{subject-id}", handleError(h.editSubjectView))
 	r.Post("/edit/subject/{subject-id}", handleError(h.createSubjectEditPatch))
 
+	// json API to create patch from partial subjects
+	r.Patch("/edit/subject/{subject-id}", handleError(h.createSubjectEditPatchAPI))
+
 	r.Get("/edit/patch/subject/{patch-id}", handleError(h.editSubjectPatchView))
 	r.Post("/edit/patch/subject/{patch-id}", handleError(h.updateSubjectEditPatch))
 
@@ -58,6 +61,9 @@ func routers(h *handler, config Config) *chi.Mux {
 
 	r.Get("/edit/patch/episode/{patch-id}", handleError(h.editEpisodePatchView))
 	r.Post("/edit/patch/episode/{patch-id}", handleError(h.updateEpisodeEditPatch))
+
+	// json API to create patch from partial episode
+	r.Patch("/edit/episode/{episode-id}", handleError(h.createEpisodeEditPatchAPI))
 
 	r.Post("/api/delete/patch/episode/{patch-id}", handleError(h.deleteEpisodePatch))
 

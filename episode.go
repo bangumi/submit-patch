@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/trim21/errgo"
+	"github.com/trim21/pkg/null"
 
 	"app/csrf"
 	"app/dal"
@@ -699,4 +701,176 @@ func (h *handler) updateEpisodeEditPatch(w http.ResponseWriter, r *http.Request)
 
 	http.Redirect(w, r, fmt.Sprintf("/episode/%s", patch.ID), http.StatusSeeOther)
 	return nil
+}
+
+type RequestToUpdateEpisode struct {
+	Name     null.String `json:"name"`
+	NameCN   null.String `json:"name_cn"`
+	Date     null.String `json:"date"`
+	Duration null.String `json:"duration"`
+	Summary  null.String `json:"summary"`
+
+	Reason    string `json:"reason"`
+	PatchDesc string `json:"patch_desc"`
+
+	CfTurnstileResponse string `json:"cf_turnstile_response"`
+}
+
+func (h *handler) createEpisodeEditPatchAPI(w http.ResponseWriter, r *http.Request) error {
+	episodeID, err := strconv.ParseInt(chi.URLParam(r, "episode-id"), 10, 32)
+	if err != nil || episodeID <= 0 {
+		return &HttpError{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Invalid or missing episode-id query parameter",
+		}
+	}
+
+	if r.Header.Get("Content-Type") != contentTypeApplicationJSON {
+		return &HttpError{
+			StatusCode: http.StatusBadRequest,
+			Message:    fmt.Sprintf("content-type must be %q to use this API", contentTypeApplicationJSON),
+		}
+	}
+
+	var req RequestToUpdateEpisode
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return &HttpError{
+			StatusCode: http.StatusBadRequest,
+			Message:    fmt.Sprintf("failed to parse request body as json: %s", err.Error()),
+		}
+	}
+
+	if req.Reason == "" {
+		return &HttpError{
+			StatusCode: http.StatusBadRequest,
+			Message:    "at least give a reason to change the subject",
+		}
+	}
+
+	user := session.GetSession(r.Context())
+	if user.UserID == 0 {
+		http.Error(w, "please login before submit any patch", http.StatusUnauthorized)
+		return nil
+	}
+
+	if !user.SuperUser() {
+		if err := h.validateCaptcha(r.Context(), req.CfTurnstileResponse); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return nil
+		}
+	}
+
+	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/ep/%d", episodeID)
+	var originalWiki dto.WikiEpisode
+	resp, err := h.client.R().
+		SetContext(r.Context()).
+		SetResult(&originalWiki).
+		Get(fetchURL)
+	if err != nil {
+		// This usually indicates a network error or DNS issue before the request was even sent
+		fmt.Printf("Error executing request to fetch original wiki: %v\n", err)
+		http.Error(w, "Failed to communicate with wiki service", http.StatusBadGateway)
+		return nil
+	}
+
+	if resp.IsError() {
+		// The request was sent, but the server returned an error status code (>= 400)
+		fmt.Printf("Error fetching original wiki (%s): status %d, body: %s\n", fetchURL, resp.StatusCode(), resp.String())
+		if resp.StatusCode() == http.StatusNotFound {
+			http.Error(w, "Original episode not found", http.StatusNotFound)
+		} else {
+			// You might want to return a more specific error message based on apiError if it was populated
+			http.Error(w, "Failed to fetch original subject req", http.StatusBadGateway)
+		}
+		return nil
+	}
+
+	var changed bool
+	var param = dal.CreateEpisodePatchParams{
+		EpisodeID:  int32(episodeID),
+		State:      0,
+		FromUserID: user.UserID,
+		WikiUserID: 0,
+		Reason:     req.Reason,
+		PatchDesc:  req.PatchDesc,
+	}
+
+	if req.Name.Set && req.Name.Value != originalWiki.Name {
+		changed = true
+		param.Name = pgtype.Text{
+			String: req.Name.Value,
+			Valid:  true,
+		}
+		param.OriginalName = pgtype.Text{
+			String: originalWiki.Name,
+			Valid:  true,
+		}
+	}
+
+	if req.NameCN.Set && req.NameCN.Value != originalWiki.NameCN {
+		changed = true
+		param.NameCn = pgtype.Text{
+			String: req.NameCN.Value,
+			Valid:  true,
+		}
+		param.OriginalNameCn = pgtype.Text{
+			String: originalWiki.NameCN,
+			Valid:  true,
+		}
+	}
+
+	if req.Duration.Set && req.Duration.Value != originalWiki.Duration {
+		changed = true
+		param.Duration = pgtype.Text{
+			String: req.Duration.Value,
+			Valid:  true,
+		}
+		param.OriginalDuration = pgtype.Text{
+			String: originalWiki.Duration,
+			Valid:  true,
+		}
+	}
+
+	if req.Date.Set && req.Date.Value != originalWiki.Date {
+		changed = true
+		param.Airdate = pgtype.Text{
+			String: req.Date.Value,
+			Valid:  true,
+		}
+		param.OriginalAirdate = pgtype.Text{
+			String: originalWiki.Date,
+			Valid:  true,
+		}
+	}
+
+	if req.Summary.Set && req.Summary.Value != originalWiki.Summary {
+		changed = true
+		param.Description = pgtype.Text{
+			String: req.Summary.Value,
+			Valid:  true,
+		}
+		param.OriginalDescription = pgtype.Text{
+			String: originalWiki.Summary,
+			Valid:  true,
+		}
+	}
+
+	if !changed {
+		http.Error(w, "No changes found", http.StatusBadRequest)
+		return nil
+	}
+
+	param.ID = uuid.Must(uuid.NewV7())
+
+	err = h.q.CreateEpisodePatch(r.Context(), param)
+	if err != nil {
+		http.Error(w, "Error inserting episode patch", http.StatusInternalServerError)
+		return nil
+	}
+
+	w.Header().Set("content-type", contentTypeApplicationJSON)
+	w.WriteHeader(http.StatusOK)
+	return json.NewEncoder(w).Encode(map[string]string{
+		"id": param.ID.String(),
+	})
 }
