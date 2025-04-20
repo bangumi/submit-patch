@@ -27,7 +27,6 @@ func routers(h *handler, config Config) *chi.Mux {
 	r.Get("/badge.svg", h.badge)
 
 	r.Get("/", logError(h.indexView))
-	r.Get("/debug", logError(h.debugView))
 
 	r.Get("/subject/{patchID}", logError(h.subjectPatchDetailView))
 	r.Get("/episode/{patchID}", logError(h.episodePatchDetailView))

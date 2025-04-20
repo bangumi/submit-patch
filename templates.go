@@ -18,10 +18,8 @@ const baseTemplates = "view/templates/base/*.gohtml"
 func loadTemplates(config Config) (Template, error) {
 	if config.Debug {
 		return Template{
-			NewSubjectPatch: &devPage[view.SubjectPatchEdit]{name: "subject-edit.gohtml"},
-			EditEpisode:     &devPage[view.EpisodePatchEdit]{name: "episode-edit.gohtml"},
-			Debug:           &devPage[any]{name: "debug.gohtml"},
-			Login:           &devPage[any]{name: "login.gohtml"},
+			EditSubject: &devPage[view.SubjectPatchEdit]{name: "subject-edit.gohtml"},
+			EditEpisode: &devPage[view.EpisodePatchEdit]{name: "episode-edit.gohtml"},
 		}, nil
 	}
 
@@ -31,10 +29,8 @@ func loadTemplates(config Config) (Template, error) {
 	}).ParseFS(templateFiles, baseTemplates))
 
 	return Template{
-		NewSubjectPatch: loadProdPage[view.SubjectPatchEdit](base, "subject-edit.gohtml"),
-		EditEpisode:     loadProdPage[view.EpisodePatchEdit](base, "episode-edit.gohtml"),
-		Debug:           loadProdPage[any](base, "debug.gohtml"),
-		Login:           loadProdPage[any](base, "login.gohtml"),
+		EditSubject: loadProdPage[view.SubjectPatchEdit](base, "subject-edit.gohtml"),
+		EditEpisode: loadProdPage[view.EpisodePatchEdit](base, "episode-edit.gohtml"),
 	}, nil
 }
 
@@ -50,10 +46,8 @@ func loadProdPage[T any](base *template.Template, name string) *prodPage[T] {
 }
 
 type Template struct {
-	NewSubjectPatch Page[view.SubjectPatchEdit]
-	EditEpisode     Page[view.EpisodePatchEdit]
-	Debug           Page[any]
-	Login           Page[any]
+	EditSubject Page[view.SubjectPatchEdit]
+	EditEpisode Page[view.EpisodePatchEdit]
 }
 
 type Page[T any] interface {

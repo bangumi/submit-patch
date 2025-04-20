@@ -5,30 +5,15 @@ import (
 	"strconv"
 
 	"app/session"
-	"app/view"
+	"app/templates"
 )
 
 const defaultPageSize = 30
 
-func (h *handler) debugView(w http.ResponseWriter, r *http.Request) error {
-	//s := GetSession(r.Context())
-	rq := r.URL.Query()
-	rawPage := rq.Get("page")
-	currentPage, err := strconv.ParseInt(rawPage, 10, 64)
-	if err != nil {
-		currentPage = 1
-	}
-	if currentPage <= 0 {
-		currentPage = 1
-	}
-
-	return h.template.Debug.Execute(w, view.Pagination{URL: r.URL, TotalPage: 10, CurrentPage: currentPage})
-}
-
 func (h *handler) indexView(w http.ResponseWriter, r *http.Request) error {
 	s := session.GetSession(r.Context())
 	if s.UserID == 0 {
-		return h.template.Login.Execute(w, nil)
+		return templates.Login().Render(r.Context(), w)
 	}
 
 	rq := r.URL.Query()

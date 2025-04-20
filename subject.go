@@ -53,7 +53,7 @@ func (h *handler) editSubjectView(w http.ResponseWriter, r *http.Request) error 
 		return nil
 	}
 
-	return h.template.NewSubjectPatch.Execute(w, view.SubjectPatchEdit{
+	return h.template.EditSubject.Execute(w, view.SubjectPatchEdit{
 		PatchID:          "",
 		SubjectID:        int32(sid),
 		CsrfToken:        csrf.GetToken(r),
@@ -125,7 +125,7 @@ func (h *handler) editSubjectPatchView(w http.ResponseWriter, r *http.Request) e
 		subject.Nsfw = patch.Nsfw.Bool
 	}
 
-	return h.template.NewSubjectPatch.Execute(w, view.SubjectPatchEdit{
+	return h.template.EditSubject.Execute(w, view.SubjectPatchEdit{
 		PatchID:          patch.ID.String(),
 		SubjectID:        patch.SubjectID,
 		CsrfToken:        csrf.GetToken(r),
