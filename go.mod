@@ -8,7 +8,6 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/a-h/templ v0.3.857
 	github.com/aymanbagabas/go-udiff v0.2.0
-	github.com/davecgh/go-spew v1.1.1
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/gofrs/uuid/v5 v5.3.2
@@ -35,6 +34,7 @@ require (
 	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cli/browser v1.3.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
