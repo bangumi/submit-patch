@@ -14,7 +14,11 @@ func Diff(name, before, after string) string {
 const PatchTypeSubject string = "subject"
 const PatchTypeEpisode string = "episode"
 
-func readableStateToDBValues(state string) ([]int32, string, error) {
+func readableStateToDBValues(state string, defaultState string) ([]int32, string, error) {
+	if state == "" {
+		state = defaultState
+	}
+
 	var stateVals = make([]int32, 0, 5)
 	switch state {
 	case "", StateFilterPending:

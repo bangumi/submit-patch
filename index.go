@@ -28,26 +28,9 @@ func (h *handler) indexView(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	state := rq.Get("state")
-	var stateVals = make([]int32, 0, 5)
-	switch state {
-	case "", StateFilterPending:
-		state = StateFilterPending
-		stateVals = append(stateVals, PatchStatePending)
-	case StateFilterAll:
-		state = StateFilterAll
-		stateVals = append(stateVals, PatchStatePending, PatchStateAccepted, PatchStateRejected, PatchStateOutdated)
-	case StateFilterAccepted:
-		state = StateFilterAccepted
-		stateVals = append(stateVals, PatchStateAccepted)
-	case StateFilterRejected:
-		state = StateFilterRejected
-		stateVals = append(stateVals, PatchStateRejected)
-	case StateFilterReviewed:
-		state = StateFilterReviewed
-		stateVals = append(stateVals, PatchStateRejected, PatchStateOutdated, PatchStateAccepted)
-	default:
-		http.Error(w, "invalid patch state", http.StatusBadRequest)
-		return nil
+	stateVals, state, err := readableStateToDBValues(state, StateFilterPending)
+	if err != nil {
+		return err
 	}
 
 	t := rq.Get("type")

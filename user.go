@@ -31,7 +31,7 @@ func (h *handler) userReviewView(w http.ResponseWriter, r *http.Request) error {
 		currentPage = 1
 	}
 
-	stateVals, state, err := readableStateToDBValues(rq.Get("state"))
+	stateVals, state, err := readableStateToDBValues(rq.Get("state"), StateFilterAll)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func (h *handler) listSubjectPatchesReviewedUser(
 	totalPage := (c + defaultPageSize - 1) / defaultPageSize
 
 	return templates.SubjectPatchList(r, view.SubjectPatchList{
-		Title:              fmt.Sprintf("%d reviewed episode patches", userID),
+		Title:              fmt.Sprintf("%d reviewed subject patches", userID),
 		Session:            session.GetSession(r.Context()),
 		Patches:            patches,
 		CurrentStateFilter: patchStateFilter,
@@ -211,7 +211,7 @@ func (h *handler) userContributionView(w http.ResponseWriter, r *http.Request) e
 	}
 
 	state := rq.Get("state")
-	stateVals, state, err := readableStateToDBValues(state)
+	stateVals, state, err := readableStateToDBValues(state, StateFilterAll)
 	if err != nil {
 		return err
 	}
