@@ -7,7 +7,7 @@ import (
 
 	"github.com/trim21/errgo"
 
-	"app/q"
+	"app/dal"
 	"app/session"
 	"app/templates"
 	"app/view"
@@ -56,7 +56,7 @@ func (h *handler) listSubjectPatchesReviewedUser(
 	stateVals []int32,
 	currentPage int64,
 ) error {
-	c, err := h.q.CountSubjectPatchesByStatesReviewedByUser(r.Context(), q.CountSubjectPatchesByStatesReviewedByUserParams{
+	c, err := h.q.CountSubjectPatchesByStatesReviewedByUser(r.Context(), dal.CountSubjectPatchesByStatesReviewedByUserParams{
 		UserID: userID,
 		State:  stateVals,
 	})
@@ -66,7 +66,7 @@ func (h *handler) listSubjectPatchesReviewedUser(
 
 	var patches = make([]view.SubjectPatchListItem, 0, defaultPageSize)
 	if c != 0 {
-		data, err := h.q.ListSubjectPatchesByStatesReviewedByUser(r.Context(), q.ListSubjectPatchesByStatesReviewedByUserParams{
+		data, err := h.q.ListSubjectPatchesByStatesReviewedByUser(r.Context(), dal.ListSubjectPatchesByStatesReviewedByUserParams{
 			WikiUserID: userID,
 			State:      stateVals,
 			Skip:       (currentPage - 1) * defaultPageSize,
@@ -129,7 +129,7 @@ func (h *handler) listEpisodePatchesReviewedUser(
 	stateVals []int32,
 	currentPage int64,
 ) error {
-	c, err := h.q.CountEpisodePatchesByStatesReviewedByUser(r.Context(), q.CountEpisodePatchesByStatesReviewedByUserParams{
+	c, err := h.q.CountEpisodePatchesByStatesReviewedByUser(r.Context(), dal.CountEpisodePatchesByStatesReviewedByUserParams{
 		UserID: userID,
 		State:  stateVals,
 	})
@@ -139,7 +139,7 @@ func (h *handler) listEpisodePatchesReviewedUser(
 
 	var patches = make([]view.EpisodePatchListItem, 0, defaultPageSize)
 	if c != 0 {
-		data, err := h.q.ListEpisodePatchesByStatesReviewedByUser(r.Context(), q.ListEpisodePatchesByStatesReviewedByUserParams{
+		data, err := h.q.ListEpisodePatchesByStatesReviewedByUser(r.Context(), dal.ListEpisodePatchesByStatesReviewedByUserParams{
 			UserID: userID,
 			State:  stateVals,
 			Skip:   (currentPage - 1) * defaultPageSize,
@@ -236,7 +236,7 @@ func (h *handler) listSubjectPatchesFromUser(
 	stateVals []int32,
 	currentPage int64,
 ) error {
-	c, err := h.q.CountSubjectPatchesByStatesFromUser(r.Context(), q.CountSubjectPatchesByStatesFromUserParams{
+	c, err := h.q.CountSubjectPatchesByStatesFromUser(r.Context(), dal.CountSubjectPatchesByStatesFromUserParams{
 		UserID: userID,
 		State:  stateVals,
 	})
@@ -246,7 +246,7 @@ func (h *handler) listSubjectPatchesFromUser(
 
 	var patches = make([]view.SubjectPatchListItem, 0, defaultPageSize)
 	if c != 0 {
-		data, err := h.q.ListSubjectPatchesByStatesFromUser(r.Context(), q.ListSubjectPatchesByStatesFromUserParams{
+		data, err := h.q.ListSubjectPatchesByStatesFromUser(r.Context(), dal.ListSubjectPatchesByStatesFromUserParams{
 			FromUserID: userID,
 			State:      stateVals,
 			Skip:       (currentPage - 1) * defaultPageSize,
@@ -309,7 +309,7 @@ func (h *handler) listEpisodePatchesFromUser(
 	stateVals []int32,
 	currentPage int64,
 ) error {
-	c, err := h.q.CountEpisodePatchesByStatesFromUser(r.Context(), q.CountEpisodePatchesByStatesFromUserParams{
+	c, err := h.q.CountEpisodePatchesByStatesFromUser(r.Context(), dal.CountEpisodePatchesByStatesFromUserParams{
 		UserID: userID,
 		State:  stateVals,
 	})
@@ -319,7 +319,7 @@ func (h *handler) listEpisodePatchesFromUser(
 
 	var patches = make([]view.EpisodePatchListItem, 0, defaultPageSize)
 	if c != 0 {
-		data, err := h.q.ListEpisodePatchesByStatesFromUser(r.Context(), q.ListEpisodePatchesByStatesFromUserParams{
+		data, err := h.q.ListEpisodePatchesByStatesFromUser(r.Context(), dal.ListEpisodePatchesByStatesFromUserParams{
 			UserID: userID,
 			State:  stateVals,
 			Skip:   (currentPage - 1) * defaultPageSize,

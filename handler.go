@@ -10,11 +10,11 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/rueidis"
 
+	"app/dal"
 	"app/dto"
-	"app/q"
 )
 
-func newHandler(db *pgxpool.Pool, r rueidis.Client, q *q.Queries, config Config, template Template) *handler {
+func newHandler(db *pgxpool.Pool, r rueidis.Client, q *dal.Queries, config Config, template Template) *handler {
 	return &handler{
 		db:          db,
 		r:           r,
@@ -28,7 +28,7 @@ func newHandler(db *pgxpool.Pool, r rueidis.Client, q *q.Queries, config Config,
 }
 
 type handler struct {
-	q           *q.Queries
+	q           *dal.Queries
 	config      Config
 	callbackURL string
 	db          *pgxpool.Pool

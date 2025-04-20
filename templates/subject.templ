@@ -1,7 +1,7 @@
 package templates
 
 import (
-	"app/q"
+	"app/dal"
 	"app/view"
 	"fmt"
 	"time"
@@ -10,10 +10,10 @@ import (
 templ SubjectPatchPage(
 	csrfToken string,
 	user *view.CurrentUser,
-	patch q.SubjectPatch,
-	author q.PatchUser,
-	reviewer *q.PatchUser,
-	comments []q.GetCommentsRow,
+	patch dal.SubjectPatch,
+	author dal.PatchUser,
+	reviewer *dal.PatchUser,
+	comments []dal.GetCommentsRow,
 	changes []view.Change,
 ) {
 	@Layout(
@@ -56,10 +56,10 @@ templ patchDetailHead() {
 templ subjectPatchDetailContent(
 	csrfToken string,
 	user *view.CurrentUser,
-	patch q.SubjectPatch,
-	author q.PatchUser,
-	reviewer *q.PatchUser,
-	comments []q.GetCommentsRow,
+	patch dal.SubjectPatch,
+	author dal.PatchUser,
+	reviewer *dal.PatchUser,
+	comments []dal.GetCommentsRow,
 	changes []view.Change,
 ) {
 	@header("", user)

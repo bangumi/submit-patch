@@ -15,8 +15,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/trim21/errgo"
 
+	"app/dal"
 	"app/dto"
-	"app/q"
 	"app/session"
 )
 
@@ -89,7 +89,7 @@ func (h *handler) callback(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("failed to get user info, unexpected status code %d", resp.StatusCode())
 	}
 
-	err = h.q.UpsertUser(r.Context(), q.UpsertUserParams{
+	err = h.q.UpsertUser(r.Context(), dal.UpsertUserParams{
 		UserID:   user.ID,
 		Username: user.Username,
 		Nickname: html.UnescapeString(user.Nickname),
@@ -191,7 +191,7 @@ func (h *handler) GetFreshSession(w http.ResponseWriter, r *http.Request, backTo
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	err = h.q.UpsertUser(ctx, q.UpsertUserParams{
+	err = h.q.UpsertUser(ctx, dal.UpsertUserParams{
 		UserID:   user.ID,
 		Username: user.Username,
 		Nickname: html.UnescapeString(user.Nickname),

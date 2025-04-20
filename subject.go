@@ -16,8 +16,8 @@ import (
 	"github.com/trim21/errgo"
 
 	"app/csrf"
+	"app/dal"
 	"app/dto"
-	"app/q"
 	"app/session"
 	"app/templates"
 	"app/view"
@@ -150,7 +150,7 @@ func (h *handler) listSubjectPatches(
 
 	var patches = make([]view.SubjectPatchListItem, 0, defaultPageSize)
 	if c != 0 {
-		data, err := h.q.ListSubjectPatchesByStates(r.Context(), q.ListSubjectPatchesByStatesParams{
+		data, err := h.q.ListSubjectPatchesByStates(r.Context(), dal.ListSubjectPatchesByStatesParams{
 			State: stateVals,
 			Size:  defaultPageSize,
 			Skip:  (currentPage - 1) * defaultPageSize,
@@ -245,7 +245,7 @@ func (h *handler) subjectPatchDetailView(
 		return errgo.Wrap(err, "failed to get user")
 	}
 
-	var reviewer *q.PatchUser
+	var reviewer *dal.PatchUser
 	if patch.WikiUserID != 0 {
 		r, err := h.q.GetUserByID(r.Context(), patch.WikiUserID)
 		if err != nil {
@@ -254,7 +254,7 @@ func (h *handler) subjectPatchDetailView(
 		reviewer = &r
 	}
 
-	comments, err := h.q.GetComments(r.Context(), q.GetCommentsParams{
+	comments, err := h.q.GetComments(r.Context(), dal.GetCommentsParams{
 		PatchID:   id,
 		PatchType: PatchTypeSubject,
 	})
@@ -371,7 +371,7 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 
 	var changed bool
 	pk := uuid.Must(uuid.NewV7())
-	var param = q.CreateSubjectEditPatchParams{
+	var param = dal.CreateSubjectEditPatchParams{
 		ID:           pk,
 		SubjectID:    int32(subjectID),
 		FromUserID:   user.UserID,
@@ -522,7 +522,7 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 	}
 
 	var changed bool
-	var param = q.UpdateSubjectPatchParams{
+	var param = dal.UpdateSubjectPatchParams{
 		ID:           patchID,
 		Reason:       data.Reason,
 		PatchDesc:    data.PatchDesc,

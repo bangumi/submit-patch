@@ -9,7 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"app/q"
+	"app/dal"
 	"app/view"
 	"fmt"
 	"time"
@@ -18,10 +18,10 @@ import (
 func EpisodePatchPage(
 	csrfToken string,
 	user *view.CurrentUser,
-	patch q.EpisodePatch,
-	author q.PatchUser,
-	reviewer *q.PatchUser,
-	comments []q.GetCommentsRow,
+	patch dal.EpisodePatch,
+	author dal.PatchUser,
+	reviewer *dal.PatchUser,
+	comments []dal.GetCommentsRow,
 	changes []view.Change,
 ) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -59,10 +59,10 @@ func EpisodePatchPage(
 func episodePatchDetailContent(
 	csrfToken string,
 	user *view.CurrentUser,
-	patch q.EpisodePatch,
-	author q.PatchUser,
-	reviewer *q.PatchUser,
-	comments []q.GetCommentsRow,
+	patch dal.EpisodePatch,
+	author dal.PatchUser,
+	reviewer *dal.PatchUser,
+	comments []dal.GetCommentsRow,
 	changes []view.Change,
 ) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {

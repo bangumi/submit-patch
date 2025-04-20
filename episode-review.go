@@ -12,8 +12,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/trim21/errgo"
 
+	"app/dal"
 	"app/dto"
-	"app/q"
 	"app/session"
 	"app/templates"
 )
@@ -44,8 +44,8 @@ func (h *handler) handleEpisodeReview(w http.ResponseWriter, r *http.Request, pa
 	})
 }
 
-func (h *handler) handleEpisodeComment(w http.ResponseWriter, r *http.Request, tx *q.Queries, patch q.EpisodePatch, text string, s *session.Session) error {
-	err := tx.CreateComment(r.Context(), q.CreateCommentParams{
+func (h *handler) handleEpisodeComment(w http.ResponseWriter, r *http.Request, tx *dal.Queries, patch dal.EpisodePatch, text string, s *session.Session) error {
+	err := tx.CreateComment(r.Context(), dal.CreateCommentParams{
 		ID:        uuid.Must(uuid.NewV7()),
 		PatchID:   patch.ID,
 		PatchType: PatchTypeEpisode,
@@ -87,7 +87,7 @@ type ApiUpdateEpisode struct {
 	Episode          ApiEpisode         `json:"episode"`
 }
 
-func (h *handler) handleEpisodeApprove(w http.ResponseWriter, r *http.Request, qx *q.Queries, patch q.EpisodePatch, s *session.Session) error {
+func (h *handler) handleEpisodeApprove(w http.ResponseWriter, r *http.Request, qx *dal.Queries, patch dal.EpisodePatch, s *session.Session) error {
 	var body = ApiUpdateEpisode{
 		CommieMessage: fmt.Sprintf("%s [https://patch.bgm38.tv/ep/%s]", patch.Reason, patch.ID),
 		ExpectedRevision: ApiExpectedSubject{
@@ -133,7 +133,7 @@ func (h *handler) handleEpisodeApprove(w http.ResponseWriter, r *http.Request, q
 		}
 
 		if errRes.Code == ErrCodeValidationError {
-			err = qx.RejectEpisodePatch(r.Context(), q.RejectEpisodePatchParams{
+			err = qx.RejectEpisodePatch(r.Context(), dal.RejectEpisodePatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateRejected,
 				ID:           patch.ID,
@@ -148,7 +148,7 @@ func (h *handler) handleEpisodeApprove(w http.ResponseWriter, r *http.Request, q
 		}
 
 		if errRes.Code == ErrCodeWikiChanged {
-			err = qx.RejectSubjectPatch(r.Context(), q.RejectSubjectPatchParams{
+			err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateOutdated,
 				ID:           patch.ID,
@@ -166,7 +166,7 @@ func (h *handler) handleEpisodeApprove(w http.ResponseWriter, r *http.Request, q
 		return errors.New("failed to submit patch")
 	}
 
-	err = qx.AcceptEpisodePatch(context.WithoutCancel(r.Context()), q.AcceptEpisodePatchParams{
+	err = qx.AcceptEpisodePatch(context.WithoutCancel(r.Context()), dal.AcceptEpisodePatchParams{
 		WikiUserID: s.UserID,
 		State:      PatchStateAccepted,
 		ID:         patch.ID,
@@ -180,8 +180,8 @@ func (h *handler) handleEpisodeApprove(w http.ResponseWriter, r *http.Request, q
 	return nil
 }
 
-func (h *handler) handleEpisodeReject(w http.ResponseWriter, r *http.Request, qx *q.Queries, p q.EpisodePatch, s *session.Session) error {
-	err := qx.RejectEpisodePatch(r.Context(), q.RejectEpisodePatchParams{
+func (h *handler) handleEpisodeReject(w http.ResponseWriter, r *http.Request, qx *dal.Queries, p dal.EpisodePatch, s *session.Session) error {
+	err := qx.RejectEpisodePatch(r.Context(), dal.RejectEpisodePatchParams{
 		WikiUserID: s.UserID,
 		State:      PatchStateRejected,
 		ID:         p.ID,

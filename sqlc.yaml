@@ -8,8 +8,8 @@ sql:
       uri: '${PG_DSN}'
     gen:
       go:
-        package: "q"
-        out: "q"
+        package: "dal"
+        out: "dal"
         sql_package: "pgx/v5"
         overrides:
           - db_type: "uuid"

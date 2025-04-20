@@ -13,8 +13,8 @@ import (
 	"github.com/samber/lo"
 	"github.com/trim21/errgo"
 
+	"app/dal"
 	"app/dto"
-	"app/q"
 	"app/session"
 	"app/templates"
 )
@@ -60,7 +60,7 @@ func (h *handler) handleSubjectReview(w http.ResponseWriter, r *http.Request, pa
 	})
 }
 
-func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, qx *q.Queries, patch q.SubjectPatch, s *session.Session) error {
+func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, qx *dal.Queries, patch dal.SubjectPatch, s *session.Session) error {
 	var body = ApiPatchSubject{
 		CommieMessage: fmt.Sprintf("%s [https://patch.bgm38.tv/subject/%s]", patch.Reason, patch.ID),
 	}
@@ -109,7 +109,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 		}
 
 		if errRes.Code == ErrCodeInvalidWikiSyntax {
-			err = qx.RejectSubjectPatch(r.Context(), q.RejectSubjectPatchParams{
+			err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateRejected,
 				ID:           patch.ID,
@@ -124,7 +124,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 		}
 
 		if errRes.Code == ErrCodeWikiChanged {
-			err = qx.RejectSubjectPatch(r.Context(), q.RejectSubjectPatchParams{
+			err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateOutdated,
 				ID:           patch.ID,
@@ -142,7 +142,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 		return errors.New("failed to submit patch")
 	}
 
-	err = qx.AcceptSubjectPatch(context.WithoutCancel(r.Context()), q.AcceptSubjectPatchParams{
+	err = qx.AcceptSubjectPatch(context.WithoutCancel(r.Context()), dal.AcceptSubjectPatchParams{
 		WikiUserID: s.UserID,
 		State:      PatchStateAccepted,
 		ID:         patch.ID,
@@ -157,8 +157,8 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 	return nil
 }
 
-func (h *handler) handleSubjectReject(w http.ResponseWriter, r *http.Request, qx *q.Queries, p q.SubjectPatch, s *session.Session) error {
-	err := qx.RejectSubjectPatch(r.Context(), q.RejectSubjectPatchParams{
+func (h *handler) handleSubjectReject(w http.ResponseWriter, r *http.Request, qx *dal.Queries, p dal.SubjectPatch, s *session.Session) error {
+	err := qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
 		WikiUserID: s.UserID,
 		State:      PatchStateRejected,
 		ID:         p.ID,
@@ -172,8 +172,8 @@ func (h *handler) handleSubjectReject(w http.ResponseWriter, r *http.Request, qx
 	return nil
 }
 
-func (h *handler) handleSubjectComment(w http.ResponseWriter, r *http.Request, tx *q.Queries, patch q.SubjectPatch, text string, s *session.Session) error {
-	err := tx.CreateComment(r.Context(), q.CreateCommentParams{
+func (h *handler) handleSubjectComment(w http.ResponseWriter, r *http.Request, tx *dal.Queries, patch dal.SubjectPatch, text string, s *session.Session) error {
+	err := tx.CreateComment(r.Context(), dal.CreateCommentParams{
 		ID:        uuid.Must(uuid.NewV7()),
 		PatchID:   patch.ID,
 		PatchType: PatchTypeSubject,

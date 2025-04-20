@@ -1,12 +1,13 @@
 package templates
 
 import (
-	"app/q"
-	"app/view"
 	"fmt"
+
+	"app/dal"
+	"app/view"
 )
 
-templ Comment(u *view.CurrentUser, s q.GetCommentsRow) {
+templ Comment(u *view.CurrentUser, s dal.GetCommentsRow) {
 	if s.UserID.Valid {
 		<li class="list-group-item border-dark-subtle list-group-item-warning">
 			<div class="d-flex w-100 justify-content-between">

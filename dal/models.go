@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.29.0
 
-package q
+package dal
 
 import (
 	uuid "github.com/gofrs/uuid/v5"

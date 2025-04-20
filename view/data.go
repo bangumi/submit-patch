@@ -4,8 +4,8 @@ import (
 	"net/url"
 	"time"
 
+	"app/dal"
 	"app/dto"
-	"app/q"
 	"app/session"
 )
 
@@ -16,7 +16,7 @@ type Change struct {
 
 type IndexPage struct {
 	Session *session.Session
-	Patches []q.SubjectPatch
+	Patches []dal.SubjectPatch
 }
 
 type SubjectPatchList struct {

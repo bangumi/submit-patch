@@ -15,8 +15,8 @@ import (
 	"github.com/trim21/errgo"
 
 	"app/csrf"
+	"app/dal"
 	"app/dto"
-	"app/q"
 	"app/session"
 	"app/templates"
 	"app/view"
@@ -126,7 +126,7 @@ func (h *handler) createEpisodeEditPatch(w http.ResponseWriter, r *http.Request)
 	summary := form.Get("summary")
 
 	pk := uuid.Must(uuid.NewV7())
-	var param = q.CreateEpisodePatchParams{
+	var param = dal.CreateEpisodePatchParams{
 		ID:         pk,
 		EpisodeID:  int32(episodeID),
 		State:      PatchStatePending,
@@ -216,7 +216,7 @@ func (h *handler) listEpisodePatches(
 
 	var patches = make([]view.EpisodePatchListItem, 0, defaultPageSize)
 	if c != 0 {
-		data, err := h.q.ListEpisodePatchesByStates(r.Context(), q.ListEpisodePatchesByStatesParams{
+		data, err := h.q.ListEpisodePatchesByStates(r.Context(), dal.ListEpisodePatchesByStatesParams{
 			State: stateVals,
 			Size:  defaultPageSize,
 			Skip:  (currentPage - 1) * defaultPageSize,
@@ -308,7 +308,7 @@ func (h *handler) episodePatchDetailView(
 		return errgo.Wrap(err, "failed to get user")
 	}
 
-	var reviewer *q.PatchUser
+	var reviewer *dal.PatchUser
 	if patch.WikiUserID != 0 {
 		r, err := h.q.GetUserByID(r.Context(), patch.WikiUserID)
 		if err != nil {
@@ -317,7 +317,7 @@ func (h *handler) episodePatchDetailView(
 		reviewer = &r
 	}
 
-	comments, err := h.q.GetComments(r.Context(), q.GetCommentsParams{
+	comments, err := h.q.GetComments(r.Context(), dal.GetCommentsParams{
 		PatchID:   id,
 		PatchType: PatchTypeEpisode,
 	})
@@ -568,7 +568,7 @@ func (h *handler) updateEpisodeEditPatch(w http.ResponseWriter, r *http.Request)
 	}
 
 	var changed bool
-	var param = q.UpdateEpisodePatchParams{
+	var param = dal.UpdateEpisodePatchParams{
 		ID:                  patchID,
 		Reason:              reason,
 		PatchDesc:           patchDesc,

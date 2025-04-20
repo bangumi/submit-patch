@@ -22,7 +22,7 @@ import (
 	"github.com/samber/lo"
 	"go.uber.org/fx"
 
-	"app/q"
+	"app/dal"
 )
 
 func main() {
@@ -37,8 +37,8 @@ func main() {
 		fx.Provide(
 			newConfig,
 			newDB,
-			func(p *pgxpool.Pool) *q.Queries {
-				return q.New(p)
+			func(p *pgxpool.Pool) *dal.Queries {
+				return dal.New(p)
 			},
 			newHandler,
 			loadTemplates,
