@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/go-resty/resty/v2"
@@ -57,7 +58,10 @@ func (h *handler) validateCaptcha(ctx context.Context, turnstileResponseToken st
 	}
 
 	if !result.Success {
-		return errors.New("验证码无效")
+		return &HttpError{
+			StatusCode: http.StatusBadGateway,
+			Message:    "captcha verification failed",
+		}
 	}
 
 	return nil

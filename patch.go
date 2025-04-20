@@ -51,6 +51,6 @@ type HttpError struct {
 	Message    string
 }
 
-func (h HttpError) Error() string {
+func (h *HttpError) Error() string {
 	return fmt.Sprintf("%d: %s", h.StatusCode, h.Message)
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/trim21/errgo"
+	"github.com/trim21/pkg/null"
 
 	"app/csrf"
 	"app/dal"
@@ -660,5 +662,161 @@ func (h *handler) deleteSubjectPatch(w http.ResponseWriter, r *http.Request) err
 
 		http.Redirect(w, r, "/", http.StatusFound)
 		return nil
+	})
+}
+
+const contentTypeApplicationJSON = "application/json"
+
+type RequestToUpdateSubject struct {
+	Name    null.String `json:"name"`
+	Infobox null.String `json:"infobox"`
+	Summary null.String `json:"summary"`
+	Nsfw    null.Bool   `json:"nsfw"`
+
+	Reason    string `json:"reason"`
+	PatchDesc string `json:"patch_desc"`
+
+	CfTurnstileResponse string `json:"cf_turnstile_response"`
+}
+
+func (h *handler) createSubjectEditPatchAPI(w http.ResponseWriter, r *http.Request) error {
+	subjectID, err := strconv.ParseInt(chi.URLParam(r, "subject-id"), 10, 32)
+	if err != nil || subjectID <= 0 {
+		return &HttpError{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Invalid or missing subject_id query parameter",
+		}
+	}
+
+	if r.Header.Get("Content-Type") != contentTypeApplicationJSON {
+		return &HttpError{
+			StatusCode: http.StatusBadRequest,
+			Message:    fmt.Sprintf("content-type must be %q to use this API", contentTypeApplicationJSON),
+		}
+	}
+
+	var req RequestToUpdateSubject
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return &HttpError{
+			StatusCode: http.StatusBadRequest,
+			Message:    fmt.Sprintf("failed to parse request body as json: %s", err.Error()),
+		}
+	}
+
+	if req.Reason == "" {
+		return &HttpError{
+			StatusCode: http.StatusBadRequest,
+			Message:    "at least give a reason to change the subject",
+		}
+	}
+
+	user := session.GetSession(r.Context())
+	if user.UserID == 0 {
+		http.Error(w, "please login before submit any patch", http.StatusUnauthorized)
+		return nil
+	}
+
+	if !user.SuperUser() {
+		if err := h.validateCaptcha(r.Context(), req.CfTurnstileResponse); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return nil
+		}
+	}
+
+	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/subjects/%d", subjectID)
+	var originalWiki dto.WikiSubject
+	resp, err := h.client.R().
+		SetContext(r.Context()).
+		SetResult(&originalWiki).
+		Get(fetchURL)
+	if err != nil {
+		// This usually indicates a network error or DNS issue before the request was even sent
+		fmt.Printf("Error executing request to fetch original wiki: %v\n", err)
+		http.Error(w, "Failed to communicate with wiki service", http.StatusBadGateway)
+		return nil
+	}
+
+	if resp.IsError() {
+		// The request was sent, but the server returned an error status code (>= 400)
+		fmt.Printf("Error fetching original wiki (%s): status %d, body: %s\n", fetchURL, resp.StatusCode(), resp.String())
+		if resp.StatusCode() == http.StatusNotFound {
+			http.Error(w, "Original subject not found", http.StatusNotFound)
+		} else {
+			// You might want to return a more specific error message based on apiError if it was populated
+			http.Error(w, "Failed to fetch original subject req", http.StatusBadGateway)
+		}
+		return nil
+	}
+
+	var changed bool
+	var param = dal.CreateSubjectEditPatchParams{
+		SubjectID:    int32(subjectID),
+		FromUserID:   user.UserID,
+		Reason:       req.Reason,
+		OriginalName: originalWiki.Name,
+		SubjectType:  originalWiki.TypeID,
+		PatchDesc:    req.PatchDesc,
+	}
+
+	if req.Name.Set && req.Name.Value != originalWiki.Name {
+		changed = true
+		param.Name = pgtype.Text{
+			String: req.Name.Value,
+			Valid:  true,
+		}
+	}
+
+	if req.Infobox.Set && req.Infobox.Value != originalWiki.Infobox {
+		changed = true
+		param.OriginalInfobox = pgtype.Text{
+			String: originalWiki.Infobox,
+			Valid:  true,
+		}
+
+		param.Infobox = pgtype.Text{
+			String: req.Infobox.Value,
+			Valid:  true,
+		}
+	}
+
+	if req.Summary.Set && req.Summary.Value != originalWiki.Summary {
+		changed = true
+		param.OriginalSummary = pgtype.Text{
+			String: originalWiki.Summary,
+			Valid:  true,
+		}
+
+		param.Summary = pgtype.Text{
+			String: req.Summary.Value,
+			Valid:  true,
+		}
+	}
+
+	if req.Nsfw.Set && req.Nsfw.Value != originalWiki.Nsfw {
+		changed = true
+		param.Nsfw = pgtype.Bool{
+			Bool:  req.Nsfw.Value,
+			Valid: true,
+		}
+	}
+
+	if !changed {
+		http.Error(w, "No changes found", http.StatusBadRequest)
+		return nil
+	}
+
+	param.ID = uuid.Must(uuid.NewV7())
+
+	err = h.q.CreateSubjectEditPatch(r.Context(), param)
+	if err != nil {
+		fmt.Printf("Error inserting subject patch: %v\n", err)
+		http.Error(w, "Failed to save suggestion", http.StatusInternalServerError)
+		return nil
+	}
+
+	w.Header().Set("content-type", contentTypeApplicationJSON)
+	w.WriteHeader(http.StatusOK)
+	return json.NewEncoder(w).Encode(map[string]string{
+		"id": param.ID.String(),
 	})
 }
