@@ -827,6 +827,103 @@ func (q *Queries) ListEpisodePatchesByStatesReviewedByUser(ctx context.Context, 
 	return items, nil
 }
 
+const listPendingEpisodePatches = `-- name: ListPendingEpisodePatches :many
+select id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, subject_id, comments_count, patch_desc, ep from episode_patch where state = 0
+`
+
+func (q *Queries) ListPendingEpisodePatches(ctx context.Context) ([]EpisodePatch, error) {
+	rows, err := q.db.Query(ctx, listPendingEpisodePatches)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []EpisodePatch
+	for rows.Next() {
+		var i EpisodePatch
+		if err := rows.Scan(
+			&i.ID,
+			&i.EpisodeID,
+			&i.State,
+			&i.FromUserID,
+			&i.WikiUserID,
+			&i.Reason,
+			&i.OriginalName,
+			&i.Name,
+			&i.OriginalNameCn,
+			&i.NameCn,
+			&i.OriginalDuration,
+			&i.Duration,
+			&i.OriginalAirdate,
+			&i.Airdate,
+			&i.OriginalDescription,
+			&i.Description,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.RejectReason,
+			&i.SubjectID,
+			&i.CommentsCount,
+			&i.PatchDesc,
+			&i.Ep,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPendingSubjectPatches = `-- name: ListPendingSubjectPatches :many
+select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action from subject_patch where state = 0
+`
+
+func (q *Queries) ListPendingSubjectPatches(ctx context.Context) ([]SubjectPatch, error) {
+	rows, err := q.db.Query(ctx, listPendingSubjectPatches)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SubjectPatch
+	for rows.Next() {
+		var i SubjectPatch
+		if err := rows.Scan(
+			&i.ID,
+			&i.SubjectID,
+			&i.State,
+			&i.FromUserID,
+			&i.WikiUserID,
+			&i.Reason,
+			&i.Name,
+			&i.OriginalName,
+			&i.Infobox,
+			&i.OriginalInfobox,
+			&i.Summary,
+			&i.OriginalSummary,
+			&i.Nsfw,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.RejectReason,
+			&i.SubjectType,
+			&i.CommentsCount,
+			&i.PatchDesc,
+			&i.OriginalPlatform,
+			&i.Platform,
+			&i.Action,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listSubjectPatchesByStates = `-- name: ListSubjectPatchesByStates :many
 select subject_patch.id,
        subject_patch.original_name,

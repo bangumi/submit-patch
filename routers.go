@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -66,6 +67,65 @@ func routers(h *handler, config Config) *chi.Mux {
 	r.Patch("/edit/episode/{episode-id}", handleError(h.createEpisodeEditPatchAPI))
 
 	r.Post("/api/delete/patch/episode/{patch-id}", handleError(h.deleteEpisodePatch))
+
+	// other json APIS
+	r.Get("/api/subject/pending", handleError(func(w http.ResponseWriter, r *http.Request) error {
+		rows, err := h.q.ListPendingSubjectPatches(r.Context())
+		if err != nil {
+			return err
+		}
+
+		type Res struct {
+			SubjectID int32 `json:"subject_id"`
+			CreatedAt int64 `json:"created_at"`
+			UpdatedAt int64 `json:"updated_at"`
+		}
+
+		var res = make([]Res, 0, len(rows))
+
+		for _, row := range rows {
+			res = append(res, Res{
+				SubjectID: row.SubjectID,
+				CreatedAt: row.CreatedAt.Time.Unix(),
+				UpdatedAt: row.UpdatedAt.Time.Unix(),
+			})
+		}
+
+		w.Header().Set("content-type", contentTypeApplicationJSON)
+		w.WriteHeader(http.StatusOK)
+		return json.NewEncoder(w).Encode(map[string]any{
+			"data": res,
+		})
+	}))
+
+	r.Get("/api/episode/pending", handleError(func(w http.ResponseWriter, r *http.Request) error {
+		rows, err := h.q.ListPendingEpisodePatches(r.Context())
+		if err != nil {
+			return err
+		}
+
+		type Res struct {
+			EpisodeID int32 `json:"episode_id"`
+			CreatedAt int64 `json:"created_at"`
+			UpdatedAt int64 `json:"updated_at"`
+		}
+
+		var res = make([]Res, 0, len(rows))
+
+		for _, row := range rows {
+			res = append(res, Res{
+				EpisodeID: row.EpisodeID,
+				CreatedAt: row.CreatedAt.Time.Unix(),
+				UpdatedAt: row.UpdatedAt.Time.Unix(),
+			})
+		}
+
+		w.Header().Set("content-type", contentTypeApplicationJSON)
+		w.WriteHeader(http.StatusOK)
+		return json.NewEncoder(w).Encode(map[string]any{
+			"data": res,
+		})
+	}))
 
 	return mux
 }

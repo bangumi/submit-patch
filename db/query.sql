@@ -393,3 +393,10 @@ from episode_patch
 where deleted_at is null
   and wiki_user_id = @user_id
   and state = any (@state::int[]);
+
+
+-- name: ListPendingEpisodePatches :many
+select * from episode_patch where state = 0;
+
+-- name: ListPendingSubjectPatches :many
+select * from subject_patch where state = 0;
