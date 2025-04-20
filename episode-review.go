@@ -161,7 +161,7 @@ func (h *handler) handleEpisodeApprove(w http.ResponseWriter, r *http.Request, q
 			return nil
 		}
 
-		log.Error().Msg("unexpected response from submit patch")
+		log.Error().RawJSON("body", resp.Body()).Msg("unexpected response from submit patch")
 		return errors.New("failed to submit patch")
 	}
 
