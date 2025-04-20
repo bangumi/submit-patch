@@ -20,6 +20,7 @@ type IndexPage struct {
 }
 
 type SubjectPatchList struct {
+	Title              string
 	Session            *session.Session
 	CurrentStateFilter string
 	Patches            []SubjectPatchListItem
@@ -27,6 +28,7 @@ type SubjectPatchList struct {
 }
 
 type EpisodePatchList struct {
+	Title              string
 	Session            *session.Session
 	CurrentStateFilter string
 	Patches            []EpisodePatchListItem

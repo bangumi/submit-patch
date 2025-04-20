@@ -38,7 +38,7 @@ func EpisodePatchList(r *http.Request, data view.EpisodePatchList) templ.Compone
 		}
 		ctx = templ.ClearChildren(ctx)
 		templ_7745c5c3_Err = Layout(
-			"episodes",
+			data.Title,
 			episodeListHead(),
 			episodeListContent(r, data),
 		).Render(ctx, templ_7745c5c3_Buffer)
@@ -99,7 +99,7 @@ func episodeListContent(r *http.Request, data view.EpisodePatchList) templ.Compo
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = header("", data.Session).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = header(data.Title, data.Session).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
