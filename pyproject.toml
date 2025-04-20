@@ -3,16 +3,7 @@ name = "project"
 version = "0"
 requires-python = "~=3.10.16"
 dependencies = [
-    'httpx[http2]==0.28.1',
-    'sslog==0.0.0a52',
     'pyyaml==6.0.2',
-    'msgspec==0.19.0',
-]
-
-[dependency-groups]
-dev = [
-    'mypy ==1.15.0',
-    'types-pyyaml ==6.0.12.20250402',
 ]
 
 [tool.uv]
