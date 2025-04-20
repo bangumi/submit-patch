@@ -38,7 +38,7 @@ func routers(h *handler, config Config) *chi.Mux {
 
 	// subjects
 	r.Get("/suggest", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, fmt.Sprintf("/edit/subject/%s", r.URL.Query().Get("subject-id")), http.StatusSeeOther)
+		http.Redirect(w, r, fmt.Sprintf("/edit/subject/%s", r.URL.Query().Get("subject_id")), http.StatusSeeOther)
 	})
 
 	r.Get("/edit/subject/{subject-id}", logError(h.editSubjectView))
