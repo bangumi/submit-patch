@@ -398,10 +398,10 @@ where deleted_at is null
 select id, episode_id, created_at, updated_at, from_user_id
 from episode_patch
 where state = 0
-  and deleted_at is not null;
+  and deleted_at is null;
 
 -- name: ListPendingSubjectPatches :many
 select id, subject_id, created_at, updated_at, from_user_id
 from subject_patch
 where state = 0
-  and deleted_at is not null;
+  and deleted_at is null;

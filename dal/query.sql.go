@@ -831,7 +831,7 @@ const listPendingEpisodePatches = `-- name: ListPendingEpisodePatches :many
 select id, episode_id, created_at, updated_at, from_user_id
 from episode_patch
 where state = 0
-  and deleted_at is not null
+  and deleted_at is null
 `
 
 type ListPendingEpisodePatchesRow struct {
@@ -872,7 +872,7 @@ const listPendingSubjectPatches = `-- name: ListPendingSubjectPatches :many
 select id, subject_id, created_at, updated_at, from_user_id
 from subject_patch
 where state = 0
-  and deleted_at is not null
+  and deleted_at is null
 `
 
 type ListPendingSubjectPatchesRow struct {
