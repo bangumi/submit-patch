@@ -10,7 +10,7 @@ import (
 
 templ EpisodePatchList(r *http.Request, data view.EpisodePatchList) {
 	@Layout(
-		"episodes",
+		data.Title,
 		episodeListHead(),
 		episodeListContent(r, data),
 	)
@@ -40,7 +40,7 @@ templ episodeListHead() {
 }
 
 templ episodeListContent(r *http.Request, data view.EpisodePatchList) {
-	@header("", data.Session)
+	@header(data.Title, data.Session)
 	@listFilter(r.URL, "episode", data.CurrentStateFilter)
 	<div class="row m-0 mb-4">
 		<ul class="list-group p-0 m-0">

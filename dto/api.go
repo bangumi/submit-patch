@@ -1,5 +1,9 @@
 package dto
 
+import (
+	"time"
+)
+
 type WikiSubject struct {
 	ID       int      `json:"id"`
 	Name     string   `json:"name"`
@@ -34,4 +38,13 @@ type OAuthAccessTokenResponse struct {
 	AccessToken  string `json:"access_token"`
 	ExpiresIn    int64  `json:"expires_in"`
 	UserID       string `json:"user_id"`
+}
+
+type TurnstileResponse struct {
+	Success     bool      `json:"success"`
+	ChallengeTS time.Time `json:"challenge_ts"`
+	Hostname    string    `json:"hostname"`
+	ErrorCodes  []string  `json:"error-codes"`
+	Action      string    `json:"action"`
+	CData       string    `json:"cdata"`
 }

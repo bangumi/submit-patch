@@ -2,19 +2,15 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/rueidis"
-	"github.com/trim21/errgo"
 
+	"app/dto"
 	"app/q"
 )
 
@@ -42,18 +38,8 @@ type handler struct {
 	template Template
 }
 
-// Placeholder: Implement Captcha Validation
-type turnstileResponse struct {
-	Success     bool      `json:"success"`
-	ChallengeTS time.Time `json:"challenge_ts"`
-	Hostname    string    `json:"hostname"`
-	ErrorCodes  []string  `json:"error-codes"`
-	Action      string    `json:"action"`
-	CData       string    `json:"cdata"`
-}
-
 func (h *handler) validateCaptcha(ctx context.Context, turnstileResponseToken string) error {
-	var result turnstileResponse
+	var result dto.TurnstileResponse
 	resp, err := h.client.R().
 		SetContext(ctx).
 		SetFormData(map[string]string{
@@ -75,34 +61,4 @@ func (h *handler) validateCaptcha(ctx context.Context, turnstileResponseToken st
 	}
 
 	return nil
-}
-
-func (h *handler) userContributionView(w http.ResponseWriter, r *http.Request) error {
-	userID, err := strconv.ParseInt(r.PathValue("user-id"), 10, 32)
-	if err != nil || userID <= 0 {
-		http.Error(w, "invalid user id", http.StatusBadRequest)
-		return nil
-	}
-
-	count, err := h.q.CountPendingPatchesForUser(r.Context(), int32(userID))
-	if err != nil {
-		return errgo.Wrap(err, "failed to count patches")
-	}
-
-	return json.NewEncoder(w).Encode(count)
-}
-
-func (h *handler) userReviewView(w http.ResponseWriter, r *http.Request) error {
-	userID, err := strconv.ParseInt(r.PathValue("user-id"), 10, 32)
-	if err != nil || userID <= 0 {
-		http.Error(w, "invalid user id", http.StatusBadRequest)
-		return nil
-	}
-
-	count, err := h.q.CountPendingPatchesForUser(r.Context(), int32(userID))
-	if err != nil {
-		return errgo.Wrap(err, "failed to count patches")
-	}
-
-	return json.NewEncoder(w).Encode(count)
 }

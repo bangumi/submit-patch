@@ -10,7 +10,7 @@ import (
 
 templ SubjectPatchList(r *http.Request, data view.SubjectPatchList) {
 	@Layout(
-		"subjects",
+		data.Title,
 		subjectListHead(),
 		subjectListContent(r, data),
 	)
@@ -40,7 +40,7 @@ templ subjectListHead() {
 }
 
 templ subjectListContent(r *http.Request, data view.SubjectPatchList) {
-	@header("", data.Session)
+	@header(data.Title, data.Session)
 	@listFilter(r.URL, "subject", data.CurrentStateFilter)
 	<div class="row m-0 mb-4">
 		<ul class="list-group p-0 m-0">

@@ -22,53 +22,59 @@ func routers(h *handler, config Config) *chi.Mux {
 	r := mux.With(SessionMiddleware(h), csrf.New())
 
 	r.Get("/login", h.loginView)
-	r.Get("/callback", logError(h.callback))
+	r.Get("/callback", handleError(h.callback))
 
 	r.Get("/badge.svg", h.badge)
 
-	r.Get("/", logError(h.indexView))
+	r.Get("/", handleError(h.indexView))
 
-	r.Get("/subject/{patchID}", logError(h.subjectPatchDetailView))
-	r.Get("/episode/{patchID}", logError(h.episodePatchDetailView))
-	r.Get("/contrib/{user-id}", logError(h.userContributionView))
-	r.Get("/review/{user-id}", logError(h.userReviewView))
+	r.Get("/subject/{patchID}", handleError(h.subjectPatchDetailView))
+	r.Get("/episode/{patchID}", handleError(h.episodePatchDetailView))
+	r.Get("/contrib/{user-id}", handleError(h.userContributionView))
+	r.Get("/review/{user-id}", handleError(h.userReviewView))
 
-	r.Post("/api/review/{patch_type}/{patch_id}", logError(h.handleReview))
+	r.Post("/api/review/{patch_type}/{patch_id}", handleError(h.handleReview))
 
 	// subjects
 	r.Get("/suggest", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, fmt.Sprintf("/edit/subject/%s", r.URL.Query().Get("subject_id")), http.StatusSeeOther)
 	})
 
-	r.Get("/edit/subject/{subject-id}", logError(h.editSubjectView))
-	r.Post("/edit/subject/{subject-id}", logError(h.createSubjectEditPatch))
+	r.Get("/edit/subject/{subject-id}", handleError(h.editSubjectView))
+	r.Post("/edit/subject/{subject-id}", handleError(h.createSubjectEditPatch))
 
-	r.Get("/edit/patch/subject/{patch-id}", logError(h.editSubjectPatchView))
-	r.Post("/edit/patch/subject/{patch-id}", logError(h.updateSubjectEditPatch))
+	r.Get("/edit/patch/subject/{patch-id}", handleError(h.editSubjectPatchView))
+	r.Post("/edit/patch/subject/{patch-id}", handleError(h.updateSubjectEditPatch))
 
-	r.Post("/api/delete/patch/subject/{patch-id}", logError(h.deleteSubjectPatch))
+	r.Post("/api/delete/patch/subject/{patch-id}", handleError(h.deleteSubjectPatch))
 
 	// episodes
 	r.Get("/suggest-episode", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, fmt.Sprintf("/edit/episode/%s", r.URL.Query().Get("episode_id")), http.StatusSeeOther)
 	})
 
-	r.Get("/edit/episode/{episode-id}", logError(h.editEpisodeView))
-	r.Post("/edit/episode/{episode-id}", logError(h.createEpisodeEditPatch))
+	r.Get("/edit/episode/{episode-id}", handleError(h.editEpisodeView))
+	r.Post("/edit/episode/{episode-id}", handleError(h.createEpisodeEditPatch))
 
-	r.Get("/edit/patch/episode/{patch-id}", logError(h.editEpisodePatchView))
-	r.Post("/edit/patch/episode/{patch-id}", logError(h.updateEpisodeEditPatch))
+	r.Get("/edit/patch/episode/{patch-id}", handleError(h.editEpisodePatchView))
+	r.Post("/edit/patch/episode/{patch-id}", handleError(h.updateEpisodeEditPatch))
 
-	r.Post("/api/delete/patch/episode/{patch-id}", logError(h.deleteEpisodePatch))
+	r.Post("/api/delete/patch/episode/{patch-id}", handleError(h.deleteEpisodePatch))
 
 	return mux
 }
 
-func logError(fn func(w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
+func handleError(fn func(w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := fn(w, r)
 		if err != nil {
 			if errors.Is(err, ErrLoginRequired) {
+				return
+			}
+
+			var he *HttpError
+			if errors.As(err, &he) {
+				http.Error(w, he.Message, he.StatusCode)
 				return
 			}
 
