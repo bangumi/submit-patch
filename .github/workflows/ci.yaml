@@ -20,7 +20,7 @@ jobs:
         with:
           cache-namespace: test
 
-      - uses: sigoden/install-binary@v1
+      - uses: sigoden/install-binary@7eb4b088aedf19fe9b2bc6c6bbdc12379ffb355c # v1
         with:
           repo: gotestyourself/gotestsum
           tag: v1.12.1
@@ -48,7 +48,7 @@ jobs:
         with:
           submodules: "true"
 
-      - uses: sqlc-dev/setup-sqlc@v3
+      - uses: sqlc-dev/setup-sqlc@7f68db1d47e070cf70f6033f13cdecce995f520f # v3
         with:
           sqlc-version: '1.29.0'
 
