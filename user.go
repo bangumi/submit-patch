@@ -41,7 +41,7 @@ func (h *handler) userReviewView(w http.ResponseWriter, r *http.Request) error {
 	case "", "subject":
 		return h.listSubjectPatchesReviewedUser(w, r, int32(userID), state, stateVals, currentPage)
 	case "episode":
-		return h.listSubjectPatchesReviewedUser(w, r, int32(userID), state, stateVals, currentPage)
+		return h.listEpisodePatchesReviewedUser(w, r, int32(userID), state, stateVals, currentPage)
 	}
 
 	http.Error(w, "invalid patch type", http.StatusBadRequest)
@@ -221,7 +221,7 @@ func (h *handler) userContributionView(w http.ResponseWriter, r *http.Request) e
 	case "", "subject":
 		return h.listSubjectPatchesFromUser(w, r, int32(userID), state, stateVals, currentPage)
 	case "episode":
-		return h.listSubjectPatchesFromUser(w, r, int32(userID), state, stateVals, currentPage)
+		return h.listEpisodePatchesFromUser(w, r, int32(userID), state, stateVals, currentPage)
 	}
 
 	http.Error(w, "invalid patch type", http.StatusBadRequest)
