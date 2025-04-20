@@ -14,8 +14,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/trim21/errgo"
 
-	"app/api"
 	"app/csrf"
+	"app/dto"
 	"app/q"
 	"app/session"
 	"app/templates"
@@ -40,7 +40,7 @@ func (h *handler) editEpisodeView(w http.ResponseWriter, r *http.Request) error 
 		return nil
 	}
 
-	var episode api.WikiEpisode
+	var episode dto.WikiEpisode
 	resp, err := h.client.R().SetResult(&episode).Get(fmt.Sprintf("https://next.bgm.tv/p1/wiki/ep/%d", eid))
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ func (h *handler) createEpisodeEditPatch(w http.ResponseWriter, r *http.Request)
 
 	// --- Fetch Original Data ---
 	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/ep/%d", episodeID)
-	var originalWiki api.WikiEpisode
+	var originalWiki dto.WikiEpisode
 	resp, err := h.client.R().
 		SetContext(r.Context()).
 		SetResult(&originalWiki).
@@ -456,7 +456,7 @@ func (h *handler) editEpisodePatchView(w http.ResponseWriter, r *http.Request) e
 		return nil
 	}
 
-	var episode api.WikiEpisode
+	var episode dto.WikiEpisode
 	resp, err := h.client.R().
 		SetResult(&episode).
 		Get(fmt.Sprintf("https://next.bgm.tv/p1/wiki/ep/%d", patch.EpisodeID))
@@ -537,7 +537,7 @@ func (h *handler) updateEpisodeEditPatch(w http.ResponseWriter, r *http.Request)
 	}
 
 	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/ep/%d", patch.EpisodeID)
-	var originalWiki api.WikiEpisode
+	var originalWiki dto.WikiEpisode
 	resp, err := h.client.R().
 		SetContext(r.Context()).
 		SetResult(&originalWiki).

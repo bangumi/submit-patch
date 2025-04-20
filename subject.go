@@ -13,15 +13,14 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/trim21/errgo"
 
-	"app/api"
 	"app/csrf"
+	"app/dto"
 	"app/q"
 	"app/session"
 	"app/templates"
 	"app/view"
-
-	"github.com/trim21/errgo"
 )
 
 func (h *handler) editSubjectView(w http.ResponseWriter, r *http.Request) error {
@@ -42,7 +41,7 @@ func (h *handler) editSubjectView(w http.ResponseWriter, r *http.Request) error 
 		return nil
 	}
 
-	var subject api.WikiSubject
+	var subject dto.WikiSubject
 	resp, err := h.client.R().
 		SetResult(&subject).
 		Get(fmt.Sprintf("https://next.bgm.tv/p1/wiki/subjects/%d", sid))
@@ -98,7 +97,7 @@ func (h *handler) editSubjectPatchView(w http.ResponseWriter, r *http.Request) e
 		return nil
 	}
 
-	var subject api.WikiSubject
+	var subject dto.WikiSubject
 	resp, err := h.client.R().
 		SetResult(&subject).
 		Get(fmt.Sprintf("https://next.bgm.tv/p1/wiki/subjects/%d", patch.SubjectID))
@@ -337,7 +336,7 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 
 	// --- Fetch Original Data ---
 	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/subjects/%d", subjectID)
-	var originalWiki api.WikiSubject
+	var originalWiki dto.WikiSubject
 	resp, err := h.client.R().
 		SetContext(r.Context()).
 		SetResult(&originalWiki). // Tell resty to unmarshal into originalWiki on success
@@ -491,7 +490,7 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 	}
 
 	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/subjects/%d", subjectID)
-	var originalWiki api.WikiSubject
+	var originalWiki dto.WikiSubject
 	resp, err := h.client.R().
 		SetContext(r.Context()).
 		SetResult(&originalWiki).

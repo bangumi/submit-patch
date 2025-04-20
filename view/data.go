@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"time"
 
-	"app/api"
+	"app/dto"
 	"app/q"
 	"app/session"
 )
@@ -88,7 +88,7 @@ type SubjectPatchEdit struct {
 	Reason      string
 	Description string
 
-	Data api.WikiSubject
+	Data dto.WikiSubject
 
 	TurnstileSiteKey string
 }
@@ -101,7 +101,7 @@ type EpisodePatchEdit struct {
 	Reason      string
 	Description string
 
-	Data api.WikiEpisode
+	Data dto.WikiEpisode
 
 	TurnstileSiteKey string
 }

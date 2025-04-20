@@ -1,4 +1,4 @@
-package api
+package dto
 
 type WikiSubject struct {
 	ID       int      `json:"id"`
@@ -22,4 +22,16 @@ type WikiEpisode struct {
 	Summary   string `json:"summary"`
 	Disc      int    `json:"disc"`
 	Date      string `json:"date"`
+}
+
+type ErrorResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+type OAuthAccessTokenResponse struct {
+	RefreshToken string `json:"refresh_token"`
+	AccessToken  string `json:"access_token"`
+	ExpiresIn    int64  `json:"expires_in"`
+	UserID       string `json:"user_id"`
 }

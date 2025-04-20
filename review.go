@@ -59,11 +59,6 @@ func (h *handler) handleReview(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-type ApiErrorResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
 const ErrCodeValidationError = "REQUEST_VALIDATION_ERROR"
 const ErrCodeWikiChanged = "WIKI_CHANGED"
 const ErrCodeInvalidWikiSyntax = "INVALID_SYNTAX_ERROR"

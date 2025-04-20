@@ -15,6 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/trim21/errgo"
 
+	"app/dto"
 	"app/q"
 	"app/session"
 )
@@ -43,13 +44,6 @@ type UserInfo struct {
 	TimeOffset int    `json:"time_offset"`
 }
 
-type OAuthAccessTokenResponse struct {
-	RefreshToken string `json:"refresh_token"`
-	AccessToken  string `json:"access_token"`
-	ExpiresIn    int64  `json:"expires_in"`
-	UserID       string `json:"user_id"`
-}
-
 func (h *handler) callback(w http.ResponseWriter, r *http.Request) error {
 	code := r.URL.Query().Get("code")
 	if code == "" {
@@ -57,7 +51,7 @@ func (h *handler) callback(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 
-	var oauthResponse OAuthAccessTokenResponse
+	var oauthResponse dto.OAuthAccessTokenResponse
 	resp, err := h.client.R().
 		SetFormData(map[string]string{
 			"client_id":     h.config.BangumiAppId,
@@ -150,7 +144,7 @@ func (h *handler) GetFreshSession(w http.ResponseWriter, r *http.Request, backTo
 	log.Debug().Int32("user_id", s.UserID).Msg("refresh token")
 
 	now := time.Now()
-	var body OAuthAccessTokenResponse
+	var body dto.OAuthAccessTokenResponse
 	res, err := h.client.R().
 		SetResult(&body).
 		SetFormData(map[string]string{
@@ -164,7 +158,7 @@ func (h *handler) GetFreshSession(w http.ResponseWriter, r *http.Request, backTo
 		return nil, errgo.Wrap(err, "failed to refresh access token")
 	}
 	if res.StatusCode() >= 300 {
-		var e ApiErrorResponse
+		var e dto.ErrorResponse
 		if err = json.Unmarshal(res.Body(), &e); err != nil {
 			return nil, fmt.Errorf("failed to get user info, unexpected status code %d", res.StatusCode())
 		}

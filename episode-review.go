@@ -12,6 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/trim21/errgo"
 
+	"app/dto"
 	"app/q"
 	"app/session"
 	"app/templates"
@@ -121,7 +122,7 @@ func (h *handler) handleEpisodeApprove(w http.ResponseWriter, r *http.Request, q
 	}
 
 	if resp.StatusCode() >= 300 {
-		var errRes ApiErrorResponse
+		var errRes dto.ErrorResponse
 		if err = json.Unmarshal(resp.Body(), &errRes); err != nil {
 			return errgo.Wrap(err, "failed to submit patch")
 		}
