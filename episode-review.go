@@ -28,7 +28,8 @@ func (h *handler) handleEpisodeReview(w http.ResponseWriter, r *http.Request, pa
 		}
 
 		if p.State != PatchStatePending {
-			return errors.New("patch is not pending")
+			http.Redirect(w, r, "/episode/"+p.ID.String(), http.StatusSeeOther)
+			return nil
 		}
 
 		switch react {
