@@ -139,7 +139,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 		}
 
 		if errRes.Code == ErrCodeItemLocked {
-			err = qx.RejectSubjectPatch(r.Context(), q.RejectSubjectPatchParams{
+			err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateRejected,
 				ID:           patch.ID,
