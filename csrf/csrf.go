@@ -19,7 +19,12 @@ const CookiesName = "x-csrf-token"
 const FormName = "x-csrf-token"
 
 func GetToken(r *http.Request) string {
-	return r.Context().Value(tokenKey).(string)
+	v := r.Context().Value(tokenKey)
+	if v == nil {
+		return ""
+	}
+
+	return v.(string)
 }
 
 func New() func(http.Handler) http.Handler {

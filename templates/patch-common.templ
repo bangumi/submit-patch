@@ -52,27 +52,29 @@ templ review(patchType string, user *view.CurrentUser, patchID string, csrfToken
 			</div>
 		</form>
 	}
-	<div class="row">
-		<hr/>
-		<form
-			action={ templ.SafeURL(fmt.Sprintf("/api/review/%s/%s", patchType, patchID)) }
-			method="post"
-			enctype="application/x-www-form-urlencoded"
-		>
-			<input type="hidden" name="x-csrf-token" value={ csrfToken }/>
-			<textarea class="form-control mb-4" name="text"></textarea>
-			<div class="row">
-				<div class="col">
-					<button
-						type="submit"
-						name="react"
-						value="comment"
-						class="btn btn-warning"
-					>
-						添加评论
-					</button>
+	if user.UserID != 0 {
+		<div class="row">
+			<hr/>
+			<form
+				action={ templ.SafeURL(fmt.Sprintf("/api/review/%s/%s", patchType, patchID)) }
+				method="post"
+				enctype="application/x-www-form-urlencoded"
+			>
+				<input type="hidden" name="x-csrf-token" value={ csrfToken }/>
+				<textarea class="form-control mb-4" name="text"></textarea>
+				<div class="row">
+					<div class="col">
+						<button
+							type="submit"
+							name="react"
+							value="comment"
+							class="btn btn-warning"
+						>
+							添加评论
+						</button>
+					</div>
 				</div>
-			</div>
-		</form>
-	</div>
+			</form>
+		</div>
+	}
 }
