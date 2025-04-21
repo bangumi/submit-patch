@@ -1181,6 +1181,38 @@ func (q *Queries) ListSubjectPatchesByStatesReviewedByUser(ctx context.Context, 
 	return items, nil
 }
 
+const nextPendingEpisodePatch = `-- name: NextPendingEpisodePatch :one
+select id
+from episode_patch
+where state = 0
+  and deleted_at is null
+  and id < $1
+order by id
+limit 1
+`
+
+func (q *Queries) NextPendingEpisodePatch(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, nextPendingEpisodePatch, id)
+	err := row.Scan(&id)
+	return id, err
+}
+
+const nextPendingSubjectPatch = `-- name: NextPendingSubjectPatch :one
+select id
+from subject_patch
+where state = 0
+  and deleted_at is null
+  and id < $1
+order by id
+limit 1
+`
+
+func (q *Queries) NextPendingSubjectPatch(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, nextPendingSubjectPatch, id)
+	err := row.Scan(&id)
+	return id, err
+}
+
 const rejectEpisodePatch = `-- name: RejectEpisodePatch :exec
 update episode_patch
 set wiki_user_id  = $1,

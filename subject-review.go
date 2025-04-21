@@ -167,8 +167,16 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 		return errgo.Wrap(err, "failed to accept patch")
 	}
 
-	// Implement subject approval logic here
-	http.Redirect(w, r, "/subject/"+patch.ID.String(), http.StatusSeeOther)
+	nextID, err := h.q.NextPendingSubjectPatch(r.Context(), patch.ID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Redirect(w, r, "/?type=subject", http.StatusSeeOther)
+			return nil
+		}
+		return errgo.Wrap(err, "failed to get next patch")
+	}
+
+	http.Redirect(w, r, "/subject/"+nextID.String(), http.StatusSeeOther)
 	return nil
 }
 

@@ -405,3 +405,22 @@ select id, subject_id, created_at, updated_at, from_user_id
 from subject_patch
 where state = 0
   and deleted_at is null;
+
+
+-- name: NextPendingSubjectPatch :one
+select id
+from subject_patch
+where state = 0
+  and deleted_at is null
+  and id < $1
+order by id
+limit 1;
+
+-- name: NextPendingEpisodePatch :one
+select id
+from episode_patch
+where state = 0
+  and deleted_at is null
+  and id < $1
+order by id
+limit 1;

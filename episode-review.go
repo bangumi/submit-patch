@@ -176,7 +176,16 @@ func (h *handler) handleEpisodeApprove(w http.ResponseWriter, r *http.Request, q
 		return errgo.Wrap(err, "failed to accept patch")
 	}
 
-	http.Redirect(w, r, "/episode/"+patch.ID.String(), http.StatusSeeOther)
+	nextID, err := h.q.NextPendingEpisodePatch(r.Context(), patch.ID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Redirect(w, r, "/?type=episode", http.StatusSeeOther)
+			return nil
+		}
+		return errgo.Wrap(err, "failed to get next patch")
+	}
+
+	http.Redirect(w, r, "/episode/"+nextID.String(), http.StatusSeeOther)
 	return nil
 }
 
