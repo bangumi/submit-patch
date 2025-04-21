@@ -413,7 +413,7 @@ from subject_patch
 where state = 0
   and deleted_at is null
   and id < $1
-order by id
+order by id desc
 limit 1;
 
 -- name: NextPendingEpisodePatch :one
@@ -422,5 +422,5 @@ from episode_patch
 where state = 0
   and deleted_at is null
   and id < $1
-order by id
+order by id desc
 limit 1;
