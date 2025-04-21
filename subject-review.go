@@ -183,7 +183,7 @@ func (h *handler) handleSubjectReject(w http.ResponseWriter, r *http.Request, qx
 		return templates.Error(r.Method, r.URL.String(), err.Error(), "", "").Render(r.Context(), w)
 	}
 
-	http.Redirect(w, r, "/episode/"+p.ID.String(), http.StatusFound)
+	http.Redirect(w, r, "/subject/"+p.ID.String(), http.StatusFound)
 	return nil
 }
 
