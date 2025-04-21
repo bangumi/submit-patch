@@ -21,6 +21,7 @@ import (
 
 type ApiPatchSubject struct {
 	CommieMessage    string `json:"commitMessage"`
+	AuthorID         int32  `json:"authorID"`
 	ExpectedRevision struct {
 		Infobox string `json:"infobox,omitempty"`
 		Name    string `json:"name,omitempty"`
@@ -63,6 +64,7 @@ func (h *handler) handleSubjectReview(w http.ResponseWriter, r *http.Request, pa
 
 func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, qx *dal.Queries, patch dal.SubjectPatch, s *session.Session) error {
 	var body = ApiPatchSubject{
+		AuthorID:      patch.FromUserID,
 		CommieMessage: fmt.Sprintf("%s [https://patch.bgm38.tv/subject/%s]", patch.Reason, patch.ID),
 	}
 
@@ -82,6 +84,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 	resp, err := h.client.R().
 		SetHeader("cf-ray", r.Header.Get("cf-ray")).
 		SetHeader("Authorization", "Bearer "+s.AccessToken).
+		SetHeader("x-admin-token", h.config.AdminToken).
 		SetBody(body).
 		Patch(fmt.Sprintf("https://next.bgm.tv/p1/wiki/subjects/%d", patch.SubjectID))
 	if err != nil {

@@ -8,6 +8,8 @@ import (
 type Config struct {
 	BotToken string `env:"TELEGRAM_BOT_TOKEN"`
 
+	AdminToken string `env:"ADMIN_TOKEN"`
+
 	BangumiAppId     string `env:"BGM_TV_APP_ID"`
 	BangumiAppSecret string `env:"BGM_TV_APP_SECRET"`
 
