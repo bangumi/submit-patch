@@ -95,7 +95,7 @@ templ subjectPatchDetailContent(
 	</div>
 	if len(comments) > 0 {
 		<div class="row mb-2">
-			<ul class="list-group">
+			<ul class="list-group ps-2 pe-2">
 				for _, c := range comments {
 					@Comment(user, c)
 				}
