@@ -138,6 +138,21 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 			return nil
 		}
 
+		if errRes.Code == ErrCodeItemLocked {
+			err = qx.RejectSubjectPatch(r.Context(), q.RejectSubjectPatchParams{
+				WikiUserID:   s.UserID,
+				State:        PatchStateRejected,
+				ID:           patch.ID,
+				RejectReason: "条目已被锁定",
+			})
+			if err != nil {
+				return errgo.Wrap(err, "failed to reject patch")
+			}
+
+			http.Redirect(w, r, "/subject/"+patch.ID.String(), http.StatusSeeOther)
+			return nil
+		}
+
 		log.Error().RawJSON("body", resp.Body()).Msg("unexpected response from submit patch")
 		return errors.New("failed to submit patch")
 	}
