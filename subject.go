@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	wiki "github.com/bangumi/wiki-parser-go"
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
@@ -438,6 +439,20 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		fmt.Printf("Error inserting subject patch: %v\n", err)
 		http.Error(w, "Failed to save suggestion", http.StatusInternalServerError)
 		return nil
+	}
+
+	if param.Infobox.Valid {
+		if _, err := wiki.Parse(param.Infobox.String); err != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			_ = h.q.CreateComment(ctx, dal.CreateCommentParams{
+				ID:        uuid.Must(uuid.NewV7()),
+				PatchID:   param.ID,
+				PatchType: PatchTypeSubject,
+				Text:      fmt.Sprintf("包含语法错误，请仔细检查\n\n%s", err),
+				FromUser:  wikiBotUserID,
+			})
+		}
 	}
 
 	http.Redirect(w, r, fmt.Sprintf("/subject/%s", pk), http.StatusFound)

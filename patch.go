@@ -7,6 +7,8 @@ import (
 	"github.com/aymanbagabas/go-udiff"
 )
 
+const wikiBotUserID = 427613
+
 func Diff(name, before, after string) string {
 	return udiff.Unified(name, name, before, after)
 }
