@@ -12,7 +12,12 @@ templ EpisodePatchList(r *http.Request, data view.EpisodePatchList) {
 	@Layout(
 		data.Title,
 		episodeListHead(),
-		episodeListContent(r, data),
+		templ.Join(
+			header(data.Title, data.Session),
+			listFilter(r.URL, "episode", data.CurrentStateFilter, data.PendingCount),
+			episodePatchList(data),
+			Pagination(data.Pagination),
+		),
 	)
 }
 
@@ -39,9 +44,9 @@ templ episodeListHead() {
   </style>
 }
 
-templ episodeListContent(r *http.Request, data view.EpisodePatchList) {
-	@header(data.Title, data.Session)
-	@listFilter(r.URL, "episode", data.CurrentStateFilter, data.PendingCount)
+// templ episodeListContent(r *http.Request, data view.EpisodePatchList) {
+// }
+templ episodePatchList(data view.EpisodePatchList) {
 	<div class="row m-0 mb-4">
 		<ul class="list-group p-0 m-0">
 			for _, patch := range data.Patches {
@@ -50,7 +55,6 @@ templ episodeListContent(r *http.Request, data view.EpisodePatchList) {
 		</ul>
 	</div>
 	<div class="row mb-2"></div>
-	@Pagination(data.Pagination)
 }
 
 templ episodePatch(patch view.EpisodePatchListItem) {

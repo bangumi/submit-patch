@@ -1,0 +1,48 @@
+package templates
+
+import (
+	"fmt"
+
+	"app/view"
+	"net/http"
+)
+
+templ UserSubjectList(r *http.Request, user view.User, data view.SubjectPatchList) {
+	@Layout(
+		data.Title,
+		subjectListHead(),
+		templ.Join(
+			header(data.Title, data.Session),
+			userHomepage(user),
+			listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
+			subjectPatchList(data),
+			Pagination(data.Pagination),
+		),
+	)
+}
+
+templ UserEpisodeList(r *http.Request, user view.User, data view.EpisodePatchList) {
+	@Layout(
+		data.Title,
+		subjectListHead(),
+		templ.Join(
+			header(data.Title, data.Session),
+			userHomepage(user),
+			listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
+			episodePatchList(data),
+			Pagination(data.Pagination),
+		),
+	)
+}
+
+templ userHomepage(user view.User) {
+	<div class="row mt-2 mb-2">
+		<div class="col d-flex justify-content-center">
+			<a href={ templ.SafeURL(fmt.Sprintf("https://bgm.tv/user/%d", user.ID)) }>
+				<h4>
+					{ fmt.Sprintf("https://bgm.tv/user/%d", user.ID) }
+				</h4>
+			</a>
+		</div>
+	</div>
+}

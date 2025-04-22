@@ -288,7 +288,16 @@ func (h *handler) listSubjectPatchesFromUser(
 
 	totalPage := (c + defaultPageSize - 1) / defaultPageSize
 
-	return templates.SubjectPatchList(r, view.SubjectPatchList{
+	u, err := h.q.GetUserByID(r.Context(), userID)
+	if err != nil {
+		return errgo.Wrap(err, "failed to get user info")
+	}
+
+	return templates.UserSubjectList(r, view.User{
+		ID:       userID,
+		Username: u.Username,
+		Nickname: u.Nickname,
+	}, view.SubjectPatchList{
 		Title:              fmt.Sprintf("%d subject patches", userID),
 		Session:            session.GetSession(r.Context()),
 		Patches:            patches,
@@ -359,7 +368,16 @@ func (h *handler) listEpisodePatchesFromUser(
 
 	totalPage := (c + defaultPageSize - 1) / defaultPageSize
 
-	return templates.EpisodePatchList(r, view.EpisodePatchList{
+	u, err := h.q.GetUserByID(r.Context(), userID)
+	if err != nil {
+		return errgo.Wrap(err, "failed to get user info")
+	}
+
+	return templates.UserEpisodeList(r, view.User{
+		ID:       userID,
+		Username: u.Username,
+		Nickname: u.Nickname,
+	}, view.EpisodePatchList{
 		Title:              fmt.Sprintf("%d episode patches", userID),
 		Session:            session.GetSession(r.Context()),
 		Patches:            patches,

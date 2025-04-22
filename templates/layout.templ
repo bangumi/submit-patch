@@ -96,3 +96,8 @@ templ header(title string, user *view.CurrentUser) {
 		<hr/>
 	</div>
 }
+
+templ composeComponents(a templ.Component, b templ.Component) {
+	@a
+	@b
+}

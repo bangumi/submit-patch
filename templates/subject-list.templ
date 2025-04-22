@@ -12,7 +12,12 @@ templ SubjectPatchList(r *http.Request, data view.SubjectPatchList) {
 	@Layout(
 		data.Title,
 		subjectListHead(),
-		subjectListContent(r, data),
+		templ.Join(
+			header(data.Title, data.Session),
+			listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
+			subjectPatchList(data),
+			Pagination(data.Pagination),
+		),
 	)
 }
 
@@ -39,9 +44,7 @@ templ subjectListHead() {
   </style>
 }
 
-templ subjectListContent(r *http.Request, data view.SubjectPatchList) {
-	@header(data.Title, data.Session)
-	@listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount)
+templ subjectPatchList(data view.SubjectPatchList) {
 	<div class="row m-0 mb-4">
 		<ul class="list-group p-0 m-0">
 			for _, patch := range data.Patches {
@@ -50,7 +53,6 @@ templ subjectListContent(r *http.Request, data view.SubjectPatchList) {
 		</ul>
 	</div>
 	<div class="row mb-2"></div>
-	@Pagination(data.Pagination)
 }
 
 templ subjectPatch(patch view.SubjectPatchListItem) {
