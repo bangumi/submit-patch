@@ -449,7 +449,7 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 				ID:        uuid.Must(uuid.NewV7()),
 				PatchID:   param.ID,
 				PatchType: PatchTypeSubject,
-				Text:      fmt.Sprintf("包含语法错误，请仔细检查\n\n%s", err),
+				Text:      fmt.Sprintf("包含语法错误，请仔细检查\n\n%s", err.Error()),
 				FromUser:  wikiBotUserID,
 			})
 		}
@@ -605,6 +605,28 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		err = qx.UpdateSubjectPatch(ctx, param)
 		if err != nil {
 			return errgo.Wrap(err, "failed to update subject patch")
+		}
+
+		if _, err := wiki.Parse(param.Infobox.String); err != nil {
+			_ = h.q.CreateComment(ctx, dal.CreateCommentParams{
+				ID:        uuid.Must(uuid.NewV7()),
+				PatchID:   param.ID,
+				PatchType: PatchTypeSubject,
+				Text:      "作者进行了修改",
+				FromUser:  0,
+			})
+		}
+
+		if param.Infobox.Valid {
+			if _, err := wiki.Parse(param.Infobox.String); err != nil {
+				_ = h.q.CreateComment(ctx, dal.CreateCommentParams{
+					ID:        uuid.Must(uuid.NewV7()),
+					PatchID:   param.ID,
+					PatchType: PatchTypeSubject,
+					Text:      fmt.Sprintf("包含语法错误，请仔细检查\n\n%s", err.Error()),
+					FromUser:  wikiBotUserID,
+				})
+			}
 		}
 
 		return nil
