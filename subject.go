@@ -453,6 +453,7 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 				Text:      fmt.Sprintf("包含语法错误，请仔细检查\n\n%s", err.Error()),
 				FromUser:  wikiBotUserID,
 			})
+			_ = h.q.UpdateSubjectPatchCommentCount(ctx, param.ID)
 		}
 	}
 
@@ -625,6 +626,7 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 					Text:      fmt.Sprintf("包含语法错误，请仔细检查\n\n%s", err.Error()),
 					FromUser:  wikiBotUserID,
 				})
+				_ = qx.UpdateSubjectPatchCommentCount(ctx, patchID)
 			}
 		}
 
