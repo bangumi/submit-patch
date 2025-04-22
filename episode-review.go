@@ -90,7 +90,7 @@ type ApiUpdateEpisode struct {
 
 func (h *handler) handleEpisodeApprove(w http.ResponseWriter, r *http.Request, qx *dal.Queries, patch dal.EpisodePatch, s *session.Session) error {
 	var body = ApiUpdateEpisode{
-		CommieMessage: fmt.Sprintf("%s [https://patch.bgm38.tv/ep/%s]", patch.Reason, patch.ID),
+		CommieMessage: fmt.Sprintf("%s [https://patch.bgm38.tv/episode/%s]", patch.Reason, patch.ID),
 		ExpectedRevision: ApiExpectedSubject{
 			Name:     patch.OriginalName.String,
 			NameCN:   patch.OriginalNameCn.String,
