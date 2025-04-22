@@ -692,6 +692,14 @@ func (h *handler) updateEpisodeEditPatch(w http.ResponseWriter, r *http.Request)
 			return errgo.Wrap(err, "failed to update subject patch")
 		}
 
+		_ = qx.CreateComment(ctx, dal.CreateCommentParams{
+			ID:        uuid.Must(uuid.NewV7()),
+			PatchID:   param.ID,
+			PatchType: PatchTypeEpisode,
+			Text:      "作者进行了修改",
+			FromUser:  0,
+		})
+
 		return nil
 	})
 

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	wiki "github.com/bangumi/wiki-parser-go"
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
@@ -433,11 +434,26 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		return nil
 	}
 
-	err = h.q.CreateSubjectEditPatch(r.Context(), param)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = h.q.CreateSubjectEditPatch(ctx, param)
 	if err != nil {
 		fmt.Printf("Error inserting subject patch: %v\n", err)
 		http.Error(w, "Failed to save suggestion", http.StatusInternalServerError)
 		return nil
+	}
+
+	if param.Infobox.Valid {
+		if _, err := wiki.Parse(param.Infobox.String); err != nil {
+			_ = h.q.CreateComment(ctx, dal.CreateCommentParams{
+				ID:        uuid.Must(uuid.NewV7()),
+				PatchID:   param.ID,
+				PatchType: PatchTypeSubject,
+				Text:      fmt.Sprintf("包含语法错误，请仔细检查\n\n%s", err.Error()),
+				FromUser:  wikiBotUserID,
+			})
+		}
 	}
 
 	http.Redirect(w, r, fmt.Sprintf("/subject/%s", pk), http.StatusFound)
@@ -590,6 +606,26 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		err = qx.UpdateSubjectPatch(ctx, param)
 		if err != nil {
 			return errgo.Wrap(err, "failed to update subject patch")
+		}
+
+		_ = qx.CreateComment(ctx, dal.CreateCommentParams{
+			ID:        uuid.Must(uuid.NewV7()),
+			PatchID:   param.ID,
+			PatchType: PatchTypeSubject,
+			Text:      "作者进行了修改",
+			FromUser:  0,
+		})
+
+		if param.Infobox.Valid {
+			if _, err := wiki.Parse(param.Infobox.String); err != nil {
+				_ = qx.CreateComment(ctx, dal.CreateCommentParams{
+					ID:        uuid.Must(uuid.NewV7()),
+					PatchID:   param.ID,
+					PatchType: PatchTypeSubject,
+					Text:      fmt.Sprintf("包含语法错误，请仔细检查\n\n%s", err.Error()),
+					FromUser:  wikiBotUserID,
+				})
+			}
 		}
 
 		return nil
