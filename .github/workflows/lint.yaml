@@ -26,6 +26,8 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - run: go install github.com/a-h/templ/cmd/templ
+
       - run: task gen:template
       - run: git diff --exit-code
 
