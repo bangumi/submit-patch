@@ -67,10 +67,10 @@ templ episodePatchDetailContent(
 		</div>
 	</div>
 	<div class="row mb-2 p-2">
-		提交时间: { relativeTime(now, patch.CreatedAt.Time) } ago
+		提交时间: { relativeTime(now, patch.CreatedAt.Time) }
 		({ user.LocalTime(patch.CreatedAt.Time) })
 		<br/>
-		修改时间: { relativeTime(now, patch.UpdatedAt.Time) } ago
+		修改时间: { relativeTime(now, patch.UpdatedAt.Time) }
 		({ user.LocalTime(patch.UpdatedAt.Time) })
 	</div>
 	if len(comments) > 0 {
