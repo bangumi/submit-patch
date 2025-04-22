@@ -19,7 +19,16 @@ templ EpisodePatchPage(
 	@Layout(
 		"",
 		patchDetailHead(),
-		episodePatchDetailContent(csrfToken, user, patch, author, reviewer, comments, changes),
+		episodePatchDetailContent(
+			csrfToken,
+			user,
+			patch,
+			author,
+			reviewer,
+			comments,
+			changes,
+			time.Now(),
+		),
 	)
 }
 
@@ -31,6 +40,7 @@ templ episodePatchDetailContent(
 	reviewer *dal.PatchUser,
 	comments []dal.GetCommentsRow,
 	changes []view.Change,
+	now time.Time,
 ) {
 	@header("", user)
 	<div class="row">
@@ -57,10 +67,10 @@ templ episodePatchDetailContent(
 		</div>
 	</div>
 	<div class="row mb-2 p-2">
-		提交时间: { time.Since(patch.CreatedAt.Time).Truncate(time.Second).String() } ago
+		提交时间: { relativeTime(now, patch.CreatedAt.Time) } ago
 		({ user.LocalTime(patch.CreatedAt.Time) })
 		<br/>
-		修改时间: { time.Since(patch.UpdatedAt.Time).Truncate(time.Second).String() } ago
+		修改时间: { relativeTime(now, patch.UpdatedAt.Time) } ago
 		({ user.LocalTime(patch.UpdatedAt.Time) })
 	</div>
 	if len(comments) > 0 {

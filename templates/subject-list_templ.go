@@ -43,7 +43,7 @@ func SubjectPatchList(r *http.Request, data view.SubjectPatchList) templ.Compone
 			templ.Join(
 				header(data.Title, data.Session),
 				listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
-				subjectPatchList(data),
+				subjectPatchList(data, time.Now()),
 				Pagination(data.Pagination),
 			),
 		).Render(ctx, templ_7745c5c3_Buffer)
@@ -83,7 +83,7 @@ func subjectListHead() templ.Component {
 	})
 }
 
-func subjectPatchList(data view.SubjectPatchList) templ.Component {
+func subjectPatchList(data view.SubjectPatchList, now time.Time) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -109,7 +109,7 @@ func subjectPatchList(data view.SubjectPatchList) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		for _, patch := range data.Patches {
-			templ_7745c5c3_Err = subjectPatch(patch).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = subjectPatch(patch, now).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -122,7 +122,7 @@ func subjectPatchList(data view.SubjectPatchList) templ.Component {
 	})
 }
 
-func subjectPatch(patch view.SubjectPatchListItem) templ.Component {
+func subjectPatch(patch view.SubjectPatchListItem, now time.Time) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -238,28 +238,28 @@ func subjectPatch(patch view.SubjectPatchListItem) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var9 string
-		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(time.Since(patch.CreatedAt).Truncate(time.Second).String())
+		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(relativeTime(now, patch.CreatedAt))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject-list.templ`, Line: 91, Col: 124}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject-list.templ`, Line: 92, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, " ago</span></div></div><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">updated</p><span class=\"badge bg-light text-dark border border-info\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</span></div></div><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">updated</p><span class=\"badge bg-light text-dark border border-info\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var10 string
-		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(time.Since(patch.UpdatedAt).Truncate(time.Second).String())
+		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(relativeTime(now, patch.UpdatedAt))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject-list.templ`, Line: 97, Col: 124}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject-list.templ`, Line: 100, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, " ago</span></div></div><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">分类</p><span class=\"badge bg-light text-dark border border-info\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</span></div></div><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">分类</p><span class=\"badge bg-light text-dark border border-info\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -297,7 +297,7 @@ func subjectPatch(patch view.SubjectPatchListItem) templ.Component {
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(patch.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject-list.templ`, Line: 122, Col: 164}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject-list.templ`, Line: 126, Col: 164}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
@@ -310,7 +310,7 @@ func subjectPatch(patch view.SubjectPatchListItem) templ.Component {
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(patch.Author.Username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject-list.templ`, Line: 128, Col: 175}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject-list.templ`, Line: 132, Col: 175}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
@@ -328,7 +328,7 @@ func subjectPatch(patch view.SubjectPatchListItem) templ.Component {
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(patch.Reviewer.Username)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject-list.templ`, Line: 135, Col: 178}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `subject-list.templ`, Line: 139, Col: 178}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {

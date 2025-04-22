@@ -5,6 +5,7 @@ import (
 
 	"app/view"
 	"net/http"
+	"time"
 )
 
 templ UserSubjectList(r *http.Request, user view.User, data view.SubjectPatchList) {
@@ -15,7 +16,7 @@ templ UserSubjectList(r *http.Request, user view.User, data view.SubjectPatchLis
 			header(data.Title, data.Session),
 			userHomepage(user),
 			listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
-			subjectPatchList(data),
+			subjectPatchList(data, time.Now()),
 			Pagination(data.Pagination),
 		),
 	)
@@ -29,7 +30,7 @@ templ UserEpisodeList(r *http.Request, user view.User, data view.EpisodePatchLis
 			header(data.Title, data.Session),
 			userHomepage(user),
 			listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
-			episodePatchList(data),
+			episodePatchList(data, time.Now()),
 			Pagination(data.Pagination),
 		),
 	)

@@ -43,7 +43,7 @@ func EpisodePatchList(r *http.Request, data view.EpisodePatchList) templ.Compone
 			templ.Join(
 				header(data.Title, data.Session),
 				listFilter(r.URL, "episode", data.CurrentStateFilter, data.PendingCount),
-				episodePatchList(data),
+				episodePatchList(data, time.Now()),
 				Pagination(data.Pagination),
 			),
 		).Render(ctx, templ_7745c5c3_Buffer)
@@ -85,7 +85,7 @@ func episodeListHead() templ.Component {
 
 // templ episodeListContent(r *http.Request, data view.EpisodePatchList) {
 // }
-func episodePatchList(data view.EpisodePatchList) templ.Component {
+func episodePatchList(data view.EpisodePatchList, now time.Time) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -111,7 +111,7 @@ func episodePatchList(data view.EpisodePatchList) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		for _, patch := range data.Patches {
-			templ_7745c5c3_Err = episodePatch(patch).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = episodePatch(patch, now).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -124,7 +124,7 @@ func episodePatchList(data view.EpisodePatchList) templ.Component {
 	})
 }
 
-func episodePatch(patch view.EpisodePatchListItem) templ.Component {
+func episodePatch(patch view.EpisodePatchListItem, now time.Time) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -234,35 +234,35 @@ func episodePatch(patch view.EpisodePatchListItem) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var9 string
-		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(time.Since(patch.CreatedAt).Truncate(time.Second).String())
+		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(relativeTime(now, patch.CreatedAt))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 93, Col: 124}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 94, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, " ago</span></div></div><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">updated</p><span class=\"badge bg-light text-dark border border-info\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</span></div></div><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">updated</p><span class=\"badge bg-light text-dark border border-info\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var10 string
-		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(time.Since(patch.UpdatedAt).Truncate(time.Second).String())
+		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(relativeTime(now, patch.UpdatedAt))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 99, Col: 124}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 102, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, " ago</span></div></div><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">条目名</p><span class=\"badge bg-light text-dark border border-info\" style=\"max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</span></div></div><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">条目名</p><span class=\"badge bg-light text-dark border border-info\" style=\"max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(patch.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 105, Col: 164}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 109, Col: 164}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
@@ -275,7 +275,7 @@ func episodePatch(patch view.EpisodePatchListItem) templ.Component {
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(patch.Author.Username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 111, Col: 175}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 115, Col: 175}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
@@ -293,7 +293,7 @@ func episodePatch(patch view.EpisodePatchListItem) templ.Component {
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(patch.Reviewer.Username)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 118, Col: 178}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 122, Col: 178}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {

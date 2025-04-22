@@ -13,6 +13,7 @@ import (
 
 	"app/view"
 	"net/http"
+	"time"
 )
 
 func UserSubjectList(r *http.Request, user view.User, data view.SubjectPatchList) templ.Component {
@@ -43,7 +44,7 @@ func UserSubjectList(r *http.Request, user view.User, data view.SubjectPatchList
 				header(data.Title, data.Session),
 				userHomepage(user),
 				listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
-				subjectPatchList(data),
+				subjectPatchList(data, time.Now()),
 				Pagination(data.Pagination),
 			),
 		).Render(ctx, templ_7745c5c3_Buffer)
@@ -82,7 +83,7 @@ func UserEpisodeList(r *http.Request, user view.User, data view.EpisodePatchList
 				header(data.Title, data.Session),
 				userHomepage(user),
 				listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
-				episodePatchList(data),
+				episodePatchList(data, time.Now()),
 				Pagination(data.Pagination),
 			),
 		).Render(ctx, templ_7745c5c3_Buffer)
@@ -130,7 +131,7 @@ func userHomepage(user view.User) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("https://bgm.tv/user/%d", user.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `user-page.templ`, Line: 43, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `user-page.templ`, Line: 44, Col: 53}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {

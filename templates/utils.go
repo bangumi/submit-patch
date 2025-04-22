@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/a-h/templ"
 )
@@ -63,10 +64,67 @@ func AutoURL(s string) string {
 	return builder.String()
 }
 
-// Example usage (optional, for demonstration)
-// func main() {
-// 	text := "Check out this link: http://example.com and also https://example.org/page?q=test. Don't forget (http://example.net)."
-// 	htmlResult := AutoURL(text)
-// 	fmt.Println(htmlResult)
-// 	// Output: Check out this link: &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt; and also &lt;a href="https://example.org/page?q=test" target="_blank"&gt;https://example.org/page?q=test&lt;/a&gt;. Don&#39;t forget (&lt;a href="http://example.net" target="_blank"&gt;http://example.net&lt;/a&gt;).
-// }
+func relativeTime(now time.Time, t time.Time) string {
+	d := now.Sub(t).Truncate(time.Second)
+
+	// Handle future times if necessary, for now assume t <= now
+	// and return the duration magnitude.
+	if d < 0 {
+		d = -d
+	}
+
+	// Handle very small durations
+	if d < time.Second {
+		return "just now"
+	}
+
+	if d < time.Minute {
+		// Format: Xs
+		return fmt.Sprintf("%ds ago", int(d.Seconds()))
+	}
+
+	if d < time.Hour {
+		// Format: XmYs or Xm
+		m := int(d.Minutes())
+		s := int(d.Seconds()) % 60
+		if s == 0 {
+			return fmt.Sprintf("%dm ago", m)
+		}
+		return fmt.Sprintf("%dm%ds ago", m, s)
+	}
+
+	const day = 24 * time.Hour
+	if d < day {
+		// Format: XhYm or Xh
+		h := int(d.Hours())
+		m := int(d.Minutes()) % 60
+		if m == 0 {
+			return fmt.Sprintf("%dh ago", h)
+		}
+		return fmt.Sprintf("%dh%dm ago", h, m)
+	}
+
+	// Using 365 days for a year is an approximation
+	const year = 365 * day
+
+	if d < year {
+		// Format: Xday Yh / Xdays Yh or Xday / Xdays
+		days := int(d / day)
+
+		dayStr := "day"
+		if days > 1 {
+			dayStr = "days"
+		}
+
+		return fmt.Sprintf("%d%s ago", days, dayStr)
+	}
+
+	// Format: XyYd or Xy
+	years := int(d / year)
+	days := int((d % year) / day) // Days remaining after full years
+
+	if days == 0 {
+		return fmt.Sprintf("%dy ago", years)
+	}
+	return fmt.Sprintf("%dy%dd ago", years, days)
+}

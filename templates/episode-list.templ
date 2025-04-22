@@ -15,7 +15,7 @@ templ EpisodePatchList(r *http.Request, data view.EpisodePatchList) {
 		templ.Join(
 			header(data.Title, data.Session),
 			listFilter(r.URL, "episode", data.CurrentStateFilter, data.PendingCount),
-			episodePatchList(data),
+			episodePatchList(data, time.Now()),
 			Pagination(data.Pagination),
 		),
 	)
@@ -46,18 +46,18 @@ templ episodeListHead() {
 
 // templ episodeListContent(r *http.Request, data view.EpisodePatchList) {
 // }
-templ episodePatchList(data view.EpisodePatchList) {
+templ episodePatchList(data view.EpisodePatchList, now time.Time) {
 	<div class="row m-0 mb-4">
 		<ul class="list-group p-0 m-0">
 			for _, patch := range data.Patches {
-				@episodePatch(patch)
+				@episodePatch(patch, now)
 			}
 		</ul>
 	</div>
 	<div class="row mb-2"></div>
 }
 
-templ episodePatch(patch view.EpisodePatchListItem) {
+templ episodePatch(patch view.EpisodePatchListItem, now time.Time) {
 	<a
 		href={ templ.SafeURL("/episode/" + patch.ID) }
 		id={ patch.ID }
@@ -90,13 +90,17 @@ templ episodePatch(patch view.EpisodePatchListItem) {
 			<div class="d-flex">
 				<div class="d-none d-sm-flex pe-2 flex-row">
 					<p class="m-0 pe-1" style="white-space: nowrap">created</p>
-					<span class="badge bg-light text-dark border border-info">{ time.Since( patch.CreatedAt).Truncate(time.Second).String() } ago</span>
+					<span class="badge bg-light text-dark border border-info">
+						{ relativeTime(now,patch.CreatedAt) }
+					</span>
 				</div>
 			</div>
 			<div class="d-flex">
 				<div class="d-none d-sm-flex pe-2 flex-row">
 					<p class="m-0 pe-1" style="white-space: nowrap">updated</p>
-					<span class="badge bg-light text-dark border border-info">{ time.Since( patch.UpdatedAt).Truncate(time.Second).String() } ago</span>
+					<span class="badge bg-light text-dark border border-info">
+						{ relativeTime(now,patch.UpdatedAt) }
+					</span>
 				</div>
 			</div>
 			<div class="d-flex">
