@@ -434,7 +434,10 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		return nil
 	}
 
-	err = h.q.CreateSubjectEditPatch(r.Context(), param)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = h.q.CreateSubjectEditPatch(ctx, param)
 	if err != nil {
 		fmt.Printf("Error inserting subject patch: %v\n", err)
 		http.Error(w, "Failed to save suggestion", http.StatusInternalServerError)
@@ -443,8 +446,6 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 
 	if param.Infobox.Valid {
 		if _, err := wiki.Parse(param.Infobox.String); err != nil {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
 			_ = h.q.CreateComment(ctx, dal.CreateCommentParams{
 				ID:        uuid.Must(uuid.NewV7()),
 				PatchID:   param.ID,
