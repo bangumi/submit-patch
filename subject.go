@@ -147,14 +147,18 @@ func (h *handler) listSubjectPatches(
 	stateVals []int32,
 	currentPage int64,
 ) error {
-	c, err := h.q.CountSubjectPatchesByStates(r.Context(), stateVals)
+	c, err := h.q.CountSubjectPatches(r.Context(), dal.CountSubjectPatchesParams{
+		State:      stateVals,
+		FromUserID: 0,
+		WikiUserID: 0,
+	})
 	if err != nil {
 		return err
 	}
 
 	var patches = make([]view.SubjectPatchListItem, 0, defaultPageSize)
 	if c != 0 {
-		data, err := h.q.ListSubjectPatchesByStates(r.Context(), dal.ListSubjectPatchesByStatesParams{
+		data, err := h.q.ListSubjectPatches(r.Context(), dal.ListSubjectPatchesParams{
 			State:   stateVals,
 			OrderBy: order,
 			Size:    defaultPageSize,
@@ -201,7 +205,7 @@ func (h *handler) listSubjectPatches(
 		return err
 	}
 
-	_ = templates.SubjectPatchList(r, view.SubjectPatchList{
+	return templates.SubjectPatchList(r, view.SubjectPatchList{
 		Session:            session.GetSession(r.Context()),
 		Patches:            patches,
 		CurrentStateFilter: patchStateFilter,
@@ -215,7 +219,6 @@ func (h *handler) listSubjectPatches(
 			CurrentPage: currentPage,
 		},
 	}).Render(r.Context(), w)
-	return nil
 }
 
 func (h *handler) subjectPatchDetailView(

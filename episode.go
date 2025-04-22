@@ -212,18 +212,18 @@ func (h *handler) listEpisodePatches(
 	stateVals []int32,
 	currentPage int64,
 ) error {
-	c, err := h.q.CountEpisodePatchesByStates(r.Context(), stateVals)
+	c, err := h.q.CountEpisodePatches(r.Context(), dal.CountEpisodePatchesParams{State: stateVals})
 	if err != nil {
 		return err
 	}
 
 	var patches = make([]view.EpisodePatchListItem, 0, defaultPageSize)
 	if c != 0 {
-		data, err := h.q.ListEpisodePatchesByStates(r.Context(), dal.ListEpisodePatchesByStatesParams{
+		data, err := h.q.ListEpisodePatches(r.Context(), dal.ListEpisodePatchesParams{
 			State:   stateVals,
-			Size:    defaultPageSize,
 			OrderBy: order,
 			Skip:    (currentPage - 1) * defaultPageSize,
+			Size:    defaultPageSize,
 		})
 		if err != nil {
 			return errgo.Wrap(err, "failed to query data")

@@ -5,7 +5,16 @@ on conflict (user_id) do update set username = excluded.username,
                                     nickname = excluded.nickname;
 
 
--- name: ListSubjectPatchesByStates :many
+-- name: CountSubjectPatches :one
+select count(1)
+from subject_patch
+where deleted_at is null
+  and state = any (@state::int[])
+  and ((from_user_id = @from_user_id and @from_user_id != 0) or @from_user_id = 0)
+  and ((wiki_user_id = @wiki_user_id and @wiki_user_id != 0) or @wiki_user_id = 0)
+  and action = 1;
+
+-- name: ListSubjectPatches :many
 select subject_patch.id,
        subject_patch.original_name,
        subject_patch.state,
@@ -26,21 +35,26 @@ from subject_patch
          left outer join patch_users as reviewer on reviewer.user_id = subject_patch.wiki_user_id
 where deleted_at is null
   and state = any (@state::int[])
+  and ((from_user_id = @from_user_id and @from_user_id != 0) or @from_user_id = 0)
+  and ((wiki_user_id = @wiki_user_id and @wiki_user_id != 0) or @wiki_user_id = 0)
   and action = 1
 order by case
              when @order_by::text = 'created_at' then created_at
              when @order_by = 'updated_at' then updated_at
+             when @order_by = '' then created_at
              end desc
 limit @size::int8 offset @skip::int8;
 
--- name: CountSubjectPatchesByStates :one
-select count(1)
-from subject_patch
-where deleted_at is null
-  and state = any ($1::int[])
-  and action = 1;
 
--- name: ListEpisodePatchesByStates :many
+-- name: CountEpisodePatches :one
+select count(1)
+from episode_patch
+where deleted_at is null
+  and ((from_user_id = @from_user_id and @from_user_id != 0) or @from_user_id = 0)
+  and ((wiki_user_id = @wiki_user_id and @wiki_user_id != 0) or @wiki_user_id = 0)
+  and state = any (@state::int[]);
+
+-- name: ListEpisodePatches :many
 select episode_patch.id,
        episode_patch.original_name,
        episode_patch.state,
@@ -58,18 +72,14 @@ from episode_patch
          inner join patch_users as author on author.user_id = episode_patch.from_user_id
          left outer join patch_users as reviewer on reviewer.user_id = episode_patch.wiki_user_id
 where deleted_at is null
+  and ((from_user_id = @from_user_id and @from_user_id != 0) or @from_user_id = 0)
+  and ((wiki_user_id = @wiki_user_id and @wiki_user_id != 0) or @wiki_user_id = 0)
   and state = any (@state::int[])
-order by case
-             when @order_by::text = 'created_at' then created_at
-             when @order_by = 'updated_at' then updated_at
-             end desc
+order by case when @order_by::text = 'created_at' then created_at end,
+         case when @order_by = 'updated_at' then updated_at end desc,
+         case when @order_by = '' then created_at end
 limit @size::int8 offset @skip::int8;
 
--- name: CountEpisodePatchesByStates :one
-select count(1)
-from episode_patch
-where deleted_at is null
-  and state = any ($1::int[]);
 
 -- name: GetSubjectPatchByID :one
 select *
@@ -230,7 +240,6 @@ set reason               = $2,
     description          = $13
 where id = $1;
 
-
 -- name: AcceptEpisodePatch :exec
 update episode_patch
 set wiki_user_id = $1,
@@ -257,7 +266,6 @@ delete
 from edit_suggestion
 where id = $1;
 
-
 -- name: CountPendingPatch :one
 select (select count(1)
         from subject_patch
@@ -267,138 +275,6 @@ select (select count(1)
         from episode_patch
         where deleted_at is null
           and state = 0) as episode_patch_count;
-
--- name: ListSubjectPatchesByStatesFromUser :many
-select subject_patch.id,
-       subject_patch.original_name,
-       subject_patch.state,
-       subject_patch.action,
-       subject_patch.created_at,
-       subject_patch.updated_at,
-       subject_patch.comments_count,
-       subject_patch.reason,
-       subject_patch.subject_type,
-       author.user_id    as author_user_id,
-       author.username   as author_username,
-       author.nickname   as author_nickname,
-       reviewer.user_id  as reviewer_user_id,
-       reviewer.username as reviewer_username,
-       reviewer.nickname as reviewer_nickname
-from subject_patch
-         inner join patch_users as author on author.user_id = subject_patch.from_user_id
-         left outer join patch_users as reviewer on reviewer.user_id = subject_patch.wiki_user_id
-where deleted_at is null
-  and state = any (@state::int[])
-  and from_user_id = $1
-  and action = 1
-order by created_at desc
-limit @size::int8 offset @skip::int8;
-
--- name: CountSubjectPatchesByStatesFromUser :one
-select count(1)
-from subject_patch
-where deleted_at is null
-  and from_user_id = @user_id
-  and state = any (@state::int[])
-  and action = 1;
-
-
--- name: ListEpisodePatchesByStatesFromUser :many
-select episode_patch.id,
-       episode_patch.original_name,
-       episode_patch.state,
-       episode_patch.created_at,
-       episode_patch.updated_at,
-       episode_patch.comments_count,
-       episode_patch.reason,
-       author.user_id    as author_user_id,
-       author.username   as author_username,
-       author.nickname   as author_nickname,
-       reviewer.user_id  as reviewer_user_id,
-       reviewer.username as reviewer_username,
-       reviewer.nickname as reviewer_nickname
-from episode_patch
-         inner join patch_users as author on author.user_id = episode_patch.from_user_id
-         left outer join patch_users as reviewer on reviewer.user_id = episode_patch.wiki_user_id
-where deleted_at is null
-  and from_user_id = @user_id
-  and state = any (@state::int[])
-order by created_at desc
-limit @size::int8 offset @skip::int8;
-
--- name: CountEpisodePatchesByStatesFromUser :one
-select count(1)
-from episode_patch
-where deleted_at is null
-  and from_user_id = @user_id
-  and state = any (@state::int[]);
-
-
--- name: ListSubjectPatchesByStatesReviewedByUser :many
-select subject_patch.id,
-       subject_patch.original_name,
-       subject_patch.state,
-       subject_patch.action,
-       subject_patch.created_at,
-       subject_patch.updated_at,
-       subject_patch.comments_count,
-       subject_patch.reason,
-       subject_patch.subject_type,
-       author.user_id    as author_user_id,
-       author.username   as author_username,
-       author.nickname   as author_nickname,
-       reviewer.user_id  as reviewer_user_id,
-       reviewer.username as reviewer_username,
-       reviewer.nickname as reviewer_nickname
-from subject_patch
-         inner join patch_users as author on author.user_id = subject_patch.from_user_id
-         left outer join patch_users as reviewer on reviewer.user_id = subject_patch.wiki_user_id
-where deleted_at is null
-  and state = any (@state::int[])
-  and wiki_user_id = $1
-  and action = 1
-order by updated_at desc
-limit @size::int8 offset @skip::int8;
-
--- name: CountSubjectPatchesByStatesReviewedByUser :one
-select count(1)
-from subject_patch
-where deleted_at is null
-  and wiki_user_id = @user_id
-  and state = any (@state::int[])
-  and action = 1;
-
-
--- name: ListEpisodePatchesByStatesReviewedByUser :many
-select episode_patch.id,
-       episode_patch.original_name,
-       episode_patch.state,
-       episode_patch.created_at,
-       episode_patch.updated_at,
-       episode_patch.comments_count,
-       episode_patch.reason,
-       author.user_id    as author_user_id,
-       author.username   as author_username,
-       author.nickname   as author_nickname,
-       reviewer.user_id  as reviewer_user_id,
-       reviewer.username as reviewer_username,
-       reviewer.nickname as reviewer_nickname
-from episode_patch
-         inner join patch_users as author on author.user_id = episode_patch.from_user_id
-         left outer join patch_users as reviewer on reviewer.user_id = episode_patch.wiki_user_id
-where deleted_at is null
-  and wiki_user_id = @user_id
-  and state = any (@state::int[])
-order by updated_at desc
-limit @size::int8 offset @skip::int8;
-
--- name: CountEpisodePatchesByStatesReviewedByUser :one
-select count(1)
-from episode_patch
-where deleted_at is null
-  and wiki_user_id = @user_id
-  and state = any (@state::int[]);
-
 
 -- name: ListPendingEpisodePatches :many
 select id, episode_id, created_at, updated_at, from_user_id
