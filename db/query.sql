@@ -38,9 +38,9 @@ where deleted_at is null
   and ((from_user_id = @from_user_id and @from_user_id != 0) or @from_user_id = 0)
   and ((wiki_user_id = @wiki_user_id and @wiki_user_id != 0) or @wiki_user_id = 0)
   and action = 1
-order by case when @order_by::text = 'created_at' then created_at end,
+order by case when @order_by::text = 'created_at' then created_at end desc,
          case when @order_by = 'updated_at' then updated_at end desc,
-         case when @order_by = '' then created_at end
+         case when @order_by = '' then created_at end desc
 limit @size::int8 offset @skip::int8;
 
 
@@ -73,9 +73,9 @@ where deleted_at is null
   and ((from_user_id = @from_user_id and @from_user_id != 0) or @from_user_id = 0)
   and ((wiki_user_id = @wiki_user_id and @wiki_user_id != 0) or @wiki_user_id = 0)
   and state = any (@state::int[])
-order by case when @order_by::text = 'created_at' then created_at end,
+order by case when @order_by::text = 'created_at' then created_at end desc,
          case when @order_by = 'updated_at' then updated_at end desc,
-         case when @order_by = '' then created_at end
+         case when @order_by = '' then created_at end desc
 limit @size::int8 offset @skip::int8;
 
 
