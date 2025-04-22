@@ -2,10 +2,11 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 // Note: Go's \p{Z} might differ slightly from Python's re2 \p{Z}.
@@ -13,9 +14,6 @@ import (
 // Pattern: Match characters NOT in the set {tab, cr, lf, Letter, Mark, Number, Punctuation, Symbol, Separator}
 var invisiblePattern = regexp.MustCompile(`[^\t\r\n\p{L}\p{M}\p{N}\p{P}\p{S}\p{Z}]`)
 
-// CheckInvalidInputStr checks if any of the input strings contain invalid characters (non-printable, control chars).
-// It checks line by line. If an invalid character is found, it returns an error.
-// This mimics the behavior of the Python version, including line-by-line checking.
 func CheckInvalidInputStr(ss ...string) error {
 	for _, s := range ss {
 		scanner := bufio.NewScanner(strings.NewReader(s))
@@ -32,11 +30,9 @@ func CheckInvalidInputStr(ss ...string) error {
 			return fmt.Errorf("error scanning string: %w", err)
 		}
 	}
-	return nil // No invalid characters found
+	return nil
 }
 
-// ContainsInvalidInputStr checks if any of the input strings contain invalid characters.
-// If found, it returns the first occurrence of such a character. Otherwise, returns an empty string.
 func ContainsInvalidInputStr(ss ...string) string {
 	for _, s := range ss {
 		match := invisiblePattern.FindString(s)
@@ -47,27 +43,26 @@ func ContainsInvalidInputStr(ss ...string) string {
 	return ""
 }
 
-// replInvisible converts a matched invisible character sequence to its Unicode escape representation.
-// This mimics the Python `__repl` function using `encode("unicode-escape").decode()`.
 func replInvisible(matchedInvisible string) string {
-	var sb strings.Builder
+	var sb = bytes.NewBuffer(make([]byte, 0, 8))
 	for _, r := range matchedInvisible {
-		// strconv.QuoteRuneToASCII produces 'X' style quotes (e.g., '\x00', '\u1234').
-		// We remove the surrounding single quotes to match the Python output.
-		quoted := strconv.QuoteRuneToASCII(r)
-		if len(quoted) >= 3 && quoted[0] == '\'' && quoted[len(quoted)-1] == '\'' {
-			sb.WriteString(quoted[1 : len(quoted)-1])
+		if isValidUnicodeCodePoint(r) {
+			fmt.Fprintf(sb, "\\x%02x", r)
+			continue
+		}
+		if r <= 0xFFFF {
+			fmt.Fprintf(sb, "\\u%04x", r)
 		} else {
-			// Fallback if QuoteRuneToASCII behaves unexpectedly.
-			// This path is unlikely for characters matched by invisiblePattern.
-			sb.WriteString(quoted)
+			fmt.Fprintf(sb, "\\U%08x", r)
 		}
 	}
 	return sb.String()
 }
 
-// EscapeInvisible replaces all invisible characters in a string with their Unicode escape sequences
-// (e.g., \x00, \uABCD).
+func isValidUnicodeCodePoint(r rune) bool {
+	return r != utf8.RuneError && !(r >= 0xD800 && r <= 0xDFFF) && r <= 0x10FFFF
+}
+
 func EscapeInvisible(s string) string {
 	return invisiblePattern.ReplaceAllStringFunc(s, replInvisible)
 }
