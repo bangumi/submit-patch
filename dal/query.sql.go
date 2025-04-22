@@ -709,11 +709,9 @@ where deleted_at is null
   and ((from_user_id = $2 and $2 != 0) or $2 = 0)
   and ((wiki_user_id = $3 and $3 != 0) or $3 = 0)
   and action = 1
-order by case
-             when $4::text = 'created_at' then created_at
-             when $4 = 'updated_at' then updated_at
-             when $4 = '' then created_at
-             end desc
+order by case when $4::text = 'created_at' then created_at end,
+         case when $4 = 'updated_at' then updated_at end desc,
+         case when $4 = '' then created_at end
 limit $6::int8 offset $5::int8
 `
 
