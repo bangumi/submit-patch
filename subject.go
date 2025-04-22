@@ -607,7 +607,7 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 			return errgo.Wrap(err, "failed to update subject patch")
 		}
 
-		_ = h.q.CreateComment(ctx, dal.CreateCommentParams{
+		_ = qx.CreateComment(ctx, dal.CreateCommentParams{
 			ID:        uuid.Must(uuid.NewV7()),
 			PatchID:   param.ID,
 			PatchType: PatchTypeSubject,
@@ -617,7 +617,7 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 
 		if param.Infobox.Valid {
 			if _, err := wiki.Parse(param.Infobox.String); err != nil {
-				_ = h.q.CreateComment(ctx, dal.CreateCommentParams{
+				_ = qx.CreateComment(ctx, dal.CreateCommentParams{
 					ID:        uuid.Must(uuid.NewV7()),
 					PatchID:   param.ID,
 					PatchType: PatchTypeSubject,
