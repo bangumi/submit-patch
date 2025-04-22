@@ -45,7 +45,7 @@ tasks:
       - sqlc generate
 
   watch:template:
-    cmd: watchexec --shell=none -e templ -w . -r -- task gen:template
+    cmd: watchexec --shell=none -e templ -w . -r -- task gen:template --force
 
   watch:dev:
-    cmd: watchexec --shell=none -e go -w . -r -- task dev
+    cmd: watchexec --shell=none -e go -w . -w templates -r -- task dev
