@@ -27,7 +27,7 @@ func (h *handler) indexView(w http.ResponseWriter, r *http.Request) error {
 		currentPage = 1
 	}
 
-	stateVals, state, err := readableStateToDBValues(rq.Get("state"), StateFilterPending)
+	stateVals, state, order, err := readableStateToDBValues(rq.Get("state"), StateFilterPending)
 	if err != nil {
 		return err
 	}
@@ -35,9 +35,9 @@ func (h *handler) indexView(w http.ResponseWriter, r *http.Request) error {
 	t := rq.Get("type")
 	switch t {
 	case "", "subject":
-		return h.listSubjectPatches(w, r, state, stateVals, currentPage)
+		return h.listSubjectPatches(w, r, state, order, stateVals, currentPage)
 	case "episode":
-		return h.listEpisodePatches(w, r, state, stateVals, currentPage)
+		return h.listEpisodePatches(w, r, state, order, stateVals, currentPage)
 	}
 
 	http.Error(w, "invalid patch type", http.StatusBadRequest)

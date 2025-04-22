@@ -595,14 +595,18 @@ from episode_patch
          left outer join patch_users as reviewer on reviewer.user_id = episode_patch.wiki_user_id
 where deleted_at is null
   and state = any ($1::int[])
-order by created_at desc
-limit $3::int8 offset $2::int8
+order by case
+             when $2::text = 'created_at' then created_at
+             when $2 = 'updated_at' then updated_at
+             end desc
+limit $4::int8 offset $3::int8
 `
 
 type ListEpisodePatchesByStatesParams struct {
-	State []int32
-	Skip  int64
-	Size  int64
+	State   []int32
+	OrderBy string
+	Skip    int64
+	Size    int64
 }
 
 type ListEpisodePatchesByStatesRow struct {
@@ -622,7 +626,12 @@ type ListEpisodePatchesByStatesRow struct {
 }
 
 func (q *Queries) ListEpisodePatchesByStates(ctx context.Context, arg ListEpisodePatchesByStatesParams) ([]ListEpisodePatchesByStatesRow, error) {
-	rows, err := q.db.Query(ctx, listEpisodePatchesByStates, arg.State, arg.Skip, arg.Size)
+	rows, err := q.db.Query(ctx, listEpisodePatchesByStates,
+		arg.State,
+		arg.OrderBy,
+		arg.Skip,
+		arg.Size,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -761,7 +770,7 @@ from episode_patch
 where deleted_at is null
   and wiki_user_id = $1
   and state = any ($2::int[])
-order by created_at desc
+order by updated_at desc
 limit $4::int8 offset $3::int8
 `
 
@@ -931,14 +940,18 @@ from subject_patch
 where deleted_at is null
   and state = any ($1::int[])
   and action = 1
-order by created_at desc
-limit $3::int8 offset $2::int8
+order by case
+             when $2::text = 'created_at' then created_at
+             when $2 = 'updated_at' then updated_at
+             end desc
+limit $4::int8 offset $3::int8
 `
 
 type ListSubjectPatchesByStatesParams struct {
-	State []int32
-	Skip  int64
-	Size  int64
+	State   []int32
+	OrderBy string
+	Skip    int64
+	Size    int64
 }
 
 type ListSubjectPatchesByStatesRow struct {
@@ -960,7 +973,12 @@ type ListSubjectPatchesByStatesRow struct {
 }
 
 func (q *Queries) ListSubjectPatchesByStates(ctx context.Context, arg ListSubjectPatchesByStatesParams) ([]ListSubjectPatchesByStatesRow, error) {
-	rows, err := q.db.Query(ctx, listSubjectPatchesByStates, arg.State, arg.Skip, arg.Size)
+	rows, err := q.db.Query(ctx, listSubjectPatchesByStates,
+		arg.State,
+		arg.OrderBy,
+		arg.Skip,
+		arg.Size,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -1111,7 +1129,7 @@ where deleted_at is null
   and state = any ($2::int[])
   and wiki_user_id = $1
   and action = 1
-order by created_at desc
+order by updated_at desc
 limit $4::int8 offset $3::int8
 `
 

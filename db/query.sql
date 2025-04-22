@@ -27,7 +27,10 @@ from subject_patch
 where deleted_at is null
   and state = any (@state::int[])
   and action = 1
-order by created_at desc
+order by case
+             when @order_by::text = 'created_at' then created_at
+             when @order_by = 'updated_at' then updated_at
+             end desc
 limit @size::int8 offset @skip::int8;
 
 -- name: CountSubjectPatchesByStates :one
@@ -56,7 +59,10 @@ from episode_patch
          left outer join patch_users as reviewer on reviewer.user_id = episode_patch.wiki_user_id
 where deleted_at is null
   and state = any (@state::int[])
-order by created_at desc
+order by case
+             when @order_by::text = 'created_at' then created_at
+             when @order_by = 'updated_at' then updated_at
+             end desc
 limit @size::int8 offset @skip::int8;
 
 -- name: CountEpisodePatchesByStates :one
@@ -351,7 +357,7 @@ where deleted_at is null
   and state = any (@state::int[])
   and wiki_user_id = $1
   and action = 1
-order by created_at desc
+order by updated_at desc
 limit @size::int8 offset @skip::int8;
 
 -- name: CountSubjectPatchesByStatesReviewedByUser :one
@@ -383,7 +389,7 @@ from episode_patch
 where deleted_at is null
   and wiki_user_id = @user_id
   and state = any (@state::int[])
-order by created_at desc
+order by updated_at desc
 limit @size::int8 offset @skip::int8;
 
 -- name: CountEpisodePatchesByStatesReviewedByUser :one

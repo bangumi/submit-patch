@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	wiki "github.com/bangumi/wiki-parser-go"
+	"github.com/bangumi/wiki-parser-go"
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
@@ -143,6 +143,7 @@ func (h *handler) listSubjectPatches(
 	w http.ResponseWriter,
 	r *http.Request,
 	patchStateFilter string,
+	order string,
 	stateVals []int32,
 	currentPage int64,
 ) error {
@@ -154,9 +155,10 @@ func (h *handler) listSubjectPatches(
 	var patches = make([]view.SubjectPatchListItem, 0, defaultPageSize)
 	if c != 0 {
 		data, err := h.q.ListSubjectPatchesByStates(r.Context(), dal.ListSubjectPatchesByStatesParams{
-			State: stateVals,
-			Size:  defaultPageSize,
-			Skip:  (currentPage - 1) * defaultPageSize,
+			State:   stateVals,
+			OrderBy: order,
+			Size:    defaultPageSize,
+			Skip:    (currentPage - 1) * defaultPageSize,
 		})
 		if err != nil {
 			return errgo.Wrap(err, "failed to query data")

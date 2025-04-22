@@ -208,6 +208,7 @@ func (h *handler) listEpisodePatches(
 	w http.ResponseWriter,
 	r *http.Request,
 	patchStateFilter string,
+	order string,
 	stateVals []int32,
 	currentPage int64,
 ) error {
@@ -219,9 +220,10 @@ func (h *handler) listEpisodePatches(
 	var patches = make([]view.EpisodePatchListItem, 0, defaultPageSize)
 	if c != 0 {
 		data, err := h.q.ListEpisodePatchesByStates(r.Context(), dal.ListEpisodePatchesByStatesParams{
-			State: stateVals,
-			Size:  defaultPageSize,
-			Skip:  (currentPage - 1) * defaultPageSize,
+			State:   stateVals,
+			Size:    defaultPageSize,
+			OrderBy: order,
+			Skip:    (currentPage - 1) * defaultPageSize,
 		})
 		if err != nil {
 			return errgo.Wrap(err, "failed to query data")

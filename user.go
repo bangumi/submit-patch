@@ -31,7 +31,7 @@ func (h *handler) userReviewView(w http.ResponseWriter, r *http.Request) error {
 		currentPage = 1
 	}
 
-	stateVals, state, err := readableStateToDBValues(rq.Get("state"), StateFilterAll)
+	stateVals, state, _, err := readableStateToDBValues(rq.Get("state"), StateFilterAll)
 	if err != nil {
 		return err
 	}
@@ -211,7 +211,7 @@ func (h *handler) userContributionView(w http.ResponseWriter, r *http.Request) e
 	}
 
 	state := rq.Get("state")
-	stateVals, state, err := readableStateToDBValues(state, StateFilterAll)
+	stateVals, state, _, err := readableStateToDBValues(state, StateFilterAll)
 	if err != nil {
 		return err
 	}
