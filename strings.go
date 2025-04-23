@@ -46,7 +46,7 @@ func ContainsInvalidInputStr(ss ...string) string {
 func replInvisible(matchedInvisible string) string {
 	var sb = bytes.NewBuffer(make([]byte, 0, 8))
 	for _, r := range matchedInvisible {
-		if isValidUnicodeCodePoint(r) {
+		if !isValidUnicodeCodePoint(r) {
 			fmt.Fprintf(sb, "\\x%02x", r)
 			continue
 		}
