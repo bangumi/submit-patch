@@ -47,13 +47,13 @@ func replInvisible(matchedInvisible string) string {
 	var sb = bytes.NewBuffer(make([]byte, 0, 8))
 	for _, r := range matchedInvisible {
 		if !isValidUnicodeCodePoint(r) {
-			fmt.Fprintf(sb, "\\x%02x", r)
+			fmt.Fprintf(sb, "\\x%02X", r)
 			continue
 		}
 		if r <= 0xFFFF {
-			fmt.Fprintf(sb, "\\u%04x", r)
+			fmt.Fprintf(sb, "\\u%04X", r)
 		} else {
-			fmt.Fprintf(sb, "\\U%08x", r)
+			fmt.Fprintf(sb, "\\U%08X", r)
 		}
 	}
 	return sb.String()

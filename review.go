@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
 
 	"app/csrf"
@@ -21,7 +20,7 @@ func (h *handler) handleReview(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 
-	patchID := chi.URLParam(r, "patch_id")
+	patchID := r.PathValue("patch-id")
 	if patchID == "" {
 		http.Error(w, "missing patch id", http.StatusBadRequest)
 		return nil
@@ -41,18 +40,28 @@ func (h *handler) handleReview(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 
-	patchType := chi.URLParam(r, "patch_type")
-
+	patchType := r.PathValue("patch-type")
 	s, err := h.GetFreshSession(w, r, fmt.Sprintf("/%s/%s", patchType, patchID))
 	if err != nil {
 		return err
 	}
 
+	text := r.PostForm.Get("text")
+
+	if patchType == "review" {
+		if text == "" {
+			return &HttpError{
+				StatusCode: http.StatusBadRequest,
+				Message:    "review text can't be empty",
+			}
+		}
+	}
+
 	switch patchType {
 	case "subject":
-		return h.handleSubjectReview(w, r, id, react, r.PostForm.Get("text"), s)
+		return h.handleSubjectReview(w, r, id, react, text, s)
 	case "episode":
-		return h.handleEpisodeReview(w, r, id, react, r.PostForm.Get("text"), s)
+		return h.handleEpisodeReview(w, r, id, react, text, s)
 	}
 
 	http.Error(w, "invalid patch type", http.StatusBadRequest)

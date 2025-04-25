@@ -61,7 +61,7 @@ templ review(patchType string, user *view.CurrentUser, patchID string, csrfToken
 				enctype="application/x-www-form-urlencoded"
 			>
 				<input type="hidden" name="x-csrf-token" value={ csrfToken }/>
-				<textarea class="form-control mb-4" name="text"></textarea>
+				<textarea class="form-control mb-4" name="text" required></textarea>
 				<div class="row">
 					<div class="col">
 						<button

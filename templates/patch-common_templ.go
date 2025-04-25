@@ -178,7 +178,7 @@ func review(patchType string, user *view.CurrentUser, patchID string, csrfToken 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\"> <textarea class=\"form-control mb-4\" name=\"text\"></textarea><div class=\"row\"><div class=\"col\"><button type=\"submit\" name=\"react\" value=\"comment\" class=\"btn btn-warning\">添加评论</button></div></div></form></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\"> <textarea class=\"form-control mb-4\" name=\"text\" required></textarea><div class=\"row\"><div class=\"col\"><button type=\"submit\" name=\"react\" value=\"comment\" class=\"btn btn-warning\">添加评论</button></div></div></form></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
