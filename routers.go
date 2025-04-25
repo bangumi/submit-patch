@@ -35,7 +35,7 @@ func routers(h *handler, config Config) *chi.Mux {
 	r.Get("/contrib/{user-id}", handleError(h.userContributionView))
 	r.Get("/review/{user-id}", handleError(h.userReviewView))
 
-	r.Post("/api/review/{patch_type}/{patch_id}", handleError(h.handleReview))
+	r.Post("/api/review/{patch-type}/{patch-id}", handleError(h.handleReview))
 
 	// subjects
 	r.Get("/suggest", func(w http.ResponseWriter, r *http.Request) {
