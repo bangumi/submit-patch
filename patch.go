@@ -2,15 +2,25 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/aymanbagabas/go-udiff"
+
+	"app/internal/myers"
 )
 
 const wikiBotUserID = 427613
 
 func Diff(name, before, after string) string {
-	return udiff.Unified(name, name, before, after)
+	edits := myers.ComputeEdits(before, after)
+	unified, err := udiff.ToUnified(name, name, before, edits, 3)
+	if err != nil {
+		// Can't happen: edits are consistent.
+		log.Fatalf("internal error in diff.Unified: %v", err)
+	}
+
+	return unified
 }
 
 const PatchTypeSubject string = "subject"
