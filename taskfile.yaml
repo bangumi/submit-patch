@@ -48,4 +48,4 @@ tasks:
     cmd: watchexec --shell=none -e templ -w . -r -- task gen:template --force
 
   watch:dev:
-    cmd: watchexec --shell=none -e go -w . -w templates -r -- task dev
+    cmd: watchexec --shell=none -e go,mod -w . -w templates -r -- task dev
