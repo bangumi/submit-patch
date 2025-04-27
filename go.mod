@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/a-h/templ v0.3.857
 	github.com/aymanbagabas/go-udiff v0.2.0
-	github.com/bangumi/wiki-parser-go v0.0.1
+	github.com/bangumi/wiki-parser-go v0.0.2
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/gofrs/uuid/v5 v5.3.2
