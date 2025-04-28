@@ -109,17 +109,24 @@ func (h *handler) listSubjectPatchesReviewedUser(
 
 	totalPage := (c + defaultPageSize - 1) / defaultPageSize
 
-	return templates.SubjectPatchList(r, view.SubjectPatchList{
-		Title:              fmt.Sprintf("%d reviewed subject patches", userID),
-		Session:            session.GetSession(r.Context()),
-		Patches:            patches,
-		CurrentStateFilter: patchStateFilter,
-		Pagination: view.Pagination{
-			URL:         r.URL,
-			TotalPage:   totalPage,
-			CurrentPage: currentPage,
-		},
-	}).Render(r.Context(), w)
+	u, err := h.q.GetUserByID(r.Context(), userID)
+	if err != nil {
+		return errgo.Wrap(err, "failed to get user info")
+	}
+
+	return templates.UserSubjectList(r,
+		view.User{ID: userID, Username: u.Username, Nickname: u.Nickname},
+		view.SubjectPatchList{
+			Title:              fmt.Sprintf("%d reviewed subject patches", userID),
+			Session:            session.GetSession(r.Context()),
+			Patches:            patches,
+			CurrentStateFilter: patchStateFilter,
+			Pagination: view.Pagination{
+				URL:         r.URL,
+				TotalPage:   totalPage,
+				CurrentPage: currentPage,
+			},
+		}).Render(r.Context(), w)
 }
 
 func (h *handler) listEpisodePatchesReviewedUser(
@@ -181,17 +188,24 @@ func (h *handler) listEpisodePatchesReviewedUser(
 
 	totalPage := (c + defaultPageSize - 1) / defaultPageSize
 
-	return templates.EpisodePatchList(r, view.EpisodePatchList{
-		Title:              fmt.Sprintf("%d reviewed episode patches", userID),
-		Session:            session.GetSession(r.Context()),
-		Patches:            patches,
-		CurrentStateFilter: patchStateFilter,
-		Pagination: view.Pagination{
-			URL:         r.URL,
-			TotalPage:   totalPage,
-			CurrentPage: currentPage,
-		},
-	}).Render(r.Context(), w)
+	u, err := h.q.GetUserByID(r.Context(), userID)
+	if err != nil {
+		return errgo.Wrap(err, "failed to get user info")
+	}
+
+	return templates.UserEpisodeList(r,
+		view.User{ID: userID, Username: u.Username, Nickname: u.Nickname},
+		view.EpisodePatchList{
+			Title:              fmt.Sprintf("%d reviewed episode patches", userID),
+			Session:            session.GetSession(r.Context()),
+			Patches:            patches,
+			CurrentStateFilter: patchStateFilter,
+			Pagination: view.Pagination{
+				URL:         r.URL,
+				TotalPage:   totalPage,
+				CurrentPage: currentPage,
+			},
+		}).Render(r.Context(), w)
 }
 
 func (h *handler) userContributionView(w http.ResponseWriter, r *http.Request) error {
