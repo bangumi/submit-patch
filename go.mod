@@ -17,7 +17,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.4
 	github.com/redis/rueidis v1.0.57
 	github.com/rs/zerolog v1.34.0
-	github.com/samber/lo v1.49.1
+	github.com/samber/lo v1.50.0
 	github.com/stretchr/testify v1.10.0
 	github.com/trim21/errgo v0.0.3
 	github.com/trim21/pkg v0.0.4
