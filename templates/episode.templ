@@ -1,10 +1,12 @@
 package templates
 
 import (
-	"app/dal"
-	"app/view"
 	"fmt"
 	"time"
+
+	"app/dal"
+	"app/internal/diff"
+	"app/view"
 )
 
 templ EpisodePatchPage(
@@ -14,7 +16,6 @@ templ EpisodePatchPage(
 	author dal.PatchUser,
 	reviewer *dal.PatchUser,
 	comments []dal.GetCommentsRow,
-	changes []view.Change,
 ) {
 	@Layout(
 		"",
@@ -26,7 +27,6 @@ templ EpisodePatchPage(
 			author,
 			reviewer,
 			comments,
-			changes,
 			time.Now(),
 		),
 	)
@@ -39,7 +39,6 @@ templ episodePatchDetailContent(
 	author dal.PatchUser,
 	reviewer *dal.PatchUser,
 	comments []dal.GetCommentsRow,
-	changes []view.Change,
 	now time.Time,
 ) {
 	@header("", user)
@@ -172,48 +171,203 @@ templ episodePatchDetailContent(
 			</blockquote>
 		</div>
 	}
-	<h2>具体变动</h2>
-	for _, change := range changes {
+	<div class="row mb-2"><h2>具体变动</h2></div>
+	if patch.OriginalName.String == patch.Name.String {
+		if patch.OriginalName.String != "" {
+			<div class="row mb-0">
+				<h5>标题</h5>
+			</div>
+			<div class="row mb-4">
+				<blockquote class="blockquote" style="background-color: #f7f7f9">
+					<p class="mb-0" style="overflow: visible; overflow-wrap: anywhere; white-space: pre-wrap">{ patch.OriginalName.String }</p>
+				</blockquote>
+			</div>
+		}
+	} else {
 		<div class="row mb-4">
-			<div id={ change.Name + "DiffElement" } data-diff={ templ.JSONString(change.Diff) }></div>
+			<div
+				id="nameDiffElement"
+				data-diff={ templ.JSONString(diff.Diff("标题", patch.OriginalName.String, patch.Name.String)) }
+			></div>
+			<script>
+	     (() => {
+	       const targetElement = document.getElementById('nameDiffElement');
+	       const diffString = JSON.parse(targetElement.getAttribute('data-diff'));;
+	       const configuration = {
+	         drawFileList: false,
+	         fileListToggle: false,
+	         fileListStartVisible: false,
+	         maxLineSizeInBlockForComparison: 80,
+	         fileContentToggle: false,
+	         matching: 'words',
+	         outputFormat: isMobile ? 'line-by-line' : 'side-by-side',
+	         synchronisedScroll: true,
+	         renderNothingWhenEmpty: false,
+	       };
+	       const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+	       diff2htmlUi.draw();
+	     })()
+	   </script>
 		</div>
-		<script>
-      (() => {
-        const targetElement = document.getElementById('{{ change.Name }}DiffElement');
-        const diffString = JSON.parse(targetElement.getAttribute('data-diff'));;
-        const configuration = {
-          drawFileList: false,
-          fileListToggle: false,
-          fileListStartVisible: false,
-          maxLineSizeInBlockForComparison: 80,
-          fileContentToggle: false,
-          matching: 'words',
-          outputFormat: isMobile ? 'line-by-line' : 'side-by-side',
-          synchronisedScroll: true,
-          renderNothingWhenEmpty: false,
-        };
-        const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
-        diff2htmlUi.draw();
-      })()
-    </script>
 	}
-	// if patch.Nsfw.Valid {
-	// 	<div class="row mb-4">
-	// 		if patch.Action.Int32 == 1 {
-	// 			if patch.Nsfw.Bool {
-	// 				<p>NSFW: ❌ -> ✅</p>
-	// 			} else {
-	// 				<p>NSFW: ✅ -> ❌</p>
-	// 			}
-	// 		} else {
-	// 			if patch.Nsfw.Bool {
-	// 				<p>NSFW: ✅</p>
-	// 			} else {
-	// 				<p>NSFW: ❌</p>
-	// 			}
-	// 		}
-	// 	</div>
-	// }
+	if patch.OriginalNameCn.String == patch.NameCn.String {
+		if patch.OriginalNameCn.String != "" {
+			<div class="row mb-0">
+				<h5>中文标题</h5>
+			</div>
+			<div class="row mb-4">
+				<blockquote class="blockquote" style="background-color: #f7f7f9">
+					<p class="mb-0" style="overflow: visible; overflow-wrap: anywhere; white-space: pre-wrap">{ patch.OriginalNameCn.String }</p>
+				</blockquote>
+			</div>
+		}
+	} else {
+		<div class="row mb-4">
+			<div
+				id="nameCnDiffElement"
+				data-diff={ templ.JSONString(diff.Diff("中文标题", patch.OriginalNameCn.String, patch.NameCn.String)) }
+			></div>
+			<script>
+	     (() => {
+	       const targetElement = document.getElementById('nameCnDiffElement');
+	       const diffString = JSON.parse(targetElement.getAttribute('data-diff'));;
+	       const configuration = {
+	         drawFileList: false,
+	         fileListToggle: false,
+	         fileListStartVisible: false,
+	         maxLineSizeInBlockForComparison: 80,
+	         fileContentToggle: false,
+	         matching: 'words',
+	         outputFormat: isMobile ? 'line-by-line' : 'side-by-side',
+	         synchronisedScroll: true,
+	         renderNothingWhenEmpty: false,
+	       };
+	       const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+	       diff2htmlUi.draw();
+	     })()
+	   </script>
+		</div>
+	}
+	if patch.OriginalDuration.String == patch.Duration.String {
+		if patch.OriginalDuration.String != "" {
+			<div class="row mb-0">
+				<h5>时长</h5>
+			</div>
+			<div class="row mb-4">
+				<blockquote class="blockquote" style="background-color: #f7f7f9">
+					<p class="mb-0" style="overflow: visible; overflow-wrap: anywhere; white-space: pre-wrap">
+						{ patch.OriginalDuration.String }
+					</p>
+				</blockquote>
+			</div>
+		}
+	} else {
+		<div class="row mb-4">
+			<div
+				id="durationDiffElement"
+				data-diff={ templ.JSONString(diff.Diff("时长", patch.OriginalDuration.String, patch.Duration.String)) }
+			></div>
+			<script>
+	     (() => {
+	       const targetElement = document.getElementById('durationDiffElement');
+	       const diffString = JSON.parse(targetElement.getAttribute('data-diff'));;
+	       const configuration = {
+	         drawFileList: false,
+	         fileListToggle: false,
+	         fileListStartVisible: false,
+	         maxLineSizeInBlockForComparison: 80,
+	         fileContentToggle: false,
+	         matching: 'words',
+	         outputFormat: isMobile ? 'line-by-line' : 'side-by-side',
+	         synchronisedScroll: true,
+	         renderNothingWhenEmpty: false,
+	       };
+	       const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+	       diff2htmlUi.draw();
+	     })()
+	   </script>
+		</div>
+	}
+	if patch.OriginalAirdate.String == patch.Airdate.String {
+		if patch.OriginalAirdate.String != "" {
+			<div class="row mb-0">
+				<h5>播出时间</h5>
+			</div>
+			<div class="row mb-4">
+				<blockquote class="blockquote" style="background-color: #f7f7f9">
+					<p class="mb-0" style="overflow: visible; overflow-wrap: anywhere; white-space: pre-wrap">
+						{ patch.OriginalAirdate.String }
+					</p>
+				</blockquote>
+			</div>
+		}
+	} else {
+		<div class="row mb-4">
+			<div
+				id="airdateDiffElement"
+				data-diff={ templ.JSONString(diff.Diff("播出时间", patch.OriginalAirdate.String, patch.Airdate.String)) }
+			></div>
+			<script>
+	     (() => {
+	       const targetElement = document.getElementById('airdateDiffElement');
+	       const diffString = JSON.parse(targetElement.getAttribute('data-diff'));;
+	       const configuration = {
+	         drawFileList: false,
+	         fileListToggle: false,
+	         fileListStartVisible: false,
+	         maxLineSizeInBlockForComparison: 80,
+	         fileContentToggle: false,
+	         matching: 'words',
+	         outputFormat: isMobile ? 'line-by-line' : 'side-by-side',
+	         synchronisedScroll: true,
+	         renderNothingWhenEmpty: false,
+	       };
+	       const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+	       diff2htmlUi.draw();
+	     })()
+	   </script>
+		</div>
+	}
+	if patch.OriginalDescription.String == patch.Description.String {
+		if patch.Description.String != "" {
+			<div class="row mb-0">
+				<h5>简介</h5>
+			</div>
+			<div class="row mb-4">
+				<blockquote class="blockquote" style="background-color: #f7f7f9">
+					<p class="mb-0" style="overflow: visible; overflow-wrap: anywhere; white-space: pre-wrap">
+						{ patch.OriginalDescription.String }
+					</p>
+				</blockquote>
+			</div>
+		}
+	} else {
+		<div class="row mb-4">
+			<div
+				id="descriptionDiffElement"
+				data-diff={ templ.JSONString(diff.Diff("简介", patch.OriginalDescription.String, patch.Description.String)) }
+			></div>
+			<script>
+	     (() => {
+	       const targetElement = document.getElementById('descriptionDiffElement');
+	       const diffString = JSON.parse(targetElement.getAttribute('data-diff'));;
+	       const configuration = {
+	         drawFileList: false,
+	         fileListToggle: false,
+	         fileListStartVisible: false,
+	         maxLineSizeInBlockForComparison: 80,
+	         fileContentToggle: false,
+	         matching: 'words',
+	         outputFormat: isMobile ? 'line-by-line' : 'side-by-side',
+	         synchronisedScroll: true,
+	         renderNothingWhenEmpty: false,
+	       };
+	       const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+	       diff2htmlUi.draw();
+	     })()
+	   </script>
+		</div>
+	}
 	if patch.State == 0 {
 		@review("episode", user, patch.ID.String(), csrfToken)
 	}
