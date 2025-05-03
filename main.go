@@ -34,6 +34,7 @@ func main() {
 	var c Config
 
 	err := fx.New(
+		fx.NopLogger,
 		fx.Provide(
 			newConfig,
 			newDB,
