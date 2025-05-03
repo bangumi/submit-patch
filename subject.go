@@ -21,6 +21,7 @@ import (
 	"app/csrf"
 	"app/dal"
 	"app/dto"
+	"app/internal/diff"
 	"app/session"
 	"app/templates"
 	"app/view"
@@ -275,24 +276,21 @@ func (h *handler) subjectPatchDetailView(
 	if patch.Name.Valid && patch.OriginalName != patch.Name.String {
 		changes = append(changes, view.Change{
 			Name: "条目名",
-			Diff: Diff("name", EscapeInvisible(patch.OriginalName),
-				EscapeInvisible(patch.Name.String)),
+			Diff: diff.Diff("name", patch.OriginalName, patch.Name.String),
 		})
 	}
 
 	if patch.OriginalInfobox.Valid && patch.Infobox.Valid {
 		changes = append(changes, view.Change{
 			Name: "wiki",
-			Diff: Diff("wiki", EscapeInvisible(patch.OriginalInfobox.String),
-				EscapeInvisible(patch.Infobox.String)),
+			Diff: diff.Diff("wiki", patch.OriginalInfobox.String, patch.Infobox.String),
 		})
 	}
 
 	if patch.OriginalSummary.Valid && patch.Summary.Valid {
 		changes = append(changes, view.Change{
 			Name: "简介",
-			Diff: Diff("summary", EscapeInvisible(patch.OriginalSummary.String),
-				EscapeInvisible(patch.Summary.String)),
+			Diff: diff.Diff("summary", patch.OriginalSummary.String, patch.Summary.String),
 		})
 	}
 

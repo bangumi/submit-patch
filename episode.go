@@ -304,66 +304,6 @@ func (h *handler) episodePatchDetailView(
 		return errgo.Wrap(err, "GetComments")
 	}
 
-	var changes = make([]view.Change, 0, 5)
-
-	type Change struct {
-		name     string
-		original string
-		current  string
-	}
-
-	for _, c := range []Change{
-		{
-			name:     "原名",
-			original: patch.OriginalName.String,
-			current:  patch.Name.String,
-		},
-		{
-			name:     "中文名",
-			original: patch.OriginalNameCn.String,
-			current:  patch.NameCn.String,
-		},
-		{
-			name:     "时长",
-			original: patch.OriginalDuration.String,
-			current:  patch.Duration.String,
-		},
-		{
-			name:     "播出时间",
-			original: patch.OriginalAirdate.String,
-			current:  patch.Airdate.String,
-		},
-		{
-			name:     "简介",
-			original: patch.OriginalDescription.String,
-			current:  patch.Description.String,
-		},
-	} {
-		if c.original != c.current {
-			changes = append(changes, view.Change{
-				Name: c.name,
-				Diff: Diff(c.name, EscapeInvisible(c.original), EscapeInvisible(c.current)),
-			})
-		}
-	}
-
-	var _ = view.EpisodePatchDetail{
-		Original: view.Episode{
-			Name:        patch.OriginalName.String,
-			NameCN:      patch.OriginalNameCn.String,
-			Airdate:     patch.OriginalAirdate.String,
-			Duration:    patch.OriginalDuration.String,
-			Description: patch.OriginalDescription.String,
-		},
-		Diff: view.Episode{
-			Name:        patch.Name.String,
-			NameCN:      patch.NameCn.String,
-			Airdate:     patch.Airdate.String,
-			Duration:    patch.Duration.String,
-			Description: patch.Description.String,
-		},
-	}
-
 	return templates.EpisodePatchPage(
 		csrf.GetToken(r),
 		s,
@@ -371,7 +311,6 @@ func (h *handler) episodePatchDetailView(
 		author,
 		reviewer,
 		comments,
-		changes,
 	).Render(r.Context(), w)
 }
 
