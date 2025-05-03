@@ -18,7 +18,8 @@ import (
 	"app/templates"
 )
 
-func (h *handler) handleEpisodeReview(w http.ResponseWriter, r *http.Request, patchID uuid.UUID, react string, text string, s *session.Session) error {
+func (h *handler) handleEpisodeReview(w http.ResponseWriter, r *http.Request,
+	patchID uuid.UUID, react string, text string, s *session.Session) error {
 	return h.tx(r.Context(), func(tx pgx.Tx) error {
 		qx := h.q.WithTx(tx)
 
@@ -45,7 +46,8 @@ func (h *handler) handleEpisodeReview(w http.ResponseWriter, r *http.Request, pa
 	})
 }
 
-func (h *handler) handleEpisodeComment(w http.ResponseWriter, r *http.Request, tx *dal.Queries, patch dal.EpisodePatch, text string, s *session.Session) error {
+func (h *handler) handleEpisodeComment(w http.ResponseWriter, r *http.Request,
+	tx *dal.Queries, patch dal.EpisodePatch, text string, s *session.Session) error {
 	err := tx.CreateComment(r.Context(), dal.CreateCommentParams{
 		ID:        uuid.Must(uuid.NewV7()),
 		PatchID:   patch.ID,
@@ -67,19 +69,19 @@ func (h *handler) handleEpisodeComment(w http.ResponseWriter, r *http.Request, t
 }
 
 type ApiExpectedSubject struct {
-	Name     string `json:"name,omitempty"`
-	NameCN   string `json:"nameCN,omitempty"`
-	Date     string `json:"date,omitempty"`
-	Duration string `json:"duration,omitempty"`
-	Summary  string `json:"summary,omitempty"`
+	Name     *string `json:"name,omitempty"`
+	NameCN   *string `json:"nameCN,omitempty"`
+	Date     *string `json:"date,omitempty"`
+	Duration *string `json:"duration,omitempty"`
+	Summary  *string `json:"summary,omitempty"`
 }
 
 type ApiEpisode struct {
-	Name     string `json:"name,omitempty"`
-	NameCN   string `json:"nameCN,omitempty"`
-	Date     string `json:"date,omitempty"`
-	Duration string `json:"duration,omitempty"`
-	Summary  string `json:"summary,omitempty"`
+	Name     *string `json:"name,omitempty"`
+	NameCN   *string `json:"nameCN,omitempty"`
+	Date     *string `json:"date,omitempty"`
+	Duration *string `json:"duration,omitempty"`
+	Summary  *string `json:"summary,omitempty"`
 }
 
 type ApiUpdateEpisode struct {
@@ -88,22 +90,35 @@ type ApiUpdateEpisode struct {
 	Episode          ApiEpisode         `json:"episode"`
 }
 
-func (h *handler) handleEpisodeApprove(w http.ResponseWriter, r *http.Request, qx *dal.Queries, patch dal.EpisodePatch, s *session.Session) error {
+func valuePtrIfChanged(val, check string) *string {
+	if check == val {
+		return nil
+	}
+	return &val
+}
+
+func (h *handler) handleEpisodeApprove(
+	w http.ResponseWriter,
+	r *http.Request,
+	qx *dal.Queries,
+	patch dal.EpisodePatch,
+	s *session.Session,
+) error {
 	var body = ApiUpdateEpisode{
 		CommieMessage: fmt.Sprintf("%s [https://patch.bgm38.tv/episode/%s]", patch.Reason, patch.ID),
 		ExpectedRevision: ApiExpectedSubject{
-			Name:     patch.OriginalName.String,
-			NameCN:   patch.OriginalNameCn.String,
-			Date:     patch.OriginalAirdate.String,
-			Duration: patch.OriginalDuration.String,
-			Summary:  patch.OriginalDescription.String,
+			Name:     valuePtrIfChanged(patch.OriginalName.String, patch.Name.String),
+			NameCN:   valuePtrIfChanged(patch.OriginalNameCn.String, patch.NameCn.String),
+			Date:     valuePtrIfChanged(patch.OriginalAirdate.String, patch.Airdate.String),
+			Duration: valuePtrIfChanged(patch.OriginalDuration.String, patch.Duration.String),
+			Summary:  valuePtrIfChanged(patch.OriginalDescription.String, patch.Description.String),
 		},
 		Episode: ApiEpisode{
-			Name:     patch.Name.String,
-			NameCN:   patch.NameCn.String,
-			Date:     patch.Airdate.String,
-			Duration: patch.Duration.String,
-			Summary:  patch.Description.String,
+			Name:     valuePtrIfChanged(patch.Name.String, patch.OriginalName.String),
+			NameCN:   valuePtrIfChanged(patch.NameCn.String, patch.OriginalNameCn.String),
+			Date:     valuePtrIfChanged(patch.Airdate.String, patch.OriginalAirdate.String),
+			Duration: valuePtrIfChanged(patch.Duration.String, patch.OriginalDuration.String),
+			Summary:  valuePtrIfChanged(patch.Description.String, patch.OriginalDescription.String),
 		},
 	}
 
@@ -149,7 +164,7 @@ func (h *handler) handleEpisodeApprove(w http.ResponseWriter, r *http.Request, q
 		}
 
 		if errRes.Code == ErrCodeWikiChanged {
-			err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
+			err = qx.RejectEpisodePatch(r.Context(), dal.RejectEpisodePatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateOutdated,
 				ID:           patch.ID,
@@ -190,7 +205,8 @@ func (h *handler) handleEpisodeApprove(w http.ResponseWriter, r *http.Request, q
 	return nil
 }
 
-func (h *handler) handleEpisodeReject(w http.ResponseWriter, r *http.Request, qx *dal.Queries, p dal.EpisodePatch, s *session.Session) error {
+func (h *handler) handleEpisodeReject(w http.ResponseWriter, r *http.Request,
+	qx *dal.Queries, p dal.EpisodePatch, s *session.Session) error {
 	err := qx.RejectEpisodePatch(r.Context(), dal.RejectEpisodePatchParams{
 		WikiUserID: s.UserID,
 		State:      PatchStateRejected,

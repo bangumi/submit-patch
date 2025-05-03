@@ -16,7 +16,7 @@ import (
 
 const oauthURL = "https://next.bgm.tv/oauth/authorize"
 
-func routers(h *handler, config Config) *chi.Mux {
+func routers(h *handler) *chi.Mux {
 	mux := chi.NewRouter()
 
 	mux.Use(middleware.Recoverer)
