@@ -197,23 +197,7 @@ templ episodePatchDetailContent(
       })()
     </script>
 	}
-	// if patch.Nsfw.Valid {
-	// 	<div class="row mb-4">
-	// 		if patch.Action.Int32 == 1 {
-	// 			if patch.Nsfw.Bool {
-	// 				<p>NSFW: ❌ -> ✅</p>
-	// 			} else {
-	// 				<p>NSFW: ✅ -> ❌</p>
-	// 			}
-	// 		} else {
-	// 			if patch.Nsfw.Bool {
-	// 				<p>NSFW: ✅</p>
-	// 			} else {
-	// 				<p>NSFW: ❌</p>
-	// 			}
-	// 		}
-	// 	</div>
-	// }
+
 	if patch.State == 0 {
 		@review("episode", user, patch.ID.String(), csrfToken)
 	}

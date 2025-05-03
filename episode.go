@@ -43,7 +43,8 @@ func (h *handler) editEpisodeView(w http.ResponseWriter, r *http.Request) error 
 	}
 
 	var episode dto.WikiEpisode
-	resp, err := h.client.R().SetResult(&episode).Get(fmt.Sprintf("https://next.bgm.tv/p1/wiki/ep/%d", eid))
+	resp, err := h.client.R().SetResult(&episode).
+		Get(fmt.Sprintf("https://next.bgm.tv/p1/wiki/ep/%d", eid))
 	if err != nil {
 		return err
 	}
@@ -96,26 +97,20 @@ func (h *handler) createEpisodeEditPatch(w http.ResponseWriter, r *http.Request)
 		return nil
 	}
 
-	// --- Fetch Original Data ---
-	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/ep/%d", episodeID)
 	var originalWiki dto.WikiEpisode
 	resp, err := h.client.R().
 		SetContext(r.Context()).
 		SetResult(&originalWiki).
-		Get(fetchURL)
+		Get(fmt.Sprintf("https://next.bgm.tv/p1/wiki/ep/%d", episodeID))
 	if err != nil {
-		fmt.Printf("Error executing request to fetch original wiki: %v\n", err)
 		http.Error(w, "Failed to communicate with wiki service", http.StatusBadGateway)
 		return nil
 	}
 
-	if resp.IsError() {
-		// The request was sent, but the server returned an error status code (>= 400)
-		fmt.Printf("Error fetching original wiki (%s): status %d, body: %s\n", fetchURL, resp.StatusCode(), resp.String())
+	if resp.StatusCode() >= 300 {
 		if resp.StatusCode() == http.StatusNotFound {
 			http.Error(w, "Original subject not found", http.StatusNotFound)
 		} else {
-			// You might want to return a more specific error message based on apiError if it was populated
 			http.Error(w, "Failed to fetch original subject data", http.StatusBadGateway)
 		}
 		return nil
@@ -129,68 +124,48 @@ func (h *handler) createEpisodeEditPatch(w http.ResponseWriter, r *http.Request)
 
 	pk := uuid.Must(uuid.NewV7())
 	var param = dal.CreateEpisodePatchParams{
-		ID:         pk,
-		EpisodeID:  int32(episodeID),
-		State:      PatchStatePending,
-		FromUserID: user.UserID,
-		WikiUserID: 0,
-		Reason:     reason,
-		PatchDesc:  patchDesc,
+		ID:                  pk,
+		EpisodeID:           int32(episodeID),
+		State:               PatchStatePending,
+		FromUserID:          user.UserID,
+		WikiUserID:          0,
+		Reason:              reason,
+		OriginalName:        pgtype.Text{String: originalWiki.Name, Valid: true},
+		OriginalNameCn:      pgtype.Text{String: originalWiki.NameCN, Valid: true},
+		OriginalDuration:    pgtype.Text{String: originalWiki.Duration, Valid: true},
+		OriginalAirdate:     pgtype.Text{String: originalWiki.Date, Valid: true},
+		OriginalDescription: pgtype.Text{String: originalWiki.Summary, Valid: true},
+		Name:                pgtype.Text{String: name, Valid: true},
+		NameCn:              pgtype.Text{String: nameCN, Valid: true},
+		Duration:            pgtype.Text{String: duration, Valid: true},
+		Airdate:             pgtype.Text{String: date, Valid: true},
+		Description:         pgtype.Text{String: summary, Valid: true},
+		PatchDesc:           patchDesc,
 	}
 
+	var changed bool
 	if name != originalWiki.Name {
-		param.OriginalName = pgtype.Text{
-			String: originalWiki.Name,
-			Valid:  true,
-		}
-		param.Name = pgtype.Text{
-			String: name,
-			Valid:  true,
-		}
+		changed = true
 	}
 
 	if nameCN != originalWiki.NameCN {
-		param.OriginalNameCn = pgtype.Text{
-			String: originalWiki.NameCN,
-			Valid:  true,
-		}
-		param.NameCn = pgtype.Text{
-			String: nameCN,
-			Valid:  true,
-		}
+		changed = true
 	}
 
 	if duration != originalWiki.Duration {
-		param.OriginalDuration = pgtype.Text{
-			String: originalWiki.Duration,
-			Valid:  true,
-		}
-		param.Duration = pgtype.Text{
-			String: duration,
-			Valid:  true,
-		}
+		changed = true
 	}
 
 	if date != originalWiki.Date {
-		param.OriginalAirdate = pgtype.Text{
-			String: originalWiki.Date,
-			Valid:  true,
-		}
-		param.Airdate = pgtype.Text{
-			String: date,
-			Valid:  true,
-		}
+		changed = true
 	}
 
 	if summary != originalWiki.Summary {
-		param.OriginalDescription = pgtype.Text{
-			String: originalWiki.Summary,
-			Valid:  true,
-		}
-		param.Description = pgtype.Text{
-			String: summary,
-			Valid:  true,
-		}
+		changed = true
+	}
+
+	if !changed {
+		return &HttpError{http.StatusBadRequest, "No changes detected"}
 	}
 
 	err = h.q.CreateEpisodePatch(r.Context(), param)
@@ -370,6 +345,23 @@ func (h *handler) episodePatchDetailView(
 				Diff: Diff(c.name, EscapeInvisible(c.original), EscapeInvisible(c.current)),
 			})
 		}
+	}
+
+	var _ = view.EpisodePatchDetail{
+		Original: view.Episode{
+			Name:        patch.OriginalName.String,
+			NameCN:      patch.OriginalNameCn.String,
+			Airdate:     patch.OriginalAirdate.String,
+			Duration:    patch.OriginalDuration.String,
+			Description: patch.OriginalDescription.String,
+		},
+		Diff: view.Episode{
+			Name:        patch.Name.String,
+			NameCN:      patch.NameCn.String,
+			Airdate:     patch.Airdate.String,
+			Duration:    patch.Duration.String,
+			Description: patch.Description.String,
+		},
 	}
 
 	return templates.EpisodePatchPage(
@@ -572,84 +564,28 @@ func (h *handler) updateEpisodeEditPatch(w http.ResponseWriter, r *http.Request)
 	}
 
 	var changed bool
-	var param = dal.UpdateEpisodePatchParams{
-		ID:                  patchID,
-		Reason:              reason,
-		PatchDesc:           patchDesc,
-		OriginalName:        pgtype.Text{},
-		Name:                pgtype.Text{},
-		OriginalNameCn:      pgtype.Text{},
-		NameCn:              pgtype.Text{},
-		OriginalDuration:    pgtype.Text{},
-		Duration:            pgtype.Text{},
-		OriginalAirdate:     pgtype.Text{},
-		Airdate:             pgtype.Text{},
-		OriginalDescription: pgtype.Text{},
-		Description:         pgtype.Text{},
-	}
-
 	name := form.Get("name")
 	if name != originalWiki.Name {
-		param.OriginalName = pgtype.Text{
-			String: originalWiki.Name,
-			Valid:  true,
-		}
-		param.Name = pgtype.Text{
-			String: name,
-			Valid:  true,
-		}
 		changed = true
 	}
 
 	nameCN := form.Get("name_cn")
 	if nameCN != originalWiki.NameCN {
-		param.OriginalNameCn = pgtype.Text{
-			String: originalWiki.NameCN,
-			Valid:  true,
-		}
-		param.NameCn = pgtype.Text{
-			String: nameCN,
-			Valid:  true,
-		}
 		changed = true
 	}
 
 	duration := form.Get("duration")
 	if duration != originalWiki.Duration {
-		param.OriginalDuration = pgtype.Text{
-			String: originalWiki.Duration,
-			Valid:  true,
-		}
-		param.Duration = pgtype.Text{
-			String: duration,
-			Valid:  true,
-		}
 		changed = true
 	}
 
 	date := form.Get("date")
 	if date != originalWiki.Date {
-		param.OriginalAirdate = pgtype.Text{
-			String: originalWiki.Date,
-			Valid:  true,
-		}
-		param.Airdate = pgtype.Text{
-			String: date,
-			Valid:  true,
-		}
 		changed = true
 	}
 
 	summary := form.Get("summary")
 	if summary != originalWiki.Summary {
-		param.OriginalDescription = pgtype.Text{
-			String: originalWiki.Summary,
-			Valid:  true,
-		}
-		param.Description = pgtype.Text{
-			String: summary,
-			Valid:  true,
-		}
 		changed = true
 	}
 
@@ -659,6 +595,22 @@ func (h *handler) updateEpisodeEditPatch(w http.ResponseWriter, r *http.Request)
 
 	if patchDesc != patch.PatchDesc {
 		changed = true
+	}
+
+	var param = dal.UpdateEpisodePatchParams{
+		ID:                  patchID,
+		Reason:              reason,
+		PatchDesc:           patchDesc,
+		OriginalName:        pgtype.Text{String: originalWiki.Name, Valid: true},
+		OriginalNameCn:      pgtype.Text{String: originalWiki.NameCN, Valid: true},
+		OriginalDuration:    pgtype.Text{String: originalWiki.Duration, Valid: true},
+		OriginalAirdate:     pgtype.Text{String: originalWiki.Date, Valid: true},
+		OriginalDescription: pgtype.Text{String: originalWiki.Summary, Valid: true},
+		Name:                pgtype.Text{String: name, Valid: true},
+		NameCn:              pgtype.Text{String: nameCN, Valid: true},
+		Duration:            pgtype.Text{String: duration, Valid: true},
+		Airdate:             pgtype.Text{String: date, Valid: true},
+		Description:         pgtype.Text{String: summary, Valid: true},
 	}
 
 	if !changed {
@@ -783,13 +735,10 @@ func (h *handler) createEpisodeEditPatchAPI(w http.ResponseWriter, r *http.Reque
 		return nil
 	}
 
-	if resp.IsError() {
-		// The request was sent, but the server returned an error status code (>= 400)
-		fmt.Printf("Error fetching original wiki (%s): status %d, body: %s\n", fetchURL, resp.StatusCode(), resp.String())
+	if resp.StatusCode() >= 300 {
 		if resp.StatusCode() == http.StatusNotFound {
 			http.Error(w, "Original episode not found", http.StatusNotFound)
 		} else {
-			// You might want to return a more specific error message based on apiError if it was populated
 			http.Error(w, "Failed to fetch original subject req", http.StatusBadGateway)
 		}
 		return nil
@@ -797,22 +746,28 @@ func (h *handler) createEpisodeEditPatchAPI(w http.ResponseWriter, r *http.Reque
 
 	var changed bool
 	var param = dal.CreateEpisodePatchParams{
-		EpisodeID:  int32(episodeID),
-		State:      0,
-		FromUserID: user.UserID,
-		WikiUserID: 0,
-		Reason:     req.Reason,
-		PatchDesc:  req.PatchDesc,
+		EpisodeID:           int32(episodeID),
+		State:               0,
+		FromUserID:          user.UserID,
+		WikiUserID:          0,
+		Reason:              req.Reason,
+		PatchDesc:           req.PatchDesc,
+		OriginalName:        pgtype.Text{String: originalWiki.Name, Valid: true},
+		OriginalNameCn:      pgtype.Text{String: originalWiki.NameCN, Valid: true},
+		OriginalDuration:    pgtype.Text{String: originalWiki.Duration, Valid: true},
+		OriginalAirdate:     pgtype.Text{String: originalWiki.Date, Valid: true},
+		OriginalDescription: pgtype.Text{String: originalWiki.Summary, Valid: true},
+		Name:                pgtype.Text{String: originalWiki.Name, Valid: true},
+		NameCn:              pgtype.Text{String: originalWiki.NameCN, Valid: true},
+		Duration:            pgtype.Text{String: originalWiki.Duration, Valid: true},
+		Airdate:             pgtype.Text{String: originalWiki.Date, Valid: true},
+		Description:         pgtype.Text{String: originalWiki.Summary, Valid: true},
 	}
 
 	if req.Name.Set && req.Name.Value != originalWiki.Name {
 		changed = true
 		param.Name = pgtype.Text{
 			String: req.Name.Value,
-			Valid:  true,
-		}
-		param.OriginalName = pgtype.Text{
-			String: originalWiki.Name,
 			Valid:  true,
 		}
 	}
@@ -823,20 +778,12 @@ func (h *handler) createEpisodeEditPatchAPI(w http.ResponseWriter, r *http.Reque
 			String: req.NameCN.Value,
 			Valid:  true,
 		}
-		param.OriginalNameCn = pgtype.Text{
-			String: originalWiki.NameCN,
-			Valid:  true,
-		}
 	}
 
 	if req.Duration.Set && req.Duration.Value != originalWiki.Duration {
 		changed = true
 		param.Duration = pgtype.Text{
 			String: req.Duration.Value,
-			Valid:  true,
-		}
-		param.OriginalDuration = pgtype.Text{
-			String: originalWiki.Duration,
 			Valid:  true,
 		}
 	}
@@ -847,20 +794,12 @@ func (h *handler) createEpisodeEditPatchAPI(w http.ResponseWriter, r *http.Reque
 			String: req.Date.Value,
 			Valid:  true,
 		}
-		param.OriginalAirdate = pgtype.Text{
-			String: originalWiki.Date,
-			Valid:  true,
-		}
 	}
 
 	if req.Summary.Set && req.Summary.Value != originalWiki.Summary {
 		changed = true
 		param.Description = pgtype.Text{
 			String: req.Summary.Value,
-			Valid:  true,
-		}
-		param.OriginalDescription = pgtype.Text{
-			String: originalWiki.Summary,
 			Valid:  true,
 		}
 	}

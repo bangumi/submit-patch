@@ -114,3 +114,16 @@ type EpisodePatchEdit struct {
 
 	TurnstileSiteKey string
 }
+
+type Episode struct {
+	Name        string
+	NameCN      string
+	Airdate     string
+	Duration    string
+	Description string
+}
+
+type EpisodePatchDetail struct {
+	Original Episode
+	Diff     Episode
+}
