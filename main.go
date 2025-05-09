@@ -20,6 +20,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
+	"github.com/trim21/errgo"
 	"go.uber.org/fx"
 
 	"app/dal"
@@ -28,6 +29,7 @@ import (
 func main() {
 	zerolog.TimeFieldFormat = time.RFC3339
 	zerolog.MessageFieldName = "msg"
+	zerolog.ErrorMarshalFunc = errgo.ZerologErrorMarshaler
 
 	var h *handler
 	var m *chi.Mux
@@ -63,6 +65,8 @@ func main() {
 	if c.Debug {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339})
 	}
+
+	log.Logger = log.Logger.With().Stack().Caller().Logger()
 
 	if err := runMigration(c); err != nil {
 		log.Err(err).Msg("migration failed")
