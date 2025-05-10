@@ -12,7 +12,7 @@ jobs:
   fmt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@v4
         with:
           submodules: "true"
 
@@ -38,6 +38,6 @@ jobs:
       - run: git diff --exit-code
 
       - name: Run linters
-        uses: golangci/golangci-lint-action@1481404843c368bc19ca9406f87d6e0fc97bdcfd # v7
+        uses: golangci/golangci-lint-action@v8
         with:
           version: v2.1.2
