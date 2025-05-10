@@ -28,7 +28,7 @@ require (
 )
 
 require (
-	dario.cat/mergo v1.0.1 // indirect
+	dario.cat/mergo v1.0.2 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.3.1 // indirect
 	github.com/a-h/parse v0.0.0-20250122154542-74294addb73e // indirect
@@ -42,7 +42,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
-	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa // indirect
+	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
@@ -54,16 +54,16 @@ require (
 	github.com/natefinch/atomic v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
-	github.com/spf13/cast v1.7.1 // indirect
-	go.uber.org/atomic v1.7.0 // indirect
-	go.uber.org/dig v1.18.1 // indirect
+	github.com/spf13/cast v1.8.0 // indirect
+	go.uber.org/atomic v1.11.0 // indirect
+	go.uber.org/dig v1.18.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.37.0 // indirect
+	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/mod v0.24.0 // indirect
-	golang.org/x/net v0.39.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
-	golang.org/x/text v0.24.0 // indirect
+	golang.org/x/net v0.40.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/text v0.25.0 // indirect
 	golang.org/x/tools v0.32.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
