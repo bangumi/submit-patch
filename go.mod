@@ -6,7 +6,7 @@ tool github.com/a-h/templ/cmd/templ
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/a-h/templ v0.3.898
+	github.com/a-h/templ v0.3.924
 	github.com/aymanbagabas/go-udiff v0.3.1
 	github.com/bangumi/wiki-parser-go v0.0.2
 	github.com/go-chi/chi/v5 v5.2.2
