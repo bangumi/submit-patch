@@ -61,6 +61,9 @@ create index idx_subject_count
 create index idx_subject_subject_id
     on public.subject_patch (subject_id, state);
 
+create index idx_subject_patch_num_id
+    on public.subject_patch (num_id);
+
 create table public.episode_patch
 (
     id                   uuid                                                   not null
@@ -115,6 +118,9 @@ create index idx_episode_subject_id
 create index idx_episode_episode_id
     on public.episode_patch (episode_id, state);
 
+create index idx_episode_patch_num_id
+    on public.episode_patch (num_id);
+
 create table public.edit_suggestion
 (
     id         uuid                                               not null
@@ -142,4 +148,3 @@ create table public.patch_tables_migrations
 
 alter table public.patch_tables_migrations
     owner to postgres;
-
