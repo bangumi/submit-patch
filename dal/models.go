@@ -44,6 +44,12 @@ type EpisodePatch struct {
 	CommentsCount       int32
 	PatchDesc           string
 	Ep                  pgtype.Int4
+	NumID               pgtype.Int8
+}
+
+type PatchTablesMigration struct {
+	Version int64
+	Dirty   bool
 }
 
 type PatchUser struct {
@@ -77,4 +83,5 @@ type SubjectPatch struct {
 	Platform         pgtype.Int4
 	// 1 for update 2 for create
 	Action pgtype.Int4
+	NumID  pgtype.Int8
 }

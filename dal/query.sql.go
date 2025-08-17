@@ -340,7 +340,7 @@ func (q *Queries) GetComments(ctx context.Context, arg GetCommentsParams) ([]Get
 }
 
 const getEpisodePatchByID = `-- name: GetEpisodePatchByID :one
-select id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, subject_id, comments_count, patch_desc, ep
+select id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, subject_id, comments_count, patch_desc, ep, num_id
 from episode_patch
 where deleted_at is null
   and id = $1
@@ -375,12 +375,13 @@ func (q *Queries) GetEpisodePatchByID(ctx context.Context, id uuid.UUID) (Episod
 		&i.CommentsCount,
 		&i.PatchDesc,
 		&i.Ep,
+		&i.NumID,
 	)
 	return i, err
 }
 
 const getEpisodePatchByIDForUpdate = `-- name: GetEpisodePatchByIDForUpdate :one
-select id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, subject_id, comments_count, patch_desc, ep
+select id, episode_id, state, from_user_id, wiki_user_id, reason, original_name, name, original_name_cn, name_cn, original_duration, duration, original_airdate, airdate, original_description, description, created_at, updated_at, deleted_at, reject_reason, subject_id, comments_count, patch_desc, ep, num_id
 from episode_patch
 where deleted_at is null
   and id = $1
@@ -415,12 +416,13 @@ func (q *Queries) GetEpisodePatchByIDForUpdate(ctx context.Context, id uuid.UUID
 		&i.CommentsCount,
 		&i.PatchDesc,
 		&i.Ep,
+		&i.NumID,
 	)
 	return i, err
 }
 
 const getSubjectPatchByID = `-- name: GetSubjectPatchByID :one
-select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action
+select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action, num_id
 from subject_patch
 where deleted_at is null
   and id = $1
@@ -454,12 +456,13 @@ func (q *Queries) GetSubjectPatchByID(ctx context.Context, id uuid.UUID) (Subjec
 		&i.OriginalPlatform,
 		&i.Platform,
 		&i.Action,
+		&i.NumID,
 	)
 	return i, err
 }
 
 const getSubjectPatchByIDForUpdate = `-- name: GetSubjectPatchByIDForUpdate :one
-select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action
+select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action, num_id
 from subject_patch
 where deleted_at is null
   and id = $1
@@ -493,6 +496,7 @@ func (q *Queries) GetSubjectPatchByIDForUpdate(ctx context.Context, id uuid.UUID
 		&i.OriginalPlatform,
 		&i.Platform,
 		&i.Action,
+		&i.NumID,
 	)
 	return i, err
 }

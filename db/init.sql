@@ -1,4 +1,4 @@
-create table public.patch_users
+create table patch_users
 (
     user_id  integer      not null
         primary key,
@@ -6,10 +6,8 @@ create table public.patch_users
     nickname varchar(255) not null
 );
 
-alter table public.patch_users
-    owner to postgres;
 
-create table public.subject_patch
+create table subject_patch
 (
     id                uuid                                                   not null
         primary key,
@@ -34,34 +32,30 @@ create table public.subject_patch
     patch_desc        text                     default ''::text              not null,
     original_platform integer,
     platform          integer,
-    action            integer                  default 1,
-    num_id            bigserial
+    action            integer                  default 1
 );
 
-comment on column public.subject_patch.action is '1 for update 2 for create';
-
-alter table public.subject_patch
-    owner to postgres;
+comment on column subject_patch.action is '1 for update 2 for create';
 
 create index idx_subject_id
-    on public.subject_patch (subject_id);
+    on subject_patch (subject_id);
 
 create index idx_subject_patch_list
-    on public.subject_patch (created_at, state, deleted_at);
+    on subject_patch (created_at, state, deleted_at);
 
 create index idx_subject_patch_list2
-    on public.subject_patch (updated_at, state, deleted_at);
+    on subject_patch (updated_at, state, deleted_at);
 
 create index idx_subject_patch_list3
-    on public.subject_patch (deleted_at, state, created_at);
+    on subject_patch (deleted_at, state, created_at);
 
 create index idx_subject_count
-    on public.subject_patch (state, deleted_at);
+    on subject_patch (state, deleted_at);
 
 create index idx_subject_subject_id
-    on public.subject_patch (subject_id, state);
+    on subject_patch (subject_id, state);
 
-create table public.episode_patch
+create table episode_patch
 (
     id                   uuid                                                   not null
         primary key,
@@ -87,59 +81,41 @@ create table public.episode_patch
     subject_id           integer                  default 0                     not null,
     comments_count       integer                  default 0                     not null,
     patch_desc           text                     default ''::text              not null,
-    ep                   integer,
-    num_id               bigserial
+    ep                   integer
 );
 
-alter table public.episode_patch
-    owner to postgres;
-
 create index episode_patch_state_idx
-    on public.episode_patch (state);
+    on episode_patch (state);
 
 create index idx_episode_patch_list
-    on public.episode_patch (created_at, state, deleted_at);
+    on episode_patch (created_at, state, deleted_at);
 
 create index idx_episode_patch_list2
-    on public.episode_patch (updated_at, state, deleted_at);
+    on episode_patch (updated_at, state, deleted_at);
 
 create index idx_episode_patch_list3
-    on public.episode_patch (deleted_at, state, created_at);
+    on episode_patch (deleted_at, state, created_at);
 
 create index idx_episode_count
-    on public.episode_patch (state, deleted_at);
+    on episode_patch (state, deleted_at);
 
 create index idx_episode_subject_id
-    on public.episode_patch (subject_id, state);
+    on episode_patch (subject_id, state);
 
 create index idx_episode_episode_id
-    on public.episode_patch (episode_id, state);
+    on episode_patch (episode_id, state);
 
-create table public.edit_suggestion
+create table edit_suggestion
 (
     id         uuid                                               not null
         primary key,
     patch_id   uuid                                               not null,
-    patch_type varchar(64)                                        not null,
+    patch_type varchar(64)                                         not null,
     text       text                                               not null,
     from_user  integer                                            not null,
     created_at timestamp with time zone default CURRENT_TIMESTAMP not null,
     deleted_at timestamp with time zone
 );
 
-alter table public.edit_suggestion
-    owner to postgres;
-
 create index idx_edit_patch_lookup
-    on public.edit_suggestion (created_at, patch_id, patch_type);
-
-create table public.patch_tables_migrations
-(
-    version bigint  not null
-        primary key,
-    dirty   boolean not null
-);
-
-alter table public.patch_tables_migrations
-    owner to postgres;
-
+    on edit_suggestion (created_at, patch_id, patch_type);
