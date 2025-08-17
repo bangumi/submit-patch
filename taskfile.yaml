@@ -11,7 +11,7 @@ tasks:
       - migrate -database {{ .PG_DSN }} -path db/migrations -verbose up
 
   new-migrate:
-    - migrate create -ext sql -dir db/migrations -seq {{ .NAME }}
+    - go run github.com/golang-migrate/migrate/v4/cmd/migrate create -ext sql -dir db/migrations -seq {{ .NAME }}
 
   build:
     sources:
