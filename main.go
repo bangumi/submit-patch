@@ -44,6 +44,7 @@ func main() {
 				return dal.New(p)
 			},
 			newHandler,
+			newKafkaWriter,
 			loadTemplates,
 			routers,
 			func(config Config) (rueidis.Client, error) {

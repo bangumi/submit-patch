@@ -10,12 +10,13 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/rueidis"
+	"github.com/segmentio/kafka-go"
 
 	"app/dal"
 	"app/dto"
 )
 
-func newHandler(db *pgxpool.Pool, r rueidis.Client, q *dal.Queries, config Config, template Template) *handler {
+func newHandler(db *pgxpool.Pool, r rueidis.Client, q *dal.Queries, config Config, template Template, k *kafka.Writer) *handler {
 	return &handler{
 		db:          db,
 		r:           r,
@@ -24,7 +25,7 @@ func newHandler(db *pgxpool.Pool, r rueidis.Client, q *dal.Queries, config Confi
 		q:           q,
 		client:      resty.New().SetHeader("User-Agent", "trim21/submit-patch").SetJSONEscapeHTML(false),
 		template:    template,
-		//tmpl:   tmpl,
+		k:           k,
 	}
 }
 
@@ -35,6 +36,7 @@ type handler struct {
 	db          *pgxpool.Pool
 	r           rueidis.Client
 	client      *resty.Client
+	k           *kafka.Writer
 
 	template Template
 }
