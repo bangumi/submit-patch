@@ -10,7 +10,7 @@ type Config struct {
 
 	AdminToken string `env:"ADMIN_TOKEN"`
 
-	KafkaAddr string `env:"KAFKA_ADDR"`
+	KafkaAddr []string `env:"KAFKA_ADDR"`
 
 	BangumiAppId     string `env:"BGM_TV_APP_ID"`
 	BangumiAppSecret string `env:"BGM_TV_APP_SECRET"`
