@@ -17,7 +17,7 @@ func (h *handler) handleReview(w http.ResponseWriter, r *http.Request) error {
 
 	if !csrf.Verify(r, r.PostForm.Get(csrf.FormName)) {
 		csrf.Clear(w)
-		http.Error(w, "csrf failed", http.StatusBadRequest)
+		http.Error(w, "csrf failed, please go-back and retry", http.StatusBadRequest)
 		return nil
 	}
 
