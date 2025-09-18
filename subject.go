@@ -222,6 +222,34 @@ func (h *handler) listSubjectPatches(
 	}).Render(r.Context(), w)
 }
 
+func (h *handler) subjectPatchShortLink(
+	w http.ResponseWriter,
+	r *http.Request,
+) error {
+	patchID := chi.URLParam(r, "patchID")
+	if patchID == "" {
+		http.Error(w, "missing patch id", http.StatusBadRequest)
+		return nil
+	}
+
+	numID, err := strconv.ParseUint(patchID, 10, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return nil
+	}
+
+	var id uuid.UUID
+	row := h.db.QueryRow(r.Context(), `select id from subject_patch where num_id = $1 limit 1`, numID)
+	err = row.Scan(&id)
+	if err != nil {
+		return errgo.Wrap(err, "failed to query subject_path")
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/subject/%s", id), http.StatusSeeOther)
+
+	return nil
+}
+
 func (h *handler) subjectPatchDetailView(
 	w http.ResponseWriter,
 	r *http.Request,

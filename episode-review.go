@@ -105,7 +105,7 @@ func (h *handler) handleEpisodeApprove(
 	s *session.Session,
 ) error {
 	var body = ApiUpdateEpisode{
-		CommieMessage: fmt.Sprintf("%s [https://patch.bgm38.tv/episode/%s]", patch.Reason, patch.ID),
+		CommieMessage: fmt.Sprintf("%s [https://patch.bgm38.tv/e/%d]", patch.Reason, patch.NumID),
 		ExpectedRevision: ApiExpectedSubject{
 			Name:     valuePtrIfChanged(patch.OriginalName.String, patch.Name.String),
 			NameCN:   valuePtrIfChanged(patch.OriginalNameCn.String, patch.NameCn.String),
