@@ -6,7 +6,6 @@ create table patch_users
     nickname varchar(255) not null
 );
 
-
 create table subject_patch
 (
     id                uuid                                                   not null
@@ -33,10 +32,8 @@ create table subject_patch
     original_platform integer,
     platform          integer,
     action            integer                  default 1,
-    num_id            bigserial                                              not null
+    num_id            bigserial
 );
-
-comment on column public.subject_patch.action is '1 for update 2 for create';
 
 comment on column subject_patch.action is '1 for update 2 for create';
 
@@ -58,7 +55,10 @@ create index idx_subject_count
 create index idx_subject_subject_id
     on subject_patch (subject_id, state);
 
-create table public.episode_patch
+create index idx_subject_patch_num_id
+    on subject_patch (num_id);
+
+create table episode_patch
 (
     id                   uuid                                                   not null
         primary key,
@@ -85,7 +85,7 @@ create table public.episode_patch
     comments_count       integer                  default 0                     not null,
     patch_desc           text                     default ''::text              not null,
     ep                   integer,
-    num_id               bigserial                                              not null
+    num_id               bigserial
 );
 
 create index episode_patch_state_idx
@@ -109,17 +109,21 @@ create index idx_episode_subject_id
 create index idx_episode_episode_id
     on episode_patch (episode_id, state);
 
+create index idx_episode_patch_num_id
+    on episode_patch (num_id);
+
 create table edit_suggestion
 (
     id         uuid                                               not null
         primary key,
     patch_id   uuid                                               not null,
-    patch_type varchar(64)                                         not null,
+    patch_type varchar(64)                                        not null,
     text       text                                               not null,
     from_user  integer                                            not null,
     created_at timestamp with time zone default CURRENT_TIMESTAMP not null,
     deleted_at timestamp with time zone
 );
+
 
 create index idx_edit_patch_lookup
     on edit_suggestion (created_at, patch_id, patch_type);
