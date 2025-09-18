@@ -3,6 +3,7 @@ package csrf
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/securecookie"
 	"github.com/rs/zerolog/log"
@@ -65,6 +66,7 @@ func New() func(http.Handler) http.Handler {
 				Path:     "/",
 				Secure:   true,
 				HttpOnly: true,
+				MaxAge:   int(time.Hour/time.Second) * 24 * 7,
 			})
 
 			next.ServeHTTP(w, r.WithContext(
@@ -84,6 +86,16 @@ func Verify(r *http.Request, token string) bool {
 	}
 
 	return v.UserID == session.GetSession(r.Context()).UserID
+}
+
+func Clear(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     CookiesName,
+		Value:    "",
+		Path:     "/",
+		Secure:   true,
+		HttpOnly: true,
+	})
 }
 
 type cookieValue struct {

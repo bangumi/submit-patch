@@ -673,7 +673,8 @@ func (h *handler) deleteSubjectPatch(w http.ResponseWriter, r *http.Request) err
 	}
 
 	if !csrf.Verify(r, r.PostForm.Get(csrf.FormName)) {
-		http.Error(w, "csrf failed", http.StatusBadRequest)
+		csrf.Clear(w)
+		http.Error(w, "csrf failed, please go-back and retry", http.StatusBadRequest)
 		return nil
 	}
 
