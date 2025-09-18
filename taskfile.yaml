@@ -49,3 +49,6 @@ tasks:
 
   watch:dev:
     cmd: watchexec --shell=none -e go,mod -w . -w templates -r -- task dev
+
+  dump-schema:
+    - pg_dump --schema-only -d {{ .PG_DSN }} > db/schema.sql
