@@ -32,8 +32,11 @@ create table subject_patch
     patch_desc        text                     default ''::text              not null,
     original_platform integer,
     platform          integer,
-    action            integer                  default 1
+    action            integer                  default 1,
+    num_id            bigserial                                              not null
 );
+
+comment on column public.subject_patch.action is '1 for update 2 for create';
 
 comment on column subject_patch.action is '1 for update 2 for create';
 
@@ -55,7 +58,7 @@ create index idx_subject_count
 create index idx_subject_subject_id
     on subject_patch (subject_id, state);
 
-create table episode_patch
+create table public.episode_patch
 (
     id                   uuid                                                   not null
         primary key,
@@ -81,7 +84,8 @@ create table episode_patch
     subject_id           integer                  default 0                     not null,
     comments_count       integer                  default 0                     not null,
     patch_desc           text                     default ''::text              not null,
-    ep                   integer
+    ep                   integer,
+    num_id               bigserial                                              not null
 );
 
 create index episode_patch_state_idx

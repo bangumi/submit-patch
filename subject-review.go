@@ -65,7 +65,7 @@ func (h *handler) handleSubjectReview(w http.ResponseWriter, r *http.Request, pa
 func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, qx *dal.Queries, patch dal.SubjectPatch, s *session.Session) error {
 	var body = ApiPatchSubject{
 		AuthorID:      patch.FromUserID,
-		CommieMessage: fmt.Sprintf("%s [https://patch.bgm38.tv/subject/%s]", patch.Reason, patch.ID),
+		CommieMessage: fmt.Sprintf("%s [https://patch.bgm38.tv/s/%d]", patch.Reason, patch.NumID),
 	}
 
 	body.ExpectedRevision.Infobox = patch.OriginalInfobox.String

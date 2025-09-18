@@ -30,8 +30,12 @@ func routers(h *handler) *chi.Mux {
 
 	r.Get("/", handleError(h.indexView))
 
+	r.Get("/s/{patchID}", handleError(h.subjectPatchShortLink))
+	r.Get("/e/{patchID}", handleError(h.episodePatchShortLink))
+
 	r.Get("/subject/{patchID}", handleError(h.subjectPatchDetailView))
 	r.Get("/episode/{patchID}", handleError(h.episodePatchDetailView))
+
 	r.Get("/contrib/{user-id}", handleError(h.userContributionView))
 	r.Get("/review/{user-id}", handleError(h.userReviewView))
 
