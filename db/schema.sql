@@ -32,7 +32,7 @@ create table subject_patch
     original_platform integer,
     platform          integer,
     action            integer                  default 1,
-    num_id            bigserial
+    num_id            bigserial                                              not null
 );
 
 comment on column subject_patch.action is '1 for update 2 for create';
@@ -85,7 +85,7 @@ create table episode_patch
     comments_count       integer                  default 0                     not null,
     patch_desc           text                     default ''::text              not null,
     ep                   integer,
-    num_id               bigserial
+    num_id               bigserial                                              not null
 );
 
 create index episode_patch_state_idx
