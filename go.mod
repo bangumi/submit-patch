@@ -14,7 +14,7 @@ require (
 	github.com/gofrs/uuid/v5 v5.3.2
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/gorilla/securecookie v1.1.2
-	github.com/jackc/pgx/v5 v5.7.5
+	github.com/jackc/pgx/v5 v5.7.6
 	github.com/redis/rueidis v1.0.64
 	github.com/rs/zerolog v1.34.0
 	github.com/samber/lo v1.51.0
