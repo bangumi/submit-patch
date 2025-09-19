@@ -24,7 +24,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0
 	go-simpler.org/env v0.12.0
 	go.uber.org/fx v1.24.0
-	golang.org/x/sync v0.16.0
+	golang.org/x/sync v0.17.0
 )
 
 require (
