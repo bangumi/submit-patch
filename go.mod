@@ -1,6 +1,6 @@
 module app
 
-go 1.24.6
+go 1.24.7
 
 tool github.com/a-h/templ/cmd/templ
 
