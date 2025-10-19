@@ -16,7 +16,7 @@ type key int
 const tokenKey = key(1)
 const signerKey = key(2)
 
-const CookiesName = "x-csrf-token"
+const CookiesName = "x-csrf-token-2"
 const FormName = "x-csrf-token"
 
 func GetToken(r *http.Request) string {
@@ -95,6 +95,7 @@ func Clear(w http.ResponseWriter) {
 		Path:     "/",
 		Secure:   true,
 		HttpOnly: true,
+		MaxAge:   int(time.Hour/time.Second) * 24 * 7,
 	})
 }
 
