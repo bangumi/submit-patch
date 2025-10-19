@@ -79,6 +79,15 @@ func New() func(http.Handler) http.Handler {
 	}
 }
 
+func newToken(ctx context.Context, signer *securecookie.SecureCookie) (string, error) {
+	encoded, err := signer.Encode(CookiesName, cookieValue{UserID: session.GetSession(ctx).UserID})
+	if err != nil {
+		return "", err
+	}
+
+	return encoded, nil
+}
+
 func Verify(r *http.Request, formValue string) bool {
 	signer := r.Context().Value(signerKey).(*securecookie.SecureCookie)
 	cookieToken := r.Context().Value(tokenKey).(string)
@@ -96,10 +105,15 @@ func Verify(r *http.Request, formValue string) bool {
 	return v.UserID == session.GetSession(r.Context()).UserID
 }
 
-func Clear(w http.ResponseWriter) {
+func Clear(w http.ResponseWriter, r *http.Request) {
+	token, err := newToken(r.Context(), r.Context().Value(signerKey).(*securecookie.SecureCookie))
+	if err != nil {
+		panic("failed to encode new token")
+	}
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     CookiesName,
-		Value:    "",
+		Value:    token,
 		Path:     "/",
 		Secure:   true,
 		HttpOnly: true,
