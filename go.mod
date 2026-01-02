@@ -10,7 +10,7 @@ require (
 	github.com/aymanbagabas/go-udiff v0.3.1
 	github.com/bangumi/wiki-parser-go v0.0.2
 	github.com/go-chi/chi/v5 v5.2.3
-	github.com/go-resty/resty/v2 v2.17.0
+	github.com/go-resty/resty/v2 v2.17.1
 	github.com/gofrs/uuid/v5 v5.4.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/gorilla/securecookie v1.1.2
