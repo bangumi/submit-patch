@@ -23,7 +23,7 @@ jobs:
       - uses: sigoden/install-binary@v1
         with:
           repo: gotestyourself/gotestsum
-          tag: v1.12.1
+          tag: v1.13.0
 
       - run: gotestsum --hide-summary=skipped --format-hide-empty-pkg
 
