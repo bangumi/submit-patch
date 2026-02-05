@@ -15,7 +15,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/gorilla/securecookie v1.1.2
 	github.com/jackc/pgx/v5 v5.8.0
-	github.com/redis/rueidis v1.0.70
+	github.com/redis/rueidis v1.0.71
 	github.com/rs/zerolog v1.34.0
 	github.com/samber/lo v1.52.0
 	github.com/stretchr/testify v1.11.1
