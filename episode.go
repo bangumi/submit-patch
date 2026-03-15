@@ -244,8 +244,10 @@ func (h *handler) listEpisodePatches(
 		Patches:            patches,
 		CurrentStateFilter: patchStateFilter,
 		PendingCount: view.PendingPatchCount{
-			Subject: pendingCount.SubjectPatchCount,
-			Episode: pendingCount.EpisodePatchCount,
+			Subject:   pendingCount.SubjectPatchCount,
+			Episode:   pendingCount.EpisodePatchCount,
+			Character: pendingCount.CharacterPatchCount,
+			Person:    pendingCount.PersonPatchCount,
 		},
 		Pagination: view.Pagination{
 			URL:         r.URL,

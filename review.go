@@ -63,6 +63,10 @@ func (h *handler) handleReview(w http.ResponseWriter, r *http.Request) error {
 		return h.handleSubjectReview(w, r, id, react, text, s)
 	case "episode":
 		return h.handleEpisodeReview(w, r, id, react, text, s)
+	case "character":
+		return h.handleCharacterReview(w, r, id, react, text, s)
+	case "person":
+		return h.handlePersonReview(w, r, id, react, text, s)
 	}
 
 	http.Error(w, "invalid patch type", http.StatusBadRequest)
