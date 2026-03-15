@@ -104,3 +104,27 @@ type CharacterPatch struct {
 	Action pgtype.Int4
 	NumID  int64
 }
+
+type PersonPatch struct {
+	ID              uuid.UUID
+	PersonID        int32
+	State           int32
+	FromUserID      int32
+	WikiUserID      int32
+	Reason          string
+	Name            pgtype.Text
+	OriginalName    string
+	Infobox         pgtype.Text
+	OriginalInfobox pgtype.Text
+	Summary         pgtype.Text
+	OriginalSummary pgtype.Text
+	CreatedAt       pgtype.Timestamptz
+	UpdatedAt       pgtype.Timestamptz
+	DeletedAt       pgtype.Timestamptz
+	RejectReason    string
+	CommentsCount   int32
+	PatchDesc       string
+	// 1 for update 2 for create
+	Action pgtype.Int4
+	NumID  int64
+}

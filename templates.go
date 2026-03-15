@@ -21,6 +21,7 @@ func loadTemplates(config Config) (Template, error) {
 			EditSubject:   &devPage[view.SubjectPatchEdit]{name: "subject-edit.gohtml"},
 			EditEpisode:   &devPage[view.EpisodePatchEdit]{name: "episode-edit.gohtml"},
 			EditCharacter: &devPage[view.CharacterPatchEdit]{name: "character-edit.gohtml"},
+			EditPerson:    &devPage[view.PersonPatchEdit]{name: "person-edit.gohtml"},
 		}, nil
 	}
 
@@ -33,6 +34,7 @@ func loadTemplates(config Config) (Template, error) {
 		EditSubject:   loadProdPage[view.SubjectPatchEdit](base, "subject-edit.gohtml"),
 		EditEpisode:   loadProdPage[view.EpisodePatchEdit](base, "episode-edit.gohtml"),
 		EditCharacter: loadProdPage[view.CharacterPatchEdit](base, "character-edit.gohtml"),
+		EditPerson:    loadProdPage[view.PersonPatchEdit](base, "person-edit.gohtml"),
 	}, nil
 }
 
@@ -51,6 +53,7 @@ type Template struct {
 	EditSubject   Page[view.SubjectPatchEdit]
 	EditEpisode   Page[view.EpisodePatchEdit]
 	EditCharacter Page[view.CharacterPatchEdit]
+	EditPerson    Page[view.PersonPatchEdit]
 }
 
 type Page[T any] interface {

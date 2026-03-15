@@ -26,6 +26,7 @@ func Diff(name, before, after string) string {
 const PatchTypeSubject string = "subject"
 const PatchTypeEpisode string = "episode"
 const PatchTypeCharacter string = "character"
+const PatchTypePerson string = "person"
 
 const OrderByCreatedAt string = "created_at"
 const OrderByUpdatedAt string = "updated_at"

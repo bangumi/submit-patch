@@ -52,6 +52,20 @@ templ listFilter(u *url.URL, currentTypeFilter string, currentStateFilter string
 						<span class="badge rounded-pill bg-danger">{ fmt.Sprint(pendingCount.Character) }</span>
 					}
 				</a>
+				<a
+					type="button"
+					if currentTypeFilter == "person" {
+						class="btn btn-primary"
+					} else {
+						class="btn btn-outline-primary"
+					}
+					href={ setQuery(u, "type", "person") }
+				>
+					人物
+					if pendingCount.Person > 0 {
+						<span class="badge rounded-pill bg-danger">{ fmt.Sprint(pendingCount.Person) }</span>
+					}
+				</a>
 			</div>
 		</div>
 		<div class="col d-flex flex-row-reverse">

@@ -44,6 +44,8 @@ func (h *handler) userReviewView(w http.ResponseWriter, r *http.Request) error {
 		return h.listEpisodePatchesReviewedUser(w, r, int32(userID), state, stateVals, currentPage)
 	case "character":
 		return h.listCharacterPatchesReviewedUser(w, r, int32(userID), state, stateVals, currentPage)
+	case "person":
+		return h.listPersonPatchesReviewedUser(w, r, int32(userID), state, stateVals, currentPage)
 	}
 
 	http.Error(w, "invalid patch type", http.StatusBadRequest)
@@ -242,6 +244,8 @@ func (h *handler) userContributionView(w http.ResponseWriter, r *http.Request) e
 		return h.listEpisodePatchesFromUser(w, r, int32(userID), state, stateVals, currentPage)
 	case "character":
 		return h.listCharacterPatchesFromUser(w, r, int32(userID), state, stateVals, currentPage)
+	case "person":
+		return h.listPersonPatchesFromUser(w, r, int32(userID), state, stateVals, currentPage)
 	}
 
 	http.Error(w, "invalid patch type", http.StatusBadRequest)
@@ -565,6 +569,168 @@ func (h *handler) listCharacterPatchesReviewedUser(
 		view.CharacterPatchList{
 			Title:              fmt.Sprintf("%d reviewed character patches", userID),
 			Session:            session.GetSession(r.Context()),
+			Patches:            patches,
+			CurrentStateFilter: patchStateFilter,
+			Pagination: view.Pagination{
+				URL:         r.URL,
+				TotalPage:   totalPage,
+				CurrentPage: currentPage,
+			},
+		}).Render(r.Context(), w)
+}
+
+func (h *handler) listPersonPatchesFromUser(
+w http.ResponseWriter,
+r *http.Request,
+userID int32,
+patchStateFilter string,
+stateVals []int32,
+currentPage int64,
+) error {
+	c, err := h.q.CountPersonPatches(r.Context(), dal.CountPersonPatchesParams{
+		FromUserID: userID,
+		State:      stateVals,
+	})
+	if err != nil {
+		return err
+	}
+
+	var patches = make([]view.PersonPatchListItem, 0, defaultPageSize)
+	if c != 0 {
+		data, err := h.q.ListPersonPatches(r.Context(), dal.ListPersonPatchesParams{
+			FromUserID: userID,
+			State:      stateVals,
+			OrderBy:    OrderByCreatedAt,
+			Skip:       (currentPage - 1) * defaultPageSize,
+			Size:       defaultPageSize,
+		})
+		if err != nil {
+			return errgo.Wrap(err, "failed to query data")
+		}
+
+		for _, v := range data {
+			var reviewer *view.User
+			if v.ReviewerNickname.Valid && v.ReviewerUserID.Valid {
+				reviewer = &view.User{
+					ID:       v.ReviewerUserID.Int32,
+					Username: v.ReviewerNickname.String,
+					Nickname: v.ReviewerNickname.String,
+				}
+			}
+
+			patches = append(patches, view.PersonPatchListItem{
+ID:            v.ID.String(),
+				UpdatedAt:     v.UpdatedAt.Time,
+				CreatedAt:     v.CreatedAt.Time,
+				State:         v.State,
+				Action:        v.Action.Int32,
+				Name:          v.OriginalName,
+				CommentsCount: v.CommentsCount,
+				Reason:        v.Reason,
+				Author: view.User{
+					ID:       v.AuthorUserID,
+					Username: v.AuthorUsername,
+					Nickname: v.AuthorNickname,
+				},
+				Reviewer: reviewer,
+			})
+		}
+	}
+
+	totalPage := (c + defaultPageSize - 1) / defaultPageSize
+
+	u, err := h.q.GetUserByID(r.Context(), userID)
+	if err != nil {
+		return errgo.Wrap(err, "failed to get user info")
+	}
+
+	return templates.UserPersonList(r, view.User{
+ID:       userID,
+Username: u.Username,
+Nickname: u.Nickname,
+}, view.PersonPatchList{
+Title:              fmt.Sprintf("%d person patches", userID),
+Session:            session.GetSession(r.Context()),
+		Patches:            patches,
+		CurrentStateFilter: patchStateFilter,
+		Pagination: view.Pagination{
+			URL:         r.URL,
+			TotalPage:   totalPage,
+			CurrentPage: currentPage,
+		},
+	}).Render(r.Context(), w)
+}
+
+func (h *handler) listPersonPatchesReviewedUser(
+w http.ResponseWriter,
+r *http.Request,
+userID int32,
+patchStateFilter string,
+stateVals []int32,
+currentPage int64,
+) error {
+	c, err := h.q.CountPersonPatches(r.Context(), dal.CountPersonPatchesParams{
+		WikiUserID: userID,
+		State:      stateVals,
+	})
+	if err != nil {
+		return err
+	}
+
+	var patches = make([]view.PersonPatchListItem, 0, defaultPageSize)
+	if c != 0 {
+		data, err := h.q.ListPersonPatches(r.Context(), dal.ListPersonPatchesParams{
+			WikiUserID: userID,
+			State:      stateVals,
+			Skip:       (currentPage - 1) * defaultPageSize,
+			OrderBy:    OrderByUpdatedAt,
+			Size:       defaultPageSize,
+		})
+		if err != nil {
+			return errgo.Wrap(err, "failed to query data")
+		}
+
+		for _, v := range data {
+			var reviewer *view.User
+			if v.ReviewerNickname.Valid && v.ReviewerUserID.Valid {
+				reviewer = &view.User{
+					ID:       v.ReviewerUserID.Int32,
+					Username: v.ReviewerNickname.String,
+					Nickname: v.ReviewerNickname.String,
+				}
+			}
+
+			patches = append(patches, view.PersonPatchListItem{
+ID:            v.ID.String(),
+				UpdatedAt:     v.UpdatedAt.Time,
+				CreatedAt:     v.CreatedAt.Time,
+				State:         v.State,
+				Action:        v.Action.Int32,
+				Name:          v.OriginalName,
+				CommentsCount: v.CommentsCount,
+				Reason:        v.Reason,
+				Author: view.User{
+					ID:       v.AuthorUserID,
+					Username: v.AuthorUsername,
+					Nickname: v.AuthorNickname,
+				},
+				Reviewer: reviewer,
+			})
+		}
+	}
+
+	totalPage := (c + defaultPageSize - 1) / defaultPageSize
+
+	u, err := h.q.GetUserByID(r.Context(), userID)
+	if err != nil {
+		return errgo.Wrap(err, "failed to get user info")
+	}
+
+	return templates.UserPersonList(r,
+view.User{ID: userID, Username: u.Username, Nickname: u.Nickname},
+view.PersonPatchList{
+Title:              fmt.Sprintf("%d reviewed person patches", userID),
+Session:            session.GetSession(r.Context()),
 			Patches:            patches,
 			CurrentStateFilter: patchStateFilter,
 			Pagination: view.Pagination{

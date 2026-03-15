@@ -50,6 +50,20 @@ templ UserCharacterList(r *http.Request, user view.User, data view.CharacterPatc
 	)
 }
 
+templ UserPersonList(r *http.Request, user view.User, data view.PersonPatchList) {
+	@Layout(
+		data.Title,
+		subjectListHead(),
+		templ.Join(
+			header(data.Title, data.Session),
+			userHomepage(user),
+			listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
+			personPatchList(data, time.Now()),
+			Pagination(data.Pagination),
+		),
+	)
+}
+
 templ userHomepage(user view.User) {
 	<div class="row mt-2 mb-2">
 		<div class="col d-flex justify-content-center">

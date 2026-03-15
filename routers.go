@@ -33,10 +33,12 @@ func routers(h *handler) *chi.Mux {
 	r.Get("/s/{patchID}", handleError(h.subjectPatchShortLink))
 	r.Get("/e/{patchID}", handleError(h.episodePatchShortLink))
 	r.Get("/c/{patchID}", handleError(h.characterPatchShortLink))
+	r.Get("/p/{patchID}", handleError(h.personPatchShortLink))
 
 	r.Get("/subject/{patchID}", handleError(h.subjectPatchDetailView))
 	r.Get("/episode/{patchID}", handleError(h.episodePatchDetailView))
 	r.Get("/character/{patchID}", handleError(h.characterPatchDetailView))
+	r.Get("/person/{patchID}", handleError(h.personPatchDetailView))
 
 	r.Get("/contrib/{user-id}", handleError(h.userContributionView))
 	r.Get("/review/{user-id}", handleError(h.userReviewView))
@@ -90,6 +92,22 @@ func routers(h *handler) *chi.Mux {
 	r.Post("/edit/patch/character/{patch-id}", handleError(h.updateCharacterEditPatch))
 
 	r.Post("/api/delete/patch/character/{patch-id}", handleError(h.deleteCharacterPatch))
+
+	// persons
+	r.Get("/suggest-person", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, fmt.Sprintf("/edit/person/%s", r.URL.Query().Get("person_id")), http.StatusSeeOther)
+	})
+
+	r.Get("/edit/person/{person-id}", handleError(h.editPersonView))
+	r.Post("/edit/person/{person-id}", handleError(h.createPersonEditPatch))
+
+	// json API to create patch from partial persons
+	r.Patch("/edit/person/{person-id}", handleError(h.createPersonEditPatchAPI))
+
+	r.Get("/edit/patch/person/{patch-id}", handleError(h.editPersonPatchView))
+	r.Post("/edit/patch/person/{patch-id}", handleError(h.updatePersonEditPatch))
+
+	r.Post("/api/delete/patch/person/{patch-id}", handleError(h.deletePersonPatch))
 
 	// other json APIS
 	r.Get("/api/subject/pending", handleError(func(w http.ResponseWriter, r *http.Request) error {
@@ -181,6 +199,39 @@ func routers(h *handler) *chi.Mux {
 				FromUser:    row.FromUserID,
 				CreatedAt:   row.CreatedAt.Time.Unix(),
 				UpdatedAt:   row.UpdatedAt.Time.Unix(),
+			})
+		}
+
+		w.Header().Set("content-type", contentTypeApplicationJSON)
+		w.WriteHeader(http.StatusOK)
+		return json.NewEncoder(w).Encode(map[string]any{
+			"data": res,
+		})
+	}))
+
+	r.Get("/api/person/pending", handleError(func(w http.ResponseWriter, r *http.Request) error {
+		rows, err := h.q.ListPendingPersonPatches(r.Context())
+		if err != nil {
+			return err
+		}
+
+		type Res struct {
+			ID       uuid.UUID `json:"id"`
+			PersonID int32     `json:"person_id"`
+			FromUser int32     `json:"from_user"`
+			CreatedAt int64     `json:"created_at"`
+			UpdatedAt int64     `json:"updated_at"`
+		}
+
+		var res = make([]Res, 0, len(rows))
+
+		for _, row := range rows {
+			res = append(res, Res{
+				ID:       row.ID,
+				PersonID: row.PersonID,
+				FromUser: row.FromUserID,
+				CreatedAt: row.CreatedAt.Time.Unix(),
+				UpdatedAt: row.UpdatedAt.Time.Unix(),
 			})
 		}
 

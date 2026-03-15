@@ -35,6 +35,13 @@ type WikiCharacter struct {
 	Summary string `json:"summary"`
 }
 
+type WikiPerson struct {
+	ID      int    `json:"id"`
+	Name    string `json:"name"`
+	Infobox string `json:"infobox"`
+	Summary string `json:"summary"`
+}
+
 type ErrorResponse struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
