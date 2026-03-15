@@ -206,9 +206,10 @@ func (h *handler) listPersonPatches(
 		Patches:            patches,
 		CurrentStateFilter: patchStateFilter,
 		PendingCount: view.PendingPatchCount{
-			Subject: pendingCount.SubjectPatchCount,
-			Episode: pendingCount.EpisodePatchCount,
-			Person:  pendingCount.PersonPatchCount,
+			Subject:   pendingCount.SubjectPatchCount,
+			Episode:   pendingCount.EpisodePatchCount,
+			Character: pendingCount.CharacterPatchCount,
+			Person:    pendingCount.PersonPatchCount,
 		},
 		Pagination: view.Pagination{
 			URL:         r.URL,
@@ -299,7 +300,7 @@ func (h *handler) personPatchDetailView(
 
 	if patch.Name.Valid && patch.OriginalName != patch.Name.String {
 		changes = append(changes, view.Change{
-			Name: "角色名",
+			Name: "人物名",
 			Diff: diff.Diff("name", patch.OriginalName, patch.Name.String),
 		})
 	}

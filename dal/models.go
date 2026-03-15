@@ -9,6 +9,30 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type CharacterPatch struct {
+	ID              uuid.UUID
+	CharacterID     int32
+	State           int32
+	FromUserID      int32
+	WikiUserID      int32
+	Reason          string
+	Name            pgtype.Text
+	OriginalName    string
+	Infobox         pgtype.Text
+	OriginalInfobox pgtype.Text
+	Summary         pgtype.Text
+	OriginalSummary pgtype.Text
+	CreatedAt       pgtype.Timestamptz
+	UpdatedAt       pgtype.Timestamptz
+	DeletedAt       pgtype.Timestamptz
+	RejectReason    string
+	CommentsCount   int32
+	PatchDesc       string
+	// 1 for update 2 for create
+	Action pgtype.Int4
+	NumID  int64
+}
+
 type EditSuggestion struct {
 	ID        uuid.UUID
 	PatchID   uuid.UUID
@@ -53,6 +77,30 @@ type PatchUser struct {
 	Nickname string
 }
 
+type PersonPatch struct {
+	ID              uuid.UUID
+	PersonID        int32
+	State           int32
+	FromUserID      int32
+	WikiUserID      int32
+	Reason          string
+	Name            pgtype.Text
+	OriginalName    string
+	Infobox         pgtype.Text
+	OriginalInfobox pgtype.Text
+	Summary         pgtype.Text
+	OriginalSummary pgtype.Text
+	CreatedAt       pgtype.Timestamptz
+	UpdatedAt       pgtype.Timestamptz
+	DeletedAt       pgtype.Timestamptz
+	RejectReason    string
+	CommentsCount   int32
+	PatchDesc       string
+	// 1 for update 2 for create
+	Action pgtype.Int4
+	NumID  int64
+}
+
 type SubjectPatch struct {
 	ID               uuid.UUID
 	SubjectID        int32
@@ -76,54 +124,6 @@ type SubjectPatch struct {
 	PatchDesc        string
 	OriginalPlatform pgtype.Int4
 	Platform         pgtype.Int4
-	// 1 for update 2 for create
-	Action pgtype.Int4
-	NumID  int64
-}
-
-type CharacterPatch struct {
-	ID              uuid.UUID
-	CharacterID     int32
-	State           int32
-	FromUserID      int32
-	WikiUserID      int32
-	Reason          string
-	Name            pgtype.Text
-	OriginalName    string
-	Infobox         pgtype.Text
-	OriginalInfobox pgtype.Text
-	Summary         pgtype.Text
-	OriginalSummary pgtype.Text
-	CreatedAt       pgtype.Timestamptz
-	UpdatedAt       pgtype.Timestamptz
-	DeletedAt       pgtype.Timestamptz
-	RejectReason    string
-	CommentsCount   int32
-	PatchDesc       string
-	// 1 for update 2 for create
-	Action pgtype.Int4
-	NumID  int64
-}
-
-type PersonPatch struct {
-	ID              uuid.UUID
-	PersonID        int32
-	State           int32
-	FromUserID      int32
-	WikiUserID      int32
-	Reason          string
-	Name            pgtype.Text
-	OriginalName    string
-	Infobox         pgtype.Text
-	OriginalInfobox pgtype.Text
-	Summary         pgtype.Text
-	OriginalSummary pgtype.Text
-	CreatedAt       pgtype.Timestamptz
-	UpdatedAt       pgtype.Timestamptz
-	DeletedAt       pgtype.Timestamptz
-	RejectReason    string
-	CommentsCount   int32
-	PatchDesc       string
 	// 1 for update 2 for create
 	Action pgtype.Int4
 	NumID  int64

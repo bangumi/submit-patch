@@ -46,10 +46,10 @@ templ personPatchDetailContent(
 		<div class="col">
 			if patch.PersonID != 0 {
 				<a href={ templ.SafeURL(fmt.Sprintf("https://bgm.tv/person/%d", patch.PersonID)) } target="_blank" rel="noopener">
-					<h3>角色链接</h3>
+					<h3>人物链接</h3>
 				</a>
 			} else {
-				<h3>创建新角色</h3>
+				<h3>创建新人物</h3>
 			}
 		</div>
 		<div class="col">
