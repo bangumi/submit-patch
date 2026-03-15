@@ -29,8 +29,9 @@ type SubjectPatchList struct {
 }
 
 type PendingPatchCount struct {
-	Subject int64
-	Episode int64
+	Subject   int64
+	Episode   int64
+	Character int64
 }
 
 type EpisodePatchList struct {
@@ -39,6 +40,15 @@ type EpisodePatchList struct {
 	PendingCount       PendingPatchCount
 	CurrentStateFilter string
 	Patches            []EpisodePatchListItem
+	Pagination         Pagination
+}
+
+type CharacterPatchList struct {
+	Title              string
+	Session            *session.Session
+	PendingCount       PendingPatchCount
+	CurrentStateFilter string
+	Patches            []CharacterPatchListItem
 	Pagination         Pagination
 }
 
@@ -89,6 +99,22 @@ type EpisodePatchListItem struct {
 	Name string
 }
 
+type CharacterPatchListItem struct {
+	ID            string
+	Reason        string
+	UpdatedAt     time.Time
+	CreatedAt     time.Time
+	CommentsCount int32
+
+	State  int32
+	Action int32
+
+	Author   User
+	Reviewer *User
+
+	Name string
+}
+
 type SubjectPatchEdit struct {
 	PatchID   string
 	SubjectID int32
@@ -111,6 +137,19 @@ type EpisodePatchEdit struct {
 	Description string
 
 	Data dto.WikiEpisode
+
+	TurnstileSiteKey string
+}
+
+type CharacterPatchEdit struct {
+	PatchID     string
+	CharacterID int32
+	CsrfToken   string
+
+	Reason      string
+	Description string
+
+	Data dto.WikiCharacter
 
 	TurnstileSiteKey string
 }

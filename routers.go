@@ -32,9 +32,11 @@ func routers(h *handler) *chi.Mux {
 
 	r.Get("/s/{patchID}", handleError(h.subjectPatchShortLink))
 	r.Get("/e/{patchID}", handleError(h.episodePatchShortLink))
+	r.Get("/c/{patchID}", handleError(h.characterPatchShortLink))
 
 	r.Get("/subject/{patchID}", handleError(h.subjectPatchDetailView))
 	r.Get("/episode/{patchID}", handleError(h.episodePatchDetailView))
+	r.Get("/character/{patchID}", handleError(h.characterPatchDetailView))
 
 	r.Get("/contrib/{user-id}", handleError(h.userContributionView))
 	r.Get("/review/{user-id}", handleError(h.userReviewView))
@@ -72,6 +74,22 @@ func routers(h *handler) *chi.Mux {
 	r.Patch("/edit/episode/{episode-id}", handleError(h.createEpisodeEditPatchAPI))
 
 	r.Post("/api/delete/patch/episode/{patch-id}", handleError(h.deleteEpisodePatch))
+
+	// characters
+	r.Get("/suggest-character", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, fmt.Sprintf("/edit/character/%s", r.URL.Query().Get("character_id")), http.StatusSeeOther)
+	})
+
+	r.Get("/edit/character/{character-id}", handleError(h.editCharacterView))
+	r.Post("/edit/character/{character-id}", handleError(h.createCharacterEditPatch))
+
+	// json API to create patch from partial characters
+	r.Patch("/edit/character/{character-id}", handleError(h.createCharacterEditPatchAPI))
+
+	r.Get("/edit/patch/character/{patch-id}", handleError(h.editCharacterPatchView))
+	r.Post("/edit/patch/character/{patch-id}", handleError(h.updateCharacterEditPatch))
+
+	r.Post("/api/delete/patch/character/{patch-id}", handleError(h.deleteCharacterPatch))
 
 	// other json APIS
 	r.Get("/api/subject/pending", handleError(func(w http.ResponseWriter, r *http.Request) error {
@@ -130,6 +148,39 @@ func routers(h *handler) *chi.Mux {
 				FromUser:  row.FromUserID,
 				CreatedAt: row.CreatedAt.Time.Unix(),
 				UpdatedAt: row.UpdatedAt.Time.Unix(),
+			})
+		}
+
+		w.Header().Set("content-type", contentTypeApplicationJSON)
+		w.WriteHeader(http.StatusOK)
+		return json.NewEncoder(w).Encode(map[string]any{
+			"data": res,
+		})
+	}))
+
+	r.Get("/api/character/pending", handleError(func(w http.ResponseWriter, r *http.Request) error {
+		rows, err := h.q.ListPendingCharacterPatches(r.Context())
+		if err != nil {
+			return err
+		}
+
+		type Res struct {
+			ID          uuid.UUID `json:"id"`
+			CharacterID int32     `json:"character_id"`
+			FromUser    int32     `json:"from_user"`
+			CreatedAt   int64     `json:"created_at"`
+			UpdatedAt   int64     `json:"updated_at"`
+		}
+
+		var res = make([]Res, 0, len(rows))
+
+		for _, row := range rows {
+			res = append(res, Res{
+				ID:          row.ID,
+				CharacterID: row.CharacterID,
+				FromUser:    row.FromUserID,
+				CreatedAt:   row.CreatedAt.Time.Unix(),
+				UpdatedAt:   row.UpdatedAt.Time.Unix(),
 			})
 		}
 

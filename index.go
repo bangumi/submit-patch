@@ -38,6 +38,8 @@ func (h *handler) indexView(w http.ResponseWriter, r *http.Request) error {
 		return h.listSubjectPatches(w, r, state, order, stateVals, currentPage)
 	case "episode":
 		return h.listEpisodePatches(w, r, state, order, stateVals, currentPage)
+	case "character":
+		return h.listCharacterPatches(w, r, state, order, stateVals, currentPage)
 	}
 
 	http.Error(w, "invalid patch type", http.StatusBadRequest)
