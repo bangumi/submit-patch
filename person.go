@@ -59,7 +59,7 @@ func (h *handler) editPersonView(w http.ResponseWriter, r *http.Request) error {
 
 	return h.template.EditPerson.Execute(w, view.PersonPatchEdit{
 		PatchID:          "",
-		PersonID:      int32(cid),
+		PersonID:         int32(cid),
 		CsrfToken:        csrf.GetToken(r),
 		Reason:           "",
 		Description:      "",
@@ -127,7 +127,7 @@ func (h *handler) editPersonPatchView(w http.ResponseWriter, r *http.Request) er
 
 	return h.template.EditPerson.Execute(w, view.PersonPatchEdit{
 		PatchID:          patch.ID.String(),
-		PersonID:      patch.PersonID,
+		PersonID:         patch.PersonID,
 		CsrfToken:        csrf.GetToken(r),
 		Reason:           patch.Reason,
 		Description:      patch.PatchDesc,
@@ -206,9 +206,9 @@ func (h *handler) listPersonPatches(
 		Patches:            patches,
 		CurrentStateFilter: patchStateFilter,
 		PendingCount: view.PendingPatchCount{
-			Subject:   pendingCount.SubjectPatchCount,
-			Episode:   pendingCount.EpisodePatchCount,
-			Person: pendingCount.PersonPatchCount,
+			Subject: pendingCount.SubjectPatchCount,
+			Episode: pendingCount.EpisodePatchCount,
+			Person:  pendingCount.PersonPatchCount,
 		},
 		Pagination: view.Pagination{
 			URL:         r.URL,
@@ -402,7 +402,7 @@ func (h *handler) createPersonEditPatch(w http.ResponseWriter, r *http.Request) 
 	pk := uuid.Must(uuid.NewV7())
 	var param = dal.CreatePersonEditPatchParams{
 		ID:           pk,
-		PersonID:  int32(personID),
+		PersonID:     int32(personID),
 		FromUserID:   user.UserID,
 		Reason:       data.Reason,
 		OriginalName: originalWiki.Name,
@@ -789,7 +789,7 @@ func (h *handler) createPersonEditPatchAPI(w http.ResponseWriter, r *http.Reques
 
 	var changed bool
 	var param = dal.CreatePersonEditPatchParams{
-		PersonID:  int32(personID),
+		PersonID:     int32(personID),
 		FromUserID:   user.UserID,
 		Reason:       req.Reason,
 		OriginalName: originalWiki.Name,

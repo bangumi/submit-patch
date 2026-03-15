@@ -216,9 +216,9 @@ func routers(h *handler) *chi.Mux {
 		}
 
 		type Res struct {
-			ID       uuid.UUID `json:"id"`
-			PersonID int32     `json:"person_id"`
-			FromUser int32     `json:"from_user"`
+			ID        uuid.UUID `json:"id"`
+			PersonID  int32     `json:"person_id"`
+			FromUser  int32     `json:"from_user"`
 			CreatedAt int64     `json:"created_at"`
 			UpdatedAt int64     `json:"updated_at"`
 		}
@@ -227,9 +227,9 @@ func routers(h *handler) *chi.Mux {
 
 		for _, row := range rows {
 			res = append(res, Res{
-				ID:       row.ID,
-				PersonID: row.PersonID,
-				FromUser: row.FromUserID,
+				ID:        row.ID,
+				PersonID:  row.PersonID,
+				FromUser:  row.FromUserID,
 				CreatedAt: row.CreatedAt.Time.Unix(),
 				UpdatedAt: row.UpdatedAt.Time.Unix(),
 			})

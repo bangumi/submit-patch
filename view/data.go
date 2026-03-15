@@ -182,7 +182,7 @@ type CharacterPatchEdit struct {
 
 type PersonPatchEdit struct {
 	PatchID   string
-	PersonID int32
+	PersonID  int32
 	CsrfToken string
 
 	Reason      string

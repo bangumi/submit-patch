@@ -580,12 +580,12 @@ func (h *handler) listCharacterPatchesReviewedUser(
 }
 
 func (h *handler) listPersonPatchesFromUser(
-w http.ResponseWriter,
-r *http.Request,
-userID int32,
-patchStateFilter string,
-stateVals []int32,
-currentPage int64,
+	w http.ResponseWriter,
+	r *http.Request,
+	userID int32,
+	patchStateFilter string,
+	stateVals []int32,
+	currentPage int64,
 ) error {
 	c, err := h.q.CountPersonPatches(r.Context(), dal.CountPersonPatchesParams{
 		FromUserID: userID,
@@ -619,7 +619,7 @@ currentPage int64,
 			}
 
 			patches = append(patches, view.PersonPatchListItem{
-ID:            v.ID.String(),
+				ID:            v.ID.String(),
 				UpdatedAt:     v.UpdatedAt.Time,
 				CreatedAt:     v.CreatedAt.Time,
 				State:         v.State,
@@ -645,12 +645,12 @@ ID:            v.ID.String(),
 	}
 
 	return templates.UserPersonList(r, view.User{
-ID:       userID,
-Username: u.Username,
-Nickname: u.Nickname,
-}, view.PersonPatchList{
-Title:              fmt.Sprintf("%d person patches", userID),
-Session:            session.GetSession(r.Context()),
+		ID:       userID,
+		Username: u.Username,
+		Nickname: u.Nickname,
+	}, view.PersonPatchList{
+		Title:              fmt.Sprintf("%d person patches", userID),
+		Session:            session.GetSession(r.Context()),
 		Patches:            patches,
 		CurrentStateFilter: patchStateFilter,
 		Pagination: view.Pagination{
@@ -662,12 +662,12 @@ Session:            session.GetSession(r.Context()),
 }
 
 func (h *handler) listPersonPatchesReviewedUser(
-w http.ResponseWriter,
-r *http.Request,
-userID int32,
-patchStateFilter string,
-stateVals []int32,
-currentPage int64,
+	w http.ResponseWriter,
+	r *http.Request,
+	userID int32,
+	patchStateFilter string,
+	stateVals []int32,
+	currentPage int64,
 ) error {
 	c, err := h.q.CountPersonPatches(r.Context(), dal.CountPersonPatchesParams{
 		WikiUserID: userID,
@@ -701,7 +701,7 @@ currentPage int64,
 			}
 
 			patches = append(patches, view.PersonPatchListItem{
-ID:            v.ID.String(),
+				ID:            v.ID.String(),
 				UpdatedAt:     v.UpdatedAt.Time,
 				CreatedAt:     v.CreatedAt.Time,
 				State:         v.State,
@@ -727,10 +727,10 @@ ID:            v.ID.String(),
 	}
 
 	return templates.UserPersonList(r,
-view.User{ID: userID, Username: u.Username, Nickname: u.Nickname},
-view.PersonPatchList{
-Title:              fmt.Sprintf("%d reviewed person patches", userID),
-Session:            session.GetSession(r.Context()),
+		view.User{ID: userID, Username: u.Username, Nickname: u.Nickname},
+		view.PersonPatchList{
+			Title:              fmt.Sprintf("%d reviewed person patches", userID),
+			Session:            session.GetSession(r.Context()),
 			Patches:            patches,
 			CurrentStateFilter: patchStateFilter,
 			Pagination: view.Pagination{

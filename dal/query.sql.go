@@ -1466,7 +1466,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 
 type CreatePersonEditPatchParams struct {
 	ID              uuid.UUID
-	PersonID     int32
+	PersonID        int32
 	FromUserID      int32
 	Reason          string
 	Name            pgtype.Text
@@ -1519,7 +1519,7 @@ func (q *Queries) GetPersonPatchByID(ctx context.Context, id uuid.UUID) (PersonP
 	row := q.db.QueryRow(ctx, getPersonPatchByID, id)
 	var i PersonPatch
 	err := row.Scan(
-&i.ID,
+		&i.ID,
 		&i.PersonID,
 		&i.State,
 		&i.FromUserID,
@@ -1555,7 +1555,7 @@ func (q *Queries) GetPersonPatchByIDForUpdate(ctx context.Context, id uuid.UUID)
 	row := q.db.QueryRow(ctx, getPersonPatchByIDForUpdate, id)
 	var i PersonPatch
 	err := row.Scan(
-&i.ID,
+		&i.ID,
 		&i.PersonID,
 		&i.State,
 		&i.FromUserID,
@@ -1588,11 +1588,11 @@ order by created_at
 `
 
 type ListPendingPersonPatchesRow struct {
-	ID        uuid.UUID
-	PersonID  int32
+	ID         uuid.UUID
+	PersonID   int32
 	FromUserID int32
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
+	CreatedAt  pgtype.Timestamptz
+	UpdatedAt  pgtype.Timestamptz
 }
 
 func (q *Queries) ListPendingPersonPatches(ctx context.Context) ([]ListPendingPersonPatchesRow, error) {
@@ -1605,7 +1605,7 @@ func (q *Queries) ListPendingPersonPatches(ctx context.Context) ([]ListPendingPe
 	for rows.Next() {
 		var i ListPendingPersonPatchesRow
 		if err := rows.Scan(
-&i.ID,
+			&i.ID,
 			&i.PersonID,
 			&i.FromUserID,
 			&i.CreatedAt,
@@ -1678,13 +1678,13 @@ type ListPersonPatchesRow struct {
 
 func (q *Queries) ListPersonPatches(ctx context.Context, arg ListPersonPatchesParams) ([]ListPersonPatchesRow, error) {
 	rows, err := q.db.Query(ctx, listPersonPatches,
-arg.State,
-arg.FromUserID,
-arg.WikiUserID,
-arg.OrderBy,
-arg.Skip,
-arg.Size,
-)
+		arg.State,
+		arg.FromUserID,
+		arg.WikiUserID,
+		arg.OrderBy,
+		arg.Skip,
+		arg.Size,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -1693,7 +1693,7 @@ arg.Size,
 	for rows.Next() {
 		var i ListPersonPatchesRow
 		if err := rows.Scan(
-&i.ID,
+			&i.ID,
 			&i.OriginalName,
 			&i.State,
 			&i.Action,
@@ -1735,10 +1735,10 @@ type CountPersonPatchesParams struct {
 
 func (q *Queries) CountPersonPatches(ctx context.Context, arg CountPersonPatchesParams) (int64, error) {
 	row := q.db.QueryRow(ctx, countPersonPatches,
-arg.State,
-arg.FromUserID,
-arg.WikiUserID,
-)
+		arg.State,
+		arg.FromUserID,
+		arg.WikiUserID,
+	)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -1756,16 +1756,16 @@ where id = $3
 
 type AcceptPersonPatchParams struct {
 	WikiUserID int32
-	State     int32
-	ID        uuid.UUID
+	State      int32
+	ID         uuid.UUID
 }
 
 func (q *Queries) AcceptPersonPatch(ctx context.Context, arg AcceptPersonPatchParams) error {
 	_, err := q.db.Exec(ctx, acceptPersonPatch,
-arg.WikiUserID,
-arg.State,
-arg.ID,
-)
+		arg.WikiUserID,
+		arg.State,
+		arg.ID,
+	)
 	return err
 }
 
@@ -1789,11 +1789,11 @@ type RejectPersonPatchParams struct {
 
 func (q *Queries) RejectPersonPatch(ctx context.Context, arg RejectPersonPatchParams) error {
 	_, err := q.db.Exec(ctx, rejectPersonPatch,
-arg.WikiUserID,
-arg.State,
-arg.ID,
-arg.RejectReason,
-)
+		arg.WikiUserID,
+		arg.State,
+		arg.ID,
+		arg.RejectReason,
+	)
 	return err
 }
 
@@ -1842,16 +1842,16 @@ type UpdatePersonPatchParams struct {
 
 func (q *Queries) UpdatePersonPatch(ctx context.Context, arg UpdatePersonPatchParams) error {
 	_, err := q.db.Exec(ctx, updatePersonPatch,
-arg.ID,
-arg.Reason,
-arg.PatchDesc,
-arg.OriginalName,
-arg.Name,
-arg.OriginalInfobox,
-arg.Infobox,
-arg.OriginalSummary,
-arg.Summary,
-)
+		arg.ID,
+		arg.Reason,
+		arg.PatchDesc,
+		arg.OriginalName,
+		arg.Name,
+		arg.OriginalInfobox,
+		arg.Infobox,
+		arg.OriginalSummary,
+		arg.Summary,
+	)
 	return err
 }
 
