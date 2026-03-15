@@ -82,7 +82,7 @@ func UserEpisodeList(r *http.Request, user view.User, data view.EpisodePatchList
 			templ.Join(
 				header(data.Title, data.Session),
 				userHomepage(user),
-				listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
+				listFilter(r.URL, "episode", data.CurrentStateFilter, data.PendingCount),
 				episodePatchList(data, time.Now()),
 				Pagination(data.Pagination),
 			),
@@ -121,7 +121,7 @@ func UserCharacterList(r *http.Request, user view.User, data view.CharacterPatch
 			templ.Join(
 				header(data.Title, data.Session),
 				userHomepage(user),
-				listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
+				listFilter(r.URL, "character", data.CurrentStateFilter, data.PendingCount),
 				characterPatchList(data, time.Now()),
 				Pagination(data.Pagination),
 			),
@@ -160,7 +160,7 @@ func UserPersonList(r *http.Request, user view.User, data view.PersonPatchList) 
 			templ.Join(
 				header(data.Title, data.Session),
 				userHomepage(user),
-				listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
+				listFilter(r.URL, "person", data.CurrentStateFilter, data.PendingCount),
 				personPatchList(data, time.Now()),
 				Pagination(data.Pagination),
 			),

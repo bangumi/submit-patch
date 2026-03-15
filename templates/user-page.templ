@@ -29,7 +29,7 @@ templ UserEpisodeList(r *http.Request, user view.User, data view.EpisodePatchLis
 		templ.Join(
 			header(data.Title, data.Session),
 			userHomepage(user),
-			listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
+			listFilter(r.URL, "episode", data.CurrentStateFilter, data.PendingCount),
 			episodePatchList(data, time.Now()),
 			Pagination(data.Pagination),
 		),
@@ -43,7 +43,7 @@ templ UserCharacterList(r *http.Request, user view.User, data view.CharacterPatc
 		templ.Join(
 			header(data.Title, data.Session),
 			userHomepage(user),
-			listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
+			listFilter(r.URL, "character", data.CurrentStateFilter, data.PendingCount),
 			characterPatchList(data, time.Now()),
 			Pagination(data.Pagination),
 		),
@@ -57,7 +57,7 @@ templ UserPersonList(r *http.Request, user view.User, data view.PersonPatchList)
 		templ.Join(
 			header(data.Title, data.Session),
 			userHomepage(user),
-			listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
+			listFilter(r.URL, "person", data.CurrentStateFilter, data.PendingCount),
 			personPatchList(data, time.Now()),
 			Pagination(data.Pagination),
 		),
