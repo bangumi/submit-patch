@@ -73,7 +73,7 @@ func (h *handler) listSubjectPatchesReviewedUser(
 		data, err := h.q.ListSubjectPatches(r.Context(), dal.ListSubjectPatchesParams{
 			WikiUserID: userID,
 			State:      stateVals,
-			Skip:       int32((currentPage - 1) * defaultPageSize),
+			Skip:       (currentPage - 1) * defaultPageSize,
 			OrderBy:    OrderByUpdatedAt,
 			Size:       defaultPageSize,
 		})
@@ -154,7 +154,7 @@ func (h *handler) listEpisodePatchesReviewedUser(
 		data, err := h.q.ListEpisodePatches(r.Context(), dal.ListEpisodePatchesParams{
 			WikiUserID: userID,
 			State:      stateVals,
-			Skip:       int32((currentPage - 1) * defaultPageSize),
+			Skip:       (currentPage - 1) * defaultPageSize,
 			OrderBy:    OrderByUpdatedAt,
 			Size:       defaultPageSize,
 		})
@@ -275,7 +275,7 @@ func (h *handler) listSubjectPatchesFromUser(
 			FromUserID: userID,
 			WikiUserID: 0,
 			OrderBy:    OrderByCreatedAt,
-			Skip:       int32((currentPage - 1) * defaultPageSize),
+			Skip:       (currentPage - 1) * defaultPageSize,
 			Size:       defaultPageSize,
 		})
 		if err != nil {
@@ -358,7 +358,7 @@ func (h *handler) listEpisodePatchesFromUser(
 			FromUserID: userID,
 			State:      stateVals,
 			OrderBy:    OrderByCreatedAt,
-			Skip:       int32((currentPage - 1) * defaultPageSize),
+			Skip:       (currentPage - 1) * defaultPageSize,
 			Size:       defaultPageSize,
 		})
 		if err != nil {
@@ -439,7 +439,7 @@ func (h *handler) listCharacterPatchesFromUser(
 			FromUserID: userID,
 			State:      stateVals,
 			OrderBy:    OrderByCreatedAt,
-			Skip:       int32((currentPage - 1) * defaultPageSize),
+			Skip:       (currentPage - 1) * defaultPageSize,
 			Size:       defaultPageSize,
 		})
 		if err != nil {
@@ -520,7 +520,7 @@ func (h *handler) listCharacterPatchesReviewedUser(
 		data, err := h.q.ListCharacterPatches(r.Context(), dal.ListCharacterPatchesParams{
 			WikiUserID: userID,
 			State:      stateVals,
-			Skip:       int32((currentPage - 1) * defaultPageSize),
+			Skip:       (currentPage - 1) * defaultPageSize,
 			OrderBy:    OrderByUpdatedAt,
 			Size:       defaultPageSize,
 		})
@@ -601,7 +601,7 @@ func (h *handler) listPersonPatchesFromUser(
 			FromUserID: userID,
 			State:      stateVals,
 			OrderBy:    OrderByCreatedAt,
-			Skip:       int32((currentPage - 1) * defaultPageSize),
+			Skip:       (currentPage - 1) * defaultPageSize,
 			Size:       defaultPageSize,
 		})
 		if err != nil {
@@ -682,7 +682,7 @@ func (h *handler) listPersonPatchesReviewedUser(
 		data, err := h.q.ListPersonPatches(r.Context(), dal.ListPersonPatchesParams{
 			WikiUserID: userID,
 			State:      stateVals,
-			Skip:       int32((currentPage - 1) * defaultPageSize),
+			Skip:       (currentPage - 1) * defaultPageSize,
 			OrderBy:    OrderByUpdatedAt,
 			Size:       defaultPageSize,
 		})
