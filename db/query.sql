@@ -264,23 +264,29 @@ delete
 from edit_suggestion
 where id = $1;
 
--- name: CountPendingPatch :one
-select (select count(1)
-        from subject_patch
-        where deleted_at is null
-          and state = 0) as subject_patch_count,
-       (select count(1)
-        from episode_patch
-        where deleted_at is null
-          and state = 0) as episode_patch_count,
-       (select count(1)
-        from character_patch
-        where deleted_at is null
-          and state = 0) as character_patch_count,
-       (select count(1)
-        from person_patch
-        where deleted_at is null
-          and state = 0) as person_patch_count;
+-- name: CountPendingSubjectPatch :one
+select count(1)
+from subject_patch
+where deleted_at is null
+  and state = 0;
+
+-- name: CountPendingEpisodePatch :one
+select count(1)
+from episode_patch
+where deleted_at is null
+  and state = 0;
+
+-- name: CountPendingCharacterPatch :one
+select count(1)
+from character_patch
+where deleted_at is null
+  and state = 0;
+
+-- name: CountPendingPersonPatch :one
+select count(1)
+from person_patch
+where deleted_at is null
+  and state = 0;
 
 -- name: ListPendingEpisodePatches :many
 select id, episode_id, created_at, updated_at, from_user_id

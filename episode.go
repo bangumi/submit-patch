@@ -234,7 +234,7 @@ func (h *handler) listEpisodePatches(
 
 	totalPage := (c + defaultPageSize - 1) / defaultPageSize
 
-	pendingCount, err := h.q.CountPendingPatch(r.Context())
+	pendingCount, err := CountPendingPatch(r.Context(), h.q)
 	if err != nil {
 		return err
 	}

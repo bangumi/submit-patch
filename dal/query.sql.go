@@ -141,42 +141,60 @@ func (q *Queries) CountEpisodePatches(ctx context.Context, arg CountEpisodePatch
 	return count, err
 }
 
-const countPendingPatch = `-- name: CountPendingPatch :one
-select (select count(1)
-        from subject_patch
-        where deleted_at is null
-          and state = 0) as subject_patch_count,
-       (select count(1)
-        from episode_patch
-        where deleted_at is null
-          and state = 0) as episode_patch_count,
-       (select count(1)
-        from character_patch
-        where deleted_at is null
-          and state = 0) as character_patch_count,
-       (select count(1)
-        from person_patch
-        where deleted_at is null
-          and state = 0) as person_patch_count
+const countPendingCharacterPatch = `-- name: CountPendingCharacterPatch :one
+select count(1)
+from character_patch
+where deleted_at is null
+  and state = 0
 `
 
-type CountPendingPatchRow struct {
-	SubjectPatchCount   int64
-	EpisodePatchCount   int64
-	CharacterPatchCount int64
-	PersonPatchCount    int64
+func (q *Queries) CountPendingCharacterPatch(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countPendingCharacterPatch)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
-func (q *Queries) CountPendingPatch(ctx context.Context) (CountPendingPatchRow, error) {
-	row := q.db.QueryRow(ctx, countPendingPatch)
-	var i CountPendingPatchRow
-	err := row.Scan(
-		&i.SubjectPatchCount,
-		&i.EpisodePatchCount,
-		&i.CharacterPatchCount,
-		&i.PersonPatchCount,
-	)
-	return i, err
+const countPendingEpisodePatch = `-- name: CountPendingEpisodePatch :one
+select count(1)
+from episode_patch
+where deleted_at is null
+  and state = 0
+`
+
+func (q *Queries) CountPendingEpisodePatch(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countPendingEpisodePatch)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countPendingPersonPatch = `-- name: CountPendingPersonPatch :one
+select count(1)
+from person_patch
+where deleted_at is null
+  and state = 0
+`
+
+func (q *Queries) CountPendingPersonPatch(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countPendingPersonPatch)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countPendingSubjectPatch = `-- name: CountPendingSubjectPatch :one
+select count(1)
+from subject_patch
+where deleted_at is null
+  and state = 0
+`
+
+func (q *Queries) CountPendingSubjectPatch(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countPendingSubjectPatch)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const countPersonPatches = `-- name: CountPersonPatches :one
