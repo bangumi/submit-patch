@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"sync"
+	"golang.org/x/sync/errgroup"
 
 	"app/dal"
 )
@@ -15,28 +15,37 @@ type PendingPatchCounts struct {
 }
 
 func CountPendingPatch(ctx context.Context, q *dal.Queries) (PendingPatchCounts, error) {
-	var wg sync.WaitGroup
 	var counts PendingPatchCounts
-	var countErr error
 
-	wg.Add(4)
-	go func() {
-		defer wg.Done()
-		counts.SubjectPatchCount, countErr = q.CountPendingSubjectPatch(ctx)
-	}()
-	go func() {
-		defer wg.Done()
-		counts.EpisodePatchCount, countErr = q.CountPendingEpisodePatch(ctx)
-	}()
-	go func() {
-		defer wg.Done()
-		counts.CharacterPatchCount, countErr = q.CountPendingCharacterPatch(ctx)
-	}()
-	go func() {
-		defer wg.Done()
-		counts.PersonPatchCount, countErr = q.CountPendingPersonPatch(ctx)
-	}()
-	wg.Wait()
+	g, ctx := errgroup.WithContext(ctx)
 
-	return counts, countErr
+	g.Go(func() error {
+		var err error
+		counts.SubjectPatchCount, err = q.CountPendingSubjectPatch(ctx)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		counts.EpisodePatchCount, err = q.CountPendingEpisodePatch(ctx)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		counts.CharacterPatchCount, err = q.CountPendingCharacterPatch(ctx)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		counts.PersonPatchCount, err = q.CountPendingPersonPatch(ctx)
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		return PendingPatchCounts{}, err
+	}
+
+	return counts, nil
 }
