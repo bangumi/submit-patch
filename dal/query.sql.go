@@ -891,7 +891,7 @@ where deleted_at is null
 order by case when $4::text = 'created_at' then created_at end desc,
          case when $4 = 'updated_at' then updated_at end desc,
          case when $4 = '' then created_at end desc
-limit $6::int8 offset $5::int8
+limit $6::integer offset $5::integer
 `
 
 type ListCharacterPatchesParams struct {
@@ -899,8 +899,8 @@ type ListCharacterPatchesParams struct {
 	FromUserID int32
 	WikiUserID int32
 	OrderBy    string
-	Skip       int64
-	Size       int64
+	Skip       int32
+	Size       int32
 }
 
 type ListCharacterPatchesRow struct {
@@ -986,7 +986,7 @@ where deleted_at is null
 order by case when $4::text = 'created_at' then created_at end desc,
          case when $4 = 'updated_at' then updated_at end desc,
          case when $4 = '' then created_at end desc
-limit $6::int8 offset $5::int8
+limit $6::integer offset $5::integer
 `
 
 type ListEpisodePatchesParams struct {
@@ -994,8 +994,8 @@ type ListEpisodePatchesParams struct {
 	WikiUserID int32
 	State      []int32
 	OrderBy    string
-	Skip       int64
-	Size       int64
+	Skip       int32
+	Size       int32
 }
 
 type ListEpisodePatchesRow struct {
@@ -1245,7 +1245,7 @@ where deleted_at is null
 order by case when $4::text = 'created_at' then created_at end desc,
          case when $4 = 'updated_at' then updated_at end desc,
          case when $4 = '' then created_at end desc
-limit $6::int8 offset $5::int8
+limit $6::integer offset $5::integer
 `
 
 type ListPersonPatchesParams struct {
@@ -1253,8 +1253,8 @@ type ListPersonPatchesParams struct {
 	FromUserID int32
 	WikiUserID int32
 	OrderBy    string
-	Skip       int64
-	Size       int64
+	Skip       int32
+	Size       int32
 }
 
 type ListPersonPatchesRow struct {
@@ -1343,7 +1343,7 @@ where deleted_at is null
 order by case when $4::text = 'created_at' then created_at end desc,
          case when $4 = 'updated_at' then updated_at end desc,
          case when $4 = '' then created_at end desc
-limit $6::int8 offset $5::int8
+limit $6::integer offset $5::integer
 `
 
 type ListSubjectPatchesParams struct {
@@ -1351,8 +1351,8 @@ type ListSubjectPatchesParams struct {
 	FromUserID int32
 	WikiUserID int32
 	OrderBy    string
-	Skip       int64
-	Size       int64
+	Skip       int32
+	Size       int32
 }
 
 type ListSubjectPatchesRow struct {
