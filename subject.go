@@ -163,7 +163,7 @@ func (h *handler) listSubjectPatches(
 			State:   stateVals,
 			OrderBy: order,
 			Size:    defaultPageSize,
-			Skip:    (currentPage - 1) * defaultPageSize,
+			Skip:    int32((currentPage - 1) * defaultPageSize),
 		})
 		if err != nil {
 			return errgo.Wrap(err, "failed to query data")

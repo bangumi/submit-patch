@@ -41,7 +41,7 @@ where deleted_at is null
 order by case when @order_by::text = 'created_at' then created_at end desc,
          case when @order_by = 'updated_at' then updated_at end desc,
          case when @order_by = '' then created_at end desc
-limit @size::integer offset @skip::integer;
+limit @size::int offset @skip::int;
 
 
 -- name: CountEpisodePatches :one
@@ -76,7 +76,7 @@ where deleted_at is null
 order by case when @order_by::text = 'created_at' then created_at end desc,
          case when @order_by = 'updated_at' then updated_at end desc,
          case when @order_by = '' then created_at end desc
-limit @size::integer offset @skip::integer;
+limit @size::int offset @skip::int;
 
 
 -- name: GetSubjectPatchByID :one
@@ -348,7 +348,7 @@ where deleted_at is null
 order by case when @order_by::text = 'created_at' then created_at end desc,
          case when @order_by = 'updated_at' then updated_at end desc,
          case when @order_by = '' then created_at end desc
-limit @size::integer offset @skip::integer;
+limit @size::int offset @skip::int;
 
 -- name: CountPersonPatches :one
 select count(1)
@@ -385,7 +385,7 @@ where deleted_at is null
 order by case when @order_by::text = 'created_at' then created_at end desc,
          case when @order_by = 'updated_at' then updated_at end desc,
          case when @order_by = '' then created_at end desc
-limit @size::integer offset @skip::integer;
+limit @size::int offset @skip::int;
 
 -- name: GetCharacterPatchByID :one
 select *

@@ -197,7 +197,7 @@ func (h *handler) listEpisodePatches(
 		data, err := h.q.ListEpisodePatches(r.Context(), dal.ListEpisodePatchesParams{
 			State:   stateVals,
 			OrderBy: order,
-			Skip:    (currentPage - 1) * defaultPageSize,
+			Skip:    int32((currentPage - 1) * defaultPageSize),
 			Size:    defaultPageSize,
 		})
 		if err != nil {

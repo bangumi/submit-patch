@@ -891,7 +891,7 @@ where deleted_at is null
 order by case when $4::text = 'created_at' then created_at end desc,
          case when $4 = 'updated_at' then updated_at end desc,
          case when $4 = '' then created_at end desc
-limit $6::integer offset $5::integer
+limit $6::int offset $5::int
 `
 
 type ListCharacterPatchesParams struct {
@@ -986,7 +986,7 @@ where deleted_at is null
 order by case when $4::text = 'created_at' then created_at end desc,
          case when $4 = 'updated_at' then updated_at end desc,
          case when $4 = '' then created_at end desc
-limit $6::integer offset $5::integer
+limit $6::int offset $5::int
 `
 
 type ListEpisodePatchesParams struct {
@@ -1245,7 +1245,7 @@ where deleted_at is null
 order by case when $4::text = 'created_at' then created_at end desc,
          case when $4 = 'updated_at' then updated_at end desc,
          case when $4 = '' then created_at end desc
-limit $6::integer offset $5::integer
+limit $6::int offset $5::int
 `
 
 type ListPersonPatchesParams struct {
@@ -1343,7 +1343,7 @@ where deleted_at is null
 order by case when $4::text = 'created_at' then created_at end desc,
          case when $4 = 'updated_at' then updated_at end desc,
          case when $4 = '' then created_at end desc
-limit $6::integer offset $5::integer
+limit $6::int offset $5::int
 `
 
 type ListSubjectPatchesParams struct {
