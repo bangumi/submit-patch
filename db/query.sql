@@ -41,7 +41,7 @@ where deleted_at is null
 order by case when @order_by::text = 'created_at' then created_at end desc,
          case when @order_by = 'updated_at' then updated_at end desc,
          case when @order_by = '' then created_at end desc
-limit @size::int8 offset @skip::int8;
+limit @size offset @skip;
 
 
 -- name: CountEpisodePatches :one
@@ -76,7 +76,7 @@ where deleted_at is null
 order by case when @order_by::text = 'created_at' then created_at end desc,
          case when @order_by = 'updated_at' then updated_at end desc,
          case when @order_by = '' then created_at end desc
-limit @size::int8 offset @skip::int8;
+limit @size offset @skip;
 
 
 -- name: GetSubjectPatchByID :one
@@ -264,15 +264,29 @@ delete
 from edit_suggestion
 where id = $1;
 
--- name: CountPendingPatch :one
-select (select count(1)
-        from subject_patch
-        where deleted_at is null
-          and state = 0) as subject_patch_count,
-       (select count(1)
-        from episode_patch
-        where deleted_at is null
-          and state = 0) as episode_patch_count;
+-- name: CountPendingSubjectPatch :one
+select count(1)
+from subject_patch
+where deleted_at is null
+  and state = 0;
+
+-- name: CountPendingEpisodePatch :one
+select count(1)
+from episode_patch
+where deleted_at is null
+  and state = 0;
+
+-- name: CountPendingCharacterPatch :one
+select count(1)
+from character_patch
+where deleted_at is null
+  and state = 0;
+
+-- name: CountPendingPersonPatch :one
+select count(1)
+from person_patch
+where deleted_at is null
+  and state = 0;
 
 -- name: ListPendingEpisodePatches :many
 select id, episode_id, created_at, updated_at, from_user_id
@@ -299,6 +313,250 @@ limit 1;
 -- name: NextPendingEpisodePatch :one
 select id
 from episode_patch
+where state = 0
+  and deleted_at is null
+  and id < $1
+order by id desc
+limit 1;
+
+-- name: CountCharacterPatches :one
+select count(1)
+from character_patch
+where deleted_at is null
+  and state = any (@state::int[])
+  and ((from_user_id = @from_user_id and @from_user_id != 0) or @from_user_id = 0)
+  and ((wiki_user_id = @wiki_user_id and @wiki_user_id != 0) or @wiki_user_id = 0)
+  and action = 1;
+
+-- name: ListCharacterPatches :many
+select character_patch.id,
+       character_patch.original_name,
+       character_patch.state,
+       character_patch.action,
+       character_patch.created_at,
+       character_patch.updated_at,
+       character_patch.comments_count,
+       character_patch.reason,
+       author.user_id    as author_user_id,
+       author.username   as author_username,
+       author.nickname   as author_nickname,
+       reviewer.user_id  as reviewer_user_id,
+       reviewer.username as reviewer_username,
+       reviewer.nickname as reviewer_nickname
+from character_patch
+         inner join patch_users as author on author.user_id = character_patch.from_user_id
+         left outer join patch_users as reviewer on reviewer.user_id = character_patch.wiki_user_id
+where deleted_at is null
+  and state = any (@state::int[])
+  and ((from_user_id = @from_user_id and @from_user_id != 0) or @from_user_id = 0)
+  and ((wiki_user_id = @wiki_user_id and @wiki_user_id != 0) or @wiki_user_id = 0)
+  and action = 1
+order by case when @order_by::text = 'created_at' then created_at end desc,
+         case when @order_by = 'updated_at' then updated_at end desc,
+         case when @order_by = '' then created_at end desc
+limit @size offset @skip;
+
+-- name: CountPersonPatches :one
+select count(1)
+from person_patch
+where deleted_at is null
+  and state = any (@state::int[])
+  and ((from_user_id = @from_user_id and @from_user_id != 0) or @from_user_id = 0)
+  and ((wiki_user_id = @wiki_user_id and @wiki_user_id != 0) or @wiki_user_id = 0)
+  and action = 1;
+
+-- name: ListPersonPatches :many
+select person_patch.id,
+       person_patch.original_name,
+       person_patch.state,
+       person_patch.action,
+       person_patch.created_at,
+       person_patch.updated_at,
+       person_patch.comments_count,
+       person_patch.reason,
+       author.user_id    as author_user_id,
+       author.username   as author_username,
+       author.nickname   as author_nickname,
+       reviewer.user_id  as reviewer_user_id,
+       reviewer.username as reviewer_username,
+       reviewer.nickname as reviewer_nickname
+from person_patch
+         inner join patch_users as author on author.user_id = person_patch.from_user_id
+         left outer join patch_users as reviewer on reviewer.user_id = person_patch.wiki_user_id
+where deleted_at is null
+  and state = any (@state::int[])
+  and ((from_user_id = @from_user_id and @from_user_id != 0) or @from_user_id = 0)
+  and ((wiki_user_id = @wiki_user_id and @wiki_user_id != 0) or @wiki_user_id = 0)
+  and action = 1
+order by case when @order_by::text = 'created_at' then created_at end desc,
+         case when @order_by = 'updated_at' then updated_at end desc,
+         case when @order_by = '' then created_at end desc
+limit @size offset @skip;
+
+-- name: GetCharacterPatchByID :one
+select *
+from character_patch
+where deleted_at is null
+  and id = $1
+limit 1;
+
+-- name: GetCharacterPatchByIDForUpdate :one
+select *
+from character_patch
+where deleted_at is null
+  and id = $1
+limit 1 for update;
+
+-- name: GetPersonPatchByID :one
+select *
+from person_patch
+where deleted_at is null
+  and id = $1
+limit 1;
+
+-- name: GetPersonPatchByIDForUpdate :one
+select *
+from person_patch
+where deleted_at is null
+  and id = $1
+limit 1 for update;
+
+-- name: CreateCharacterEditPatch :exec
+INSERT INTO character_patch (id,
+                             character_id, from_user_id, reason, name, infobox,
+                             summary,
+                             original_name, original_infobox,
+                             original_summary, patch_desc)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
+
+-- name: CreatePersonEditPatch :exec
+INSERT INTO person_patch (id,
+                           person_id, from_user_id, reason, name, infobox,
+                           summary,
+                           original_name, original_infobox,
+                           original_summary, patch_desc)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
+
+-- name: UpdateCharacterPatch :exec
+update character_patch
+set original_name    = $2,
+    name             = $3,
+    original_infobox = $4,
+    infobox          = $5,
+    original_summary = $6,
+    summary          = $7,
+    reason           = $8,
+    patch_desc       = $9,
+    updated_at       = current_timestamp
+where id = $1;
+
+-- name: UpdatePersonPatch :exec
+update person_patch
+set original_name    = $2,
+    name             = $3,
+    original_infobox = $4,
+    infobox          = $5,
+    original_summary = $6,
+    summary          = $7,
+    reason           = $8,
+    patch_desc       = $9,
+    updated_at       = current_timestamp
+where id = $1;
+
+-- name: RejectCharacterPatch :exec
+update character_patch
+set wiki_user_id  = $1,
+    state         = $2,
+    reject_reason = $3,
+    updated_at    = current_timestamp
+where id = $4
+  and deleted_at is null
+  and state = 0;
+
+-- name: RejectPersonPatch :exec
+update person_patch
+set wiki_user_id  = $1,
+    state         = $2,
+    reject_reason = $3,
+    updated_at    = current_timestamp
+where id = $4
+  and deleted_at is null
+  and state = 0;
+
+-- name: AcceptCharacterPatch :exec
+update character_patch
+set wiki_user_id = $1,
+    state        = $2,
+    updated_at   = current_timestamp
+where id = $3
+  and deleted_at is null
+  and state = 0;
+
+-- name: AcceptPersonPatch :exec
+update person_patch
+set wiki_user_id = $1,
+    state        = $2,
+    updated_at   = current_timestamp
+where id = $3
+  and deleted_at is null
+  and state = 0;
+
+-- name: UpdateCharacterPatchCommentCount :exec
+update character_patch
+set comments_count = (select count(1)
+                      from edit_suggestion
+                      where patch_type = 'character'
+                        and patch_id = $1
+                        and edit_suggestion.from_user != 0)
+where id = $1
+  and deleted_at is null;
+
+-- name: UpdatePersonPatchCommentCount :exec
+update person_patch
+set comments_count = (select count(1)
+                      from edit_suggestion
+                      where patch_type = 'person'
+                        and patch_id = $1
+                        and edit_suggestion.from_user != 0)
+where id = $1
+  and deleted_at is null;
+
+-- name: DeleteCharacterPatch :exec
+update character_patch
+set deleted_at = current_timestamp
+where id = $1
+  and deleted_at is null;
+
+-- name: DeletePersonPatch :exec
+update person_patch
+set deleted_at = current_timestamp
+where id = $1
+  and deleted_at is null;
+
+-- name: ListPendingCharacterPatches :many
+select id, character_id, created_at, updated_at, from_user_id
+from character_patch
+where state = 0
+  and deleted_at is null;
+
+-- name: ListPendingPersonPatches :many
+select id, person_id, created_at, updated_at, from_user_id
+from person_patch
+where state = 0
+  and deleted_at is null;
+
+-- name: NextPendingCharacterPatch :one
+select id
+from character_patch
+where state = 0
+  and deleted_at is null
+  and id < $1
+order by id desc
+limit 1;
+
+-- name: NextPendingPersonPatch :one
+select id
+from person_patch
 where state = 0
   and deleted_at is null
   and id < $1

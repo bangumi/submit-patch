@@ -234,7 +234,7 @@ func (h *handler) listEpisodePatches(
 
 	totalPage := (c + defaultPageSize - 1) / defaultPageSize
 
-	pendingCount, err := h.q.CountPendingPatch(r.Context())
+	pendingCount, err := CountPendingPatch(r.Context(), h.q)
 	if err != nil {
 		return err
 	}
@@ -244,8 +244,10 @@ func (h *handler) listEpisodePatches(
 		Patches:            patches,
 		CurrentStateFilter: patchStateFilter,
 		PendingCount: view.PendingPatchCount{
-			Subject: pendingCount.SubjectPatchCount,
-			Episode: pendingCount.EpisodePatchCount,
+			Subject:   pendingCount.SubjectPatchCount,
+			Episode:   pendingCount.EpisodePatchCount,
+			Character: pendingCount.CharacterPatchCount,
+			Person:    pendingCount.PersonPatchCount,
 		},
 		Pagination: view.Pagination{
 			URL:         r.URL,

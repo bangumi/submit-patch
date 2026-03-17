@@ -2,6 +2,8 @@
 // @include       /^https://[^/]*/ep/[^/]*$/
 // @include       /^https://[^/]*/subject/[^/]*/edit$/
 // @include       /^https://[^/]*/subject/[^/]*$/
+// @include       /^https://[^/]*/character/[^/]*$/
+// @include       /^https://[^/]*/person/[^/]*$/
 // @include       /^https://[^/]*/$/
 // ==/UserScript==
 
@@ -39,4 +41,25 @@
 
     return
   }
+
+  const characterMatch = /^\/character\/(\d+)/.exec(path);
+  if (characterMatch) {
+    const characterID = characterMatch[1];
+    $('.crtCommentList .subtitle').append(
+      `<small><a href="https://patch.bgm38.tv/edit/character/${characterID}" class="l" target="_blank">[提供修改建议]</a></small>`
+    );
+
+    return
+  }
+
+  const personMatch = /^\/person\/(\d+)/.exec(path);
+  if (personMatch) {
+    const personID = personMatch[1];
+    $('.crtCommentList .subtitle').append(
+      `<small><a href="https://patch.bgm38.tv/edit/person/${personID}" class="l" target="_blank">[提供修改建议]</a></small>`
+    );
+
+    return
+  }
+
 })();

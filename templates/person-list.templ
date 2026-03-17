@@ -1,0 +1,126 @@
+package templates
+
+import (
+	"fmt"
+	"time"
+
+	"app/view"
+	"net/http"
+)
+
+templ PersonPatchList(r *http.Request, data view.PersonPatchList) {
+	@Layout(
+		data.Title,
+		personListHead(),
+		templ.Join(
+			header(data.Title, data.Session),
+			listFilter(r.URL, "person", data.CurrentStateFilter, data.PendingCount),
+			personPatchList(data, time.Now()),
+			Pagination(data.Pagination),
+		),
+	)
+}
+
+templ personListHead() {
+	<style>
+      .patch_reason {
+          white-space: nowrap;
+          order: 1;
+          flex: 0 1 auto;
+          text-wrap: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          min-width: 0;
+      }
+
+      @media screen and (min-device-width: 480px) {
+          html {
+              overflow-y: scroll;
+          }
+          .header h3 {
+              text-wrap: nowrap;
+          }
+      }
+  </style>
+}
+
+templ personPatchList(data view.PersonPatchList, now time.Time) {
+	<div class="row m-0 mb-4">
+		<ul class="list-group p-0 m-0">
+			for _, patch := range data.Patches {
+				@personPatch(patch, now)
+			}
+		</ul>
+	</div>
+	<div class="row mb-2"></div>
+}
+
+templ personPatch(patch view.PersonPatchListItem, now time.Time) {
+	<a
+		href={ templ.SafeURL("/person/" + patch.ID) }
+		id={ patch.ID }
+		rel="noopener"
+		class="list-group-item list-group-item-action flex-column align-items-start"
+	>
+		<div class="d-flex align-content-start mb-1 flex-wrap">
+			if patch.Action == 2 {
+				<h5 class="me-2"><span class="badge bg-success">新人物</span></h5>
+			}
+			switch  patch.State {
+				case 0:
+					<h5 class="me-2"><span class="badge bg-primary">待审核</span></h5>
+				case 1:
+					<h5 class="me-2"><span class="badge bg-success">Accepted</span></h5>
+				case 2:
+					<h5 class="me-2"><span class="badge bg-danger">Rejected</span></h5>
+				case 3:
+					<h5 class="me-2"><span class="badge bg-secondary">Outdated</span></h5>
+			}
+			<p class="patch_reason">{ patch.Reason }</p>
+			if patch.CommentsCount > 0 {
+				<h5 class="me-2">
+					<span class="badge bg-warning text-dark d-block">{ fmt.Sprint(patch.CommentsCount) } comments</span>
+				</h5>
+			}
+		</div>
+		// footer
+		<div class="d-block d-sm-flex w-100 flex-wrap">
+			<div class="d-flex">
+				<div class="d-none d-sm-flex pe-2 flex-row">
+					<p class="m-0 pe-1" style="white-space: nowrap">created</p>
+					<span class="badge bg-light text-dark border border-info">
+						{ relativeTime(now,patch.CreatedAt) }
+					</span>
+				</div>
+			</div>
+			<div class="d-flex">
+				<div class="d-none d-sm-flex pe-2 flex-row">
+					<p class="m-0 pe-1" style="white-space: nowrap">updated</p>
+					<span class="badge bg-light text-dark border border-info">
+						{ relativeTime(now,patch.UpdatedAt) }
+					</span>
+				</div>
+			</div>
+			<div class="d-flex">
+				<div class="d-none d-sm-flex pe-2 flex-row">
+					<p class="m-0 pe-1" style="white-space: nowrap">人物名</p>
+					<span class="badge bg-light text-dark border border-info" style="max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{ patch.Name }</span>
+				</div>
+			</div>
+			<div class="d-flex">
+				<div class="d-none d-sm-flex pe-2 flex-row">
+					<p class="m-0 pe-1" style="white-space: nowrap">author</p>
+					<span class="badge bg-light text-dark border border-info" style="max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{ patch.Author.Username }</span>
+				</div>
+			</div>
+			if patch.Reviewer != nil {
+				<div class="d-flex">
+					<div class="d-none d-sm-flex pe-2 flex-row">
+						<p class="m-0 pe-1" style="white-space: nowrap">reviewer</p>
+						<span class="badge bg-light text-dark border border-info" style="max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{ patch.Reviewer.Username }</span>
+					</div>
+				</div>
+			}
+		</div>
+	</a>
+}
