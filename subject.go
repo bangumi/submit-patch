@@ -399,8 +399,12 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		if resp.StatusCode() == http.StatusNotFound {
 			http.Error(w, "Original subject not found", http.StatusNotFound)
 		} else {
-			// You might want to return a more specific error message based on apiError if it was populated
-			http.Error(w, "Failed to fetch original subject data", http.StatusBadGateway)
+			var errRes dto.ErrorResponse
+			if jsonErr := json.Unmarshal(resp.Body(), &errRes); jsonErr == nil && errRes.Code == ErrCodeItemLocked {
+				http.Error(w, "Subject is locked and cannot be edited", http.StatusForbidden)
+			} else {
+				http.Error(w, "Failed to fetch original subject data", http.StatusBadGateway)
+			}
 		}
 		return nil
 	}
@@ -568,7 +572,12 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		if resp.StatusCode() == http.StatusNotFound {
 			http.Error(w, "Original subject not found", http.StatusNotFound)
 		} else {
-			http.Error(w, "Failed to fetch original subject data", http.StatusBadGateway)
+			var errRes dto.ErrorResponse
+			if jsonErr := json.Unmarshal(resp.Body(), &errRes); jsonErr == nil && errRes.Code == ErrCodeItemLocked {
+				http.Error(w, "Subject is locked and cannot be edited", http.StatusForbidden)
+			} else {
+				http.Error(w, "Failed to fetch original subject data", http.StatusBadGateway)
+			}
 		}
 		return nil
 	}
@@ -814,8 +823,12 @@ func (h *handler) createSubjectEditPatchAPI(w http.ResponseWriter, r *http.Reque
 		if resp.StatusCode() == http.StatusNotFound {
 			http.Error(w, "Original subject not found", http.StatusNotFound)
 		} else {
-			// You might want to return a more specific error message based on apiError if it was populated
-			http.Error(w, "Failed to fetch original subject req", http.StatusBadGateway)
+			var errRes dto.ErrorResponse
+			if jsonErr := json.Unmarshal(resp.Body(), &errRes); jsonErr == nil && errRes.Code == ErrCodeItemLocked {
+				http.Error(w, "Subject is locked and cannot be edited", http.StatusForbidden)
+			} else {
+				http.Error(w, "Failed to fetch original subject req", http.StatusBadGateway)
+			}
 		}
 		return nil
 	}
