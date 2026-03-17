@@ -15,6 +15,7 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/rs/zerolog/log"
 	"github.com/trim21/errgo"
 	"github.com/trim21/pkg/null"
 
@@ -378,22 +379,19 @@ func (h *handler) createPersonEditPatch(w http.ResponseWriter, r *http.Request) 
 	var originalWiki dto.WikiPerson
 	resp, err := h.client.R().
 		SetContext(r.Context()).
-		SetResult(&originalWiki). // Tell resty to unmarshal into originalWiki on success
+		SetResult(&originalWiki).
 		Get(fetchURL)
 	if err != nil {
-		// This usually indicates a network error or DNS issue before the request was even sent
-		fmt.Printf("Error executing request to fetch original wiki: %v\n", err)
+		log.Error().Err(err).Msg("failed to fetch original wiki")
 		http.Error(w, "Failed to communicate with wiki service", http.StatusBadGateway)
 		return nil
 	}
 
 	if resp.IsError() {
-		// The request was sent, but the server returned an error status code (>= 400)
-		fmt.Printf("Error fetching original wiki (%s): status %d, body: %s\n", fetchURL, resp.StatusCode(), resp.String())
+		log.Warn().Str("url", fetchURL).Int("status", resp.StatusCode()).Msg("error fetching original wiki")
 		if resp.StatusCode() == http.StatusNotFound {
 			http.Error(w, "Original person not found", http.StatusNotFound)
 		} else {
-			// You might want to return a more specific error message based on apiError if it was populated
 			http.Error(w, "Failed to fetch original person data", http.StatusBadGateway)
 		}
 		return nil
@@ -454,7 +452,7 @@ func (h *handler) createPersonEditPatch(w http.ResponseWriter, r *http.Request) 
 
 	err = h.q.CreatePersonEditPatch(ctx, param)
 	if err != nil {
-		fmt.Printf("Error inserting person patch: %v\n", err)
+		log.Error().Err(err).Msg("failed to insert person patch")
 		http.Error(w, "Failed to save suggestion", http.StatusInternalServerError)
 		return nil
 	}
@@ -538,14 +536,13 @@ func (h *handler) updatePersonEditPatch(w http.ResponseWriter, r *http.Request) 
 		SetResult(&originalWiki).
 		Get(fetchURL)
 	if err != nil {
-		fmt.Printf("Error executing request to fetch original wiki: %v\n", err)
+		log.Error().Err(err).Msg("failed to fetch original wiki")
 		http.Error(w, "Failed to communicate with wiki service", http.StatusBadGateway)
 		return nil
 	}
 
 	if resp.IsError() {
-		fmt.Printf("Error fetching original wiki (%s): status %d, body: %s\n",
-			fetchURL, resp.StatusCode(), resp.String())
+		log.Warn().Str("url", fetchURL).Int("status", resp.StatusCode()).Msg("error fetching original wiki")
 		if resp.StatusCode() == http.StatusNotFound {
 			http.Error(w, "Original person not found", http.StatusNotFound)
 		} else {
@@ -770,19 +767,16 @@ func (h *handler) createPersonEditPatchAPI(w http.ResponseWriter, r *http.Reques
 		SetResult(&originalWiki).
 		Get(fetchURL)
 	if err != nil {
-		// This usually indicates a network error or DNS issue before the request was even sent
-		fmt.Printf("Error executing request to fetch original wiki: %v\n", err)
+		log.Error().Err(err).Msg("failed to fetch original wiki")
 		http.Error(w, "Failed to communicate with wiki service", http.StatusBadGateway)
 		return nil
 	}
 
 	if resp.IsError() {
-		// The request was sent, but the server returned an error status code (>= 400)
-		fmt.Printf("Error fetching original wiki (%s): status %d, body: %s\n", fetchURL, resp.StatusCode(), resp.String())
+		log.Warn().Str("url", fetchURL).Int("status", resp.StatusCode()).Msg("error fetching original wiki")
 		if resp.StatusCode() == http.StatusNotFound {
 			http.Error(w, "Original person not found", http.StatusNotFound)
 		} else {
-			// You might want to return a more specific error message based on apiError if it was populated
 			http.Error(w, "Failed to fetch original person req", http.StatusBadGateway)
 		}
 		return nil
@@ -840,7 +834,7 @@ func (h *handler) createPersonEditPatchAPI(w http.ResponseWriter, r *http.Reques
 
 	err = h.q.CreatePersonEditPatch(r.Context(), param)
 	if err != nil {
-		fmt.Printf("Error inserting person patch: %v\n", err)
+		log.Error().Err(err).Msg("failed to insert person patch")
 		http.Error(w, "Failed to save suggestion", http.StatusInternalServerError)
 		return nil
 	}
