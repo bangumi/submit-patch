@@ -45,8 +45,8 @@
   const characterMatch = /^\/character\/(\d+)/.exec(path);
   if (characterMatch) {
     const characterID = characterMatch[1];
-    $('.crtCommentList .subtitle').append(
-      `<small><a href="https://patch.bgm38.tv/edit/character/${characterID}" class="l" target="_blank">[提供修改建议]</a></small>`
+    $('#subjectPanelIndex').before(
+      `<p><a href="https://patch.bgm38.tv/edit/character/${characterID}" class="l" target="_blank">[提供修改建议]</a></p>`
     );
 
     return
@@ -55,8 +55,8 @@
   const personMatch = /^\/person\/(\d+)/.exec(path);
   if (personMatch) {
     const personID = personMatch[1];
-    $('.crtCommentList .subtitle').append(
-      `<small><a href="https://patch.bgm38.tv/edit/person/${personID}" class="l" target="_blank">[提供修改建议]</a></small>`
+    $('#subjectPanelIndex').before(
+      `<p><a href="https://patch.bgm38.tv/edit/person/${personID}" class="l" target="_blank">[提供修改建议]</a></p>`
     );
 
     return
