@@ -57,6 +57,11 @@ func (h *handler) editSubjectView(w http.ResponseWriter, r *http.Request) error 
 		return nil
 	}
 
+	if subject.Locked || subject.Redirect != 0 {
+		http.Error(w, "Subject is locked or redirected and cannot be edited", http.StatusForbidden)
+		return nil
+	}
+
 	return h.template.EditSubject.Execute(w, view.SubjectPatchEdit{
 		PatchID:          "",
 		SubjectID:        int32(sid),
@@ -399,13 +404,13 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		if resp.StatusCode() == http.StatusNotFound {
 			http.Error(w, "Original subject not found", http.StatusNotFound)
 		} else {
-			var errRes dto.ErrorResponse
-			if jsonErr := json.Unmarshal(resp.Body(), &errRes); jsonErr == nil && errRes.Code == ErrCodeItemLocked {
-				http.Error(w, "Subject is locked and cannot be edited", http.StatusForbidden)
-			} else {
-				http.Error(w, "Failed to fetch original subject data", http.StatusBadGateway)
-			}
+			http.Error(w, "Failed to fetch original subject data", http.StatusBadGateway)
 		}
+		return nil
+	}
+
+	if originalWiki.Locked || originalWiki.Redirect != 0 {
+		http.Error(w, "Subject is locked and cannot be edited", http.StatusForbidden)
 		return nil
 	}
 
@@ -572,13 +577,13 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		if resp.StatusCode() == http.StatusNotFound {
 			http.Error(w, "Original subject not found", http.StatusNotFound)
 		} else {
-			var errRes dto.ErrorResponse
-			if jsonErr := json.Unmarshal(resp.Body(), &errRes); jsonErr == nil && errRes.Code == ErrCodeItemLocked {
-				http.Error(w, "Subject is locked and cannot be edited", http.StatusForbidden)
-			} else {
-				http.Error(w, "Failed to fetch original subject data", http.StatusBadGateway)
-			}
+			http.Error(w, "Failed to fetch original subject data", http.StatusBadGateway)
 		}
+		return nil
+	}
+
+	if originalWiki.Locked || originalWiki.Redirect != 0 {
+		http.Error(w, "Subject is locked and cannot be edited", http.StatusForbidden)
 		return nil
 	}
 
@@ -823,13 +828,13 @@ func (h *handler) createSubjectEditPatchAPI(w http.ResponseWriter, r *http.Reque
 		if resp.StatusCode() == http.StatusNotFound {
 			http.Error(w, "Original subject not found", http.StatusNotFound)
 		} else {
-			var errRes dto.ErrorResponse
-			if jsonErr := json.Unmarshal(resp.Body(), &errRes); jsonErr == nil && errRes.Code == ErrCodeItemLocked {
-				http.Error(w, "Subject is locked and cannot be edited", http.StatusForbidden)
-			} else {
-				http.Error(w, "Failed to fetch original subject req", http.StatusBadGateway)
-			}
+			http.Error(w, "Failed to fetch original subject req", http.StatusBadGateway)
 		}
+		return nil
+	}
+
+	if originalWiki.Locked || originalWiki.Redirect != 0 {
+		http.Error(w, "Subject is locked and cannot be edited", http.StatusForbidden)
 		return nil
 	}
 
