@@ -58,6 +58,11 @@ func (h *handler) editPersonView(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 
+	if person.Locked || person.Redirect != 0 {
+		http.Error(w, "Person is locked or redirected and cannot be edited", http.StatusForbidden)
+		return nil
+	}
+
 	return h.template.EditPerson.Execute(w, view.PersonPatchEdit{
 		PatchID:          "",
 		PersonID:         int32(cid),
@@ -397,6 +402,11 @@ func (h *handler) createPersonEditPatch(w http.ResponseWriter, r *http.Request) 
 		return nil
 	}
 
+	if originalWiki.Locked || originalWiki.Redirect != 0 {
+		http.Error(w, "Person is locked and cannot be edited", http.StatusForbidden)
+		return nil
+	}
+
 	var changed bool
 	pk := uuid.Must(uuid.NewV7())
 	var param = dal.CreatePersonEditPatchParams{
@@ -548,6 +558,11 @@ func (h *handler) updatePersonEditPatch(w http.ResponseWriter, r *http.Request) 
 		} else {
 			http.Error(w, "Failed to fetch original person data", http.StatusBadGateway)
 		}
+		return nil
+	}
+
+	if originalWiki.Locked || originalWiki.Redirect != 0 {
+		http.Error(w, "Person is locked and cannot be edited", http.StatusForbidden)
 		return nil
 	}
 
@@ -779,6 +794,11 @@ func (h *handler) createPersonEditPatchAPI(w http.ResponseWriter, r *http.Reques
 		} else {
 			http.Error(w, "Failed to fetch original person req", http.StatusBadGateway)
 		}
+		return nil
+	}
+
+	if originalWiki.Locked || originalWiki.Redirect != 0 {
+		http.Error(w, "Person is locked and cannot be edited", http.StatusForbidden)
 		return nil
 	}
 

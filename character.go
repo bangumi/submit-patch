@@ -58,6 +58,11 @@ func (h *handler) editCharacterView(w http.ResponseWriter, r *http.Request) erro
 		return nil
 	}
 
+	if character.Locked || character.Redirect != 0 {
+		http.Error(w, "Character is locked or redirected and cannot be edited", http.StatusForbidden)
+		return nil
+	}
+
 	return h.template.EditCharacter.Execute(w, view.CharacterPatchEdit{
 		PatchID:          "",
 		CharacterID:      int32(cid),
@@ -397,6 +402,11 @@ func (h *handler) createCharacterEditPatch(w http.ResponseWriter, r *http.Reques
 		return nil
 	}
 
+	if originalWiki.Locked || originalWiki.Redirect != 0 {
+		http.Error(w, "Character is locked and cannot be edited", http.StatusForbidden)
+		return nil
+	}
+
 	var changed bool
 	pk := uuid.Must(uuid.NewV7())
 	var param = dal.CreateCharacterEditPatchParams{
@@ -548,6 +558,11 @@ func (h *handler) updateCharacterEditPatch(w http.ResponseWriter, r *http.Reques
 		} else {
 			http.Error(w, "Failed to fetch original character data", http.StatusBadGateway)
 		}
+		return nil
+	}
+
+	if originalWiki.Locked || originalWiki.Redirect != 0 {
+		http.Error(w, "Character is locked and cannot be edited", http.StatusForbidden)
 		return nil
 	}
 
@@ -779,6 +794,11 @@ func (h *handler) createCharacterEditPatchAPI(w http.ResponseWriter, r *http.Req
 		} else {
 			http.Error(w, "Failed to fetch original character req", http.StatusBadGateway)
 		}
+		return nil
+	}
+
+	if originalWiki.Locked || originalWiki.Redirect != 0 {
+		http.Error(w, "Character is locked and cannot be edited", http.StatusForbidden)
 		return nil
 	}
 

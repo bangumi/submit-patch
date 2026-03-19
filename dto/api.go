@@ -13,6 +13,8 @@ type WikiSubject struct {
 	MetaTags []string `json:"metaTags"`
 	Summary  string   `json:"summary"`
 	Nsfw     bool     `json:"nsfw"`
+	Locked   bool     `json:"locked"`
+	Redirect int      `json:"redirect"`
 }
 
 type WikiEpisode struct {
@@ -29,17 +31,21 @@ type WikiEpisode struct {
 }
 
 type WikiCharacter struct {
-	ID      int    `json:"id"`
-	Name    string `json:"name"`
-	Infobox string `json:"infobox"`
-	Summary string `json:"summary"`
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	Infobox  string `json:"infobox"`
+	Summary  string `json:"summary"`
+	Locked   bool   `json:"locked"`
+	Redirect int    `json:"redirect"`
 }
 
 type WikiPerson struct {
-	ID      int    `json:"id"`
-	Name    string `json:"name"`
-	Infobox string `json:"infobox"`
-	Summary string `json:"summary"`
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	Infobox  string `json:"infobox"`
+	Summary  string `json:"summary"`
+	Locked   bool   `json:"locked"`
+	Redirect int    `json:"redirect"`
 }
 
 type ErrorResponse struct {
