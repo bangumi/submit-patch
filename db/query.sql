@@ -562,3 +562,24 @@ where state = 0
   and id < $1
 order by id desc
 limit 1;
+
+-- name: GetPendingSubjectPatchesBySubjectID :many
+select id, name, original_name, infobox, original_infobox, summary, original_summary
+from subject_patch
+where subject_id = $1
+  and state = 0
+  and deleted_at is null;
+
+-- name: GetPendingCharacterPatchesByCharacterID :many
+select id, name, original_name, infobox, original_infobox, summary, original_summary
+from character_patch
+where character_id = $1
+  and state = 0
+  and deleted_at is null;
+
+-- name: GetPendingPersonPatchesByPersonID :many
+select id, name, original_name, infobox, original_infobox, summary, original_summary
+from person_patch
+where person_id = $1
+  and state = 0
+  and deleted_at is null;
