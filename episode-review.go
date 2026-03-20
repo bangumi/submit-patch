@@ -159,6 +159,8 @@ func (h *handler) handleEpisodeApprove(
 				return errgo.Wrap(err, "failed to reject patch")
 			}
 
+			h.sendNotifyEpisodePatchRejected(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
+
 			http.Redirect(w, r, "/episode/"+patch.ID.String(), http.StatusSeeOther)
 			return nil
 		}
@@ -173,6 +175,8 @@ func (h *handler) handleEpisodeApprove(
 			if err != nil {
 				return errgo.Wrap(err, "failed to reject patch")
 			}
+
+			h.sendNotifyEpisodePatchExpired(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
 
 			http.Redirect(w, r, "/episode/"+patch.ID.String(), http.StatusSeeOther)
 			return nil
@@ -191,6 +195,8 @@ func (h *handler) handleEpisodeApprove(
 	if err != nil {
 		return errgo.Wrap(err, "failed to accept patch")
 	}
+
+	h.sendNotifyEpisodePatchAccepted(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
 
 	nextID, err := h.q.NextPendingEpisodePatch(r.Context(), patch.ID)
 	if err != nil {
@@ -216,6 +222,8 @@ func (h *handler) handleEpisodeReject(w http.ResponseWriter, r *http.Request,
 	if err != nil {
 		return templates.Error(r.Method, r.URL.String(), err.Error(), "", "").Render(r.Context(), w)
 	}
+
+	h.sendNotifyEpisodePatchRejected(context.WithoutCancel(r.Context()), p.NumID, p.FromUserID)
 
 	http.Redirect(w, r, "/episode/"+p.ID.String(), http.StatusFound)
 	return nil

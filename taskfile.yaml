@@ -11,7 +11,7 @@ tasks:
       - migrate -database {{ .PG_DSN }} -path db/migrations -verbose up
 
   new-migrate:
-    - migrate create -ext sql -dir db/migrations -seq {{ .NAME }}
+    - go run github.com/golang-migrate/migrate/v4/cmd/migrate create -ext sql -dir db/migrations -seq {{ .NAME }}
 
   build:
     sources:
@@ -40,6 +40,10 @@ tasks:
     cmds:
       - go tool github.com/a-h/templ/cmd/templ generate -path templates/
 
+  gen:proto:
+    cmds:
+      - buf generate
+
   gen:
     cmds:
       - sqlc generate
@@ -49,3 +53,6 @@ tasks:
 
   watch:dev:
     cmd: watchexec --shell=none -e go,mod -w . -w templates -r -- task dev
+
+  dump-schema:
+    - pg_dump --schema-only -d {{ .PG_DSN }} > db/schema.sql

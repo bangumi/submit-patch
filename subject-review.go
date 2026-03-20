@@ -123,6 +123,8 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 				return errgo.Wrap(err, "failed to reject patch")
 			}
 
+			h.sendNotifySubjectPatchRejected(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
+
 			http.Redirect(w, r, "/subject/"+patch.ID.String(), http.StatusSeeOther)
 			return nil
 		}
@@ -138,6 +140,8 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 				return errgo.Wrap(err, "failed to reject patch")
 			}
 
+			h.sendNotifySubjectPatchExpired(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
+
 			http.Redirect(w, r, "/subject/"+patch.ID.String(), http.StatusSeeOther)
 			return nil
 		}
@@ -152,6 +156,8 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 			if err != nil {
 				return errgo.Wrap(err, "failed to reject patch")
 			}
+
+			h.sendNotifySubjectPatchRejected(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
 
 			http.Redirect(w, r, "/subject/"+patch.ID.String(), http.StatusSeeOther)
 			return nil
@@ -186,6 +192,8 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 		return errgo.Wrap(err, "failed to accept patch")
 	}
 
+	h.sendNotifySubjectPatchAccepted(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
+
 	nextID, err := h.q.NextPendingSubjectPatch(r.Context(), patch.ID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -209,6 +217,8 @@ func (h *handler) handleSubjectReject(w http.ResponseWriter, r *http.Request, qx
 	if err != nil {
 		return templates.Error(r.Method, r.URL.String(), err.Error(), "", "").Render(r.Context(), w)
 	}
+
+	h.sendNotifySubjectPatchRejected(context.WithoutCancel(r.Context()), p.NumID, p.FromUserID)
 
 	http.Redirect(w, r, "/subject/"+p.ID.String(), http.StatusFound)
 	return nil
