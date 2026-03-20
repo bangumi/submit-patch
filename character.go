@@ -419,6 +419,10 @@ func (h *handler) createCharacterEditPatch(w http.ResponseWriter, r *http.Reques
 	}
 
 	if data.Name != originalWiki.Name {
+		if data.Name == "" {
+			http.Error(w, "角色名不能为空", http.StatusBadRequest)
+			return nil
+		}
 		changed = true
 		param.Name = pgtype.Text{
 			String: data.Name,
@@ -575,6 +579,10 @@ func (h *handler) updateCharacterEditPatch(w http.ResponseWriter, r *http.Reques
 	}
 
 	if data.Name != originalWiki.Name {
+		if data.Name == "" {
+			http.Error(w, "角色名不能为空", http.StatusBadRequest)
+			return nil
+		}
 		changed = true
 		param.Name = pgtype.Text{String: data.Name, Valid: true}
 	}
@@ -812,6 +820,9 @@ func (h *handler) createCharacterEditPatchAPI(w http.ResponseWriter, r *http.Req
 	}
 
 	if req.Name.Set && req.Name.Value != originalWiki.Name {
+		if req.Name.Value == "" {
+			return &HttpError{StatusCode: http.StatusBadRequest, Message: "角色名不能为空"}
+		}
 		changed = true
 		param.Name = pgtype.Text{
 			String: req.Name.Value,

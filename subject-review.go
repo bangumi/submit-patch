@@ -157,6 +157,21 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 			return nil
 		}
 
+		if errRes.Code == ErrCodeValidationError {
+			err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
+				WikiUserID:   s.UserID,
+				State:        PatchStateRejected,
+				ID:           patch.ID,
+				RejectReason: fmt.Sprintf("包含错误，已经自动拒绝:\n %s", errRes.Message),
+			})
+			if err != nil {
+				return errgo.Wrap(err, "failed to reject patch")
+			}
+
+			http.Redirect(w, r, "/subject/"+patch.ID.String(), http.StatusSeeOther)
+			return nil
+		}
+
 		log.Error().RawJSON("body", resp.Body()).Msg("unexpected response from submit patch")
 		return errors.New("failed to submit patch")
 	}
