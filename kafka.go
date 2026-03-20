@@ -6,7 +6,7 @@ import (
 
 func newKafkaWriter(config Config) *kafka.Writer {
 	w := kafka.Writer{
-		Addr:                   kafka.TCP(config.KafkaAddr...),
+		Addr:                   kafka.TCP(config.KafkaBroker),
 		RequiredAcks:           kafka.RequireAll,
 		AllowAutoTopicCreation: true,
 	}
