@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"slices"
 	"syscall"
 	"time"
 
@@ -96,6 +97,7 @@ func main() {
 		return nil
 	})
 
+	c.KafkaTopics = slices.DeleteFunc(c.KafkaTopics, func(s string) bool { return s == "" })
 	if c.KafkaBroker != "" && len(c.KafkaTopics) > 0 {
 		g.Go(func() error {
 			return startCanalConsumer(ctx, c, h)
