@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"embed"
 	"errors"
@@ -8,6 +9,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -22,6 +25,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/trim21/errgo"
 	"go.uber.org/fx"
+	"golang.org/x/sync/errgroup"
 
 	"app/dal"
 )
@@ -73,10 +77,34 @@ func main() {
 		panic(err)
 	}
 
-	log.Info().Msgf("start listen http://127.0.0.1:%d/", c.Port)
-	err = http.ListenAndServe(fmt.Sprintf(":%d", c.Port), m)
-	if err != nil {
-		panic(err)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	g, ctx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		log.Info().Msgf("start listen http://127.0.0.1:%d/", c.Port)
+		srv := &http.Server{Addr: fmt.Sprintf(":%d", c.Port), Handler: m}
+		// shut down the server when ctx is cancelled (other component exited)
+		go func() {
+			<-ctx.Done()
+			srv.Shutdown(context.Background()) //nolint:errcheck
+		}()
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return err
+		}
+		return nil
+	})
+
+	if c.KafkaBroker != "" && len(c.KafkaTopics) > 0 {
+		g.Go(func() error {
+			return startCanalConsumer(ctx, c, h)
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		log.Error().Err(err).Msg("exiting")
+		os.Exit(1)
 	}
 }
 

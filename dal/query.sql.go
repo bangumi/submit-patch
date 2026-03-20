@@ -1482,6 +1482,111 @@ func (q *Queries) NextPendingPersonPatch(ctx context.Context, id uuid.UUID) (uui
 	return id, err
 }
 
+const getPendingSubjectPatchesBySubjectID = `-- name: GetPendingSubjectPatchesBySubjectID :many
+select id, name, original_name, infobox, original_infobox, summary, original_summary
+from subject_patch
+where subject_id = $1
+  and state = 0
+  and deleted_at is null
+`
+
+type GetPendingSubjectPatchesBySubjectIDRow struct {
+	ID              uuid.UUID
+	Name            pgtype.Text
+	OriginalName    string
+	Infobox         pgtype.Text
+	OriginalInfobox pgtype.Text
+	Summary         pgtype.Text
+	OriginalSummary pgtype.Text
+}
+
+func (q *Queries) GetPendingSubjectPatchesBySubjectID(ctx context.Context, subjectID int32) ([]GetPendingSubjectPatchesBySubjectIDRow, error) {
+	rows, err := q.db.Query(ctx, getPendingSubjectPatchesBySubjectID, subjectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPendingSubjectPatchesBySubjectIDRow
+	for rows.Next() {
+		var i GetPendingSubjectPatchesBySubjectIDRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.OriginalName, &i.Infobox, &i.OriginalInfobox, &i.Summary, &i.OriginalSummary); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	return items, rows.Err()
+}
+
+const getPendingCharacterPatchesByCharacterID = `-- name: GetPendingCharacterPatchesByCharacterID :many
+select id, name, original_name, infobox, original_infobox, summary, original_summary
+from character_patch
+where character_id = $1
+  and state = 0
+  and deleted_at is null
+`
+
+type GetPendingCharacterPatchesByCharacterIDRow struct {
+	ID              uuid.UUID
+	Name            pgtype.Text
+	OriginalName    string
+	Infobox         pgtype.Text
+	OriginalInfobox pgtype.Text
+	Summary         pgtype.Text
+	OriginalSummary pgtype.Text
+}
+
+func (q *Queries) GetPendingCharacterPatchesByCharacterID(ctx context.Context, characterID int32) ([]GetPendingCharacterPatchesByCharacterIDRow, error) {
+	rows, err := q.db.Query(ctx, getPendingCharacterPatchesByCharacterID, characterID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPendingCharacterPatchesByCharacterIDRow
+	for rows.Next() {
+		var i GetPendingCharacterPatchesByCharacterIDRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.OriginalName, &i.Infobox, &i.OriginalInfobox, &i.Summary, &i.OriginalSummary); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	return items, rows.Err()
+}
+
+const getPendingPersonPatchesByPersonID = `-- name: GetPendingPersonPatchesByPersonID :many
+select id, name, original_name, infobox, original_infobox, summary, original_summary
+from person_patch
+where person_id = $1
+  and state = 0
+  and deleted_at is null
+`
+
+type GetPendingPersonPatchesByPersonIDRow struct {
+	ID              uuid.UUID
+	Name            pgtype.Text
+	OriginalName    string
+	Infobox         pgtype.Text
+	OriginalInfobox pgtype.Text
+	Summary         pgtype.Text
+	OriginalSummary pgtype.Text
+}
+
+func (q *Queries) GetPendingPersonPatchesByPersonID(ctx context.Context, personID int32) ([]GetPendingPersonPatchesByPersonIDRow, error) {
+	rows, err := q.db.Query(ctx, getPendingPersonPatchesByPersonID, personID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPendingPersonPatchesByPersonIDRow
+	for rows.Next() {
+		var i GetPendingPersonPatchesByPersonIDRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.OriginalName, &i.Infobox, &i.OriginalInfobox, &i.Summary, &i.OriginalSummary); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	return items, rows.Err()
+}
+
 const nextPendingSubjectPatch = `-- name: NextPendingSubjectPatch :one
 select id
 from subject_patch
