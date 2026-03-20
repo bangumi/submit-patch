@@ -18,8 +18,10 @@ const baseTemplates = "view/templates/base/*.gohtml"
 func loadTemplates(config Config) (Template, error) {
 	if config.Debug {
 		return Template{
-			EditSubject: &devPage[view.SubjectPatchEdit]{name: "subject-edit.gohtml"},
-			EditEpisode: &devPage[view.EpisodePatchEdit]{name: "episode-edit.gohtml"},
+			EditSubject:   &devPage[view.SubjectPatchEdit]{name: "subject-edit.gohtml"},
+			EditEpisode:   &devPage[view.EpisodePatchEdit]{name: "episode-edit.gohtml"},
+			EditCharacter: &devPage[view.CharacterPatchEdit]{name: "character-edit.gohtml"},
+			EditPerson:    &devPage[view.PersonPatchEdit]{name: "person-edit.gohtml"},
 		}, nil
 	}
 
@@ -29,8 +31,10 @@ func loadTemplates(config Config) (Template, error) {
 	}).ParseFS(templateFiles, baseTemplates))
 
 	return Template{
-		EditSubject: loadProdPage[view.SubjectPatchEdit](base, "subject-edit.gohtml"),
-		EditEpisode: loadProdPage[view.EpisodePatchEdit](base, "episode-edit.gohtml"),
+		EditSubject:   loadProdPage[view.SubjectPatchEdit](base, "subject-edit.gohtml"),
+		EditEpisode:   loadProdPage[view.EpisodePatchEdit](base, "episode-edit.gohtml"),
+		EditCharacter: loadProdPage[view.CharacterPatchEdit](base, "character-edit.gohtml"),
+		EditPerson:    loadProdPage[view.PersonPatchEdit](base, "person-edit.gohtml"),
 	}, nil
 }
 
@@ -46,8 +50,10 @@ func loadProdPage[T any](base *template.Template, name string) *prodPage[T] {
 }
 
 type Template struct {
-	EditSubject Page[view.SubjectPatchEdit]
-	EditEpisode Page[view.EpisodePatchEdit]
+	EditSubject   Page[view.SubjectPatchEdit]
+	EditEpisode   Page[view.EpisodePatchEdit]
+	EditCharacter Page[view.CharacterPatchEdit]
+	EditPerson    Page[view.PersonPatchEdit]
 }
 
 type Page[T any] interface {

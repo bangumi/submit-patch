@@ -15,6 +15,7 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/rs/zerolog/log"
 	"github.com/trim21/errgo"
 	"github.com/trim21/pkg/null"
 
@@ -27,10 +28,10 @@ import (
 	"app/view"
 )
 
-func (h *handler) editSubjectView(w http.ResponseWriter, r *http.Request) error {
-	sid, err := strconv.ParseInt(chi.URLParam(r, "subject-id"), 10, 32)
-	if err != nil || sid <= 0 {
-		http.Error(w, "subject-id must be a positive integer", http.StatusBadRequest)
+func (h *handler) editCharacterView(w http.ResponseWriter, r *http.Request) error {
+	cid, err := strconv.ParseInt(chi.URLParam(r, "character-id"), 10, 32)
+	if err != nil || cid <= 0 {
+		http.Error(w, "character-id must be a positive integer", http.StatusBadRequest)
 		return nil
 	}
 
@@ -38,17 +39,17 @@ func (h *handler) editSubjectView(w http.ResponseWriter, r *http.Request) error 
 	if s.UserID == 0 {
 		http.SetCookie(w, &http.Cookie{
 			Name:  cookieBackTo,
-			Value: fmt.Sprintf("/suggest-subject?subject_id=%d", sid),
+			Value: fmt.Sprintf("/suggest-character?character_id=%d", cid),
 		})
 
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return nil
 	}
 
-	var subject dto.WikiSubject
+	var character dto.WikiCharacter
 	resp, err := h.client.R().
-		SetResult(&subject).
-		Get(fmt.Sprintf("https://next.bgm.tv/p1/wiki/subjects/%d", sid))
+		SetResult(&character).
+		Get(fmt.Sprintf("https://next.bgm.tv/p1/wiki/characters/%d", cid))
 	if err != nil {
 		return err
 	}
@@ -57,23 +58,23 @@ func (h *handler) editSubjectView(w http.ResponseWriter, r *http.Request) error 
 		return nil
 	}
 
-	if subject.Locked || subject.Redirect != 0 {
-		http.Error(w, "Subject is locked or redirected and cannot be edited", http.StatusForbidden)
+	if character.Locked || character.Redirect != 0 {
+		http.Error(w, "Character is locked or redirected and cannot be edited", http.StatusForbidden)
 		return nil
 	}
 
-	return h.template.EditSubject.Execute(w, view.SubjectPatchEdit{
+	return h.template.EditCharacter.Execute(w, view.CharacterPatchEdit{
 		PatchID:          "",
-		SubjectID:        int32(sid),
+		CharacterID:      int32(cid),
 		CsrfToken:        csrf.GetToken(r),
 		Reason:           "",
 		Description:      "",
-		Data:             subject,
+		Data:             character,
 		TurnstileSiteKey: h.config.TurnstileSiteKey,
 	})
 }
 
-func (h *handler) editSubjectPatchView(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) editCharacterPatchView(w http.ResponseWriter, r *http.Request) error {
 	patchID, err := uuid.FromString(chi.URLParam(r, "patch-id"))
 	if err != nil {
 		http.Error(w, "patch-id must be a valid uuid", http.StatusBadRequest)
@@ -86,7 +87,7 @@ func (h *handler) editSubjectPatchView(w http.ResponseWriter, r *http.Request) e
 		return nil
 	}
 
-	patch, err := h.q.GetSubjectPatchByID(r.Context(), patchID)
+	patch, err := h.q.GetCharacterPatchByID(r.Context(), patchID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			http.NotFound(w, r)
@@ -106,10 +107,10 @@ func (h *handler) editSubjectPatchView(w http.ResponseWriter, r *http.Request) e
 		return nil
 	}
 
-	var subject dto.WikiSubject
+	var character dto.WikiCharacter
 	resp, err := h.client.R().
-		SetResult(&subject).
-		Get(fmt.Sprintf("https://next.bgm.tv/p1/wiki/subjects/%d", patch.SubjectID))
+		SetResult(&character).
+		Get(fmt.Sprintf("https://next.bgm.tv/p1/wiki/characters/%d", patch.CharacterID))
 	if err != nil {
 		return err
 	}
@@ -119,33 +120,29 @@ func (h *handler) editSubjectPatchView(w http.ResponseWriter, r *http.Request) e
 	}
 
 	if patch.Name.Valid {
-		subject.Name = patch.Name.String
+		character.Name = patch.Name.String
 	}
 
 	if patch.Infobox.Valid {
-		subject.Infobox = patch.Infobox.String
+		character.Infobox = patch.Infobox.String
 	}
 
 	if patch.Summary.Valid {
-		subject.Summary = patch.Summary.String
+		character.Summary = patch.Summary.String
 	}
 
-	if patch.Nsfw.Valid {
-		subject.Nsfw = patch.Nsfw.Bool
-	}
-
-	return h.template.EditSubject.Execute(w, view.SubjectPatchEdit{
+	return h.template.EditCharacter.Execute(w, view.CharacterPatchEdit{
 		PatchID:          patch.ID.String(),
-		SubjectID:        patch.SubjectID,
+		CharacterID:      patch.CharacterID,
 		CsrfToken:        csrf.GetToken(r),
 		Reason:           patch.Reason,
 		Description:      patch.PatchDesc,
-		Data:             subject,
+		Data:             character,
 		TurnstileSiteKey: h.config.TurnstileSiteKey,
 	})
 }
 
-func (h *handler) listSubjectPatches(
+func (h *handler) listCharacterPatches(
 	w http.ResponseWriter,
 	r *http.Request,
 	patchStateFilter string,
@@ -153,7 +150,7 @@ func (h *handler) listSubjectPatches(
 	stateVals []int32,
 	currentPage int64,
 ) error {
-	c, err := h.q.CountSubjectPatches(r.Context(), dal.CountSubjectPatchesParams{
+	c, err := h.q.CountCharacterPatches(r.Context(), dal.CountCharacterPatchesParams{
 		State:      stateVals,
 		FromUserID: 0,
 		WikiUserID: 0,
@@ -162,9 +159,9 @@ func (h *handler) listSubjectPatches(
 		return err
 	}
 
-	var patches = make([]view.SubjectPatchListItem, 0, defaultPageSize)
+	var patches = make([]view.CharacterPatchListItem, 0, defaultPageSize)
 	if c != 0 {
-		data, err := h.q.ListSubjectPatches(r.Context(), dal.ListSubjectPatchesParams{
+		data, err := h.q.ListCharacterPatches(r.Context(), dal.ListCharacterPatchesParams{
 			State:   stateVals,
 			OrderBy: order,
 			Size:    defaultPageSize,
@@ -184,7 +181,7 @@ func (h *handler) listSubjectPatches(
 				}
 			}
 
-			patches = append(patches, view.SubjectPatchListItem{
+			patches = append(patches, view.CharacterPatchListItem{
 				ID:            v.ID.String(),
 				UpdatedAt:     v.UpdatedAt.Time,
 				CreatedAt:     v.CreatedAt.Time,
@@ -193,7 +190,6 @@ func (h *handler) listSubjectPatches(
 				Name:          v.OriginalName,
 				CommentsCount: v.CommentsCount,
 				Reason:        v.Reason,
-				SubjectType:   v.SubjectType,
 				Author: view.User{
 					ID:       v.AuthorUserID,
 					Username: v.AuthorUsername,
@@ -211,7 +207,7 @@ func (h *handler) listSubjectPatches(
 		return err
 	}
 
-	return templates.SubjectPatchList(r, view.SubjectPatchList{
+	return templates.CharacterPatchList(r, view.CharacterPatchList{
 		Session:            session.GetSession(r.Context()),
 		Patches:            patches,
 		CurrentStateFilter: patchStateFilter,
@@ -229,7 +225,7 @@ func (h *handler) listSubjectPatches(
 	}).Render(r.Context(), w)
 }
 
-func (h *handler) subjectPatchShortLink(
+func (h *handler) characterPatchShortLink(
 	w http.ResponseWriter,
 	r *http.Request,
 ) error {
@@ -246,18 +242,18 @@ func (h *handler) subjectPatchShortLink(
 	}
 
 	var id uuid.UUID
-	row := h.db.QueryRow(r.Context(), `select id from subject_patch where num_id = $1 limit 1`, numID)
+	row := h.db.QueryRow(r.Context(), `select id from character_patch where num_id = $1 limit 1`, numID)
 	err = row.Scan(&id)
 	if err != nil {
-		return errgo.Wrap(err, "failed to query subject_path")
+		return errgo.Wrap(err, "failed to query character_path")
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/subject/%s", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/character/%s", id), http.StatusSeeOther)
 
 	return nil
 }
 
-func (h *handler) subjectPatchDetailView(
+func (h *handler) characterPatchDetailView(
 	w http.ResponseWriter,
 	r *http.Request,
 ) error {
@@ -275,13 +271,13 @@ func (h *handler) subjectPatchDetailView(
 		return nil
 	}
 
-	patch, err := h.q.GetSubjectPatchByID(r.Context(), id)
+	patch, err := h.q.GetCharacterPatchByID(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			http.Error(w, "patch not found", http.StatusNotFound)
 			return nil
 		}
-		return errgo.Wrap(err, "GetSubjectPatchByID")
+		return errgo.Wrap(err, "GetCharacterPatchByID")
 	}
 
 	author, err := h.q.GetUserByID(r.Context(), patch.FromUserID)
@@ -300,17 +296,17 @@ func (h *handler) subjectPatchDetailView(
 
 	comments, err := h.q.GetComments(r.Context(), dal.GetCommentsParams{
 		PatchID:   id,
-		PatchType: PatchTypeSubject,
+		PatchType: PatchTypeCharacter,
 	})
 	if err != nil {
 		return errgo.Wrap(err, "GetComments")
 	}
 
-	var changes = make([]view.Change, 0, 4)
+	var changes = make([]view.Change, 0, 3)
 
 	if patch.Name.Valid && patch.OriginalName != patch.Name.String {
 		changes = append(changes, view.Change{
-			Name: "条目名",
+			Name: "角色名",
 			Diff: diff.Diff("name", patch.OriginalName, patch.Name.String),
 		})
 	}
@@ -329,7 +325,7 @@ func (h *handler) subjectPatchDetailView(
 		})
 	}
 
-	return templates.SubjectPatchPage(
+	return templates.CharacterPatchPage(
 		csrf.GetToken(r),
 		s,
 		patch,
@@ -340,27 +336,26 @@ func (h *handler) subjectPatchDetailView(
 	).Render(r.Context(), w)
 }
 
-func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) createCharacterEditPatch(w http.ResponseWriter, r *http.Request) error {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, fmt.Sprintf("Failed to parse form data: %v", err), http.StatusBadRequest)
 		return nil
 	}
 
-	subjectID, err := strconv.ParseInt(chi.URLParam(r, "subject-id"), 10, 32)
-	if err != nil || subjectID <= 0 {
-		http.Error(w, "Invalid or missing subject_id query parameter", http.StatusBadRequest)
+	characterID, err := strconv.ParseInt(chi.URLParam(r, "character-id"), 10, 32)
+	if err != nil || characterID <= 0 {
+		http.Error(w, "Invalid or missing character_id query parameter", http.StatusBadRequest)
 		return nil
 	}
 
 	form := r.PostForm
-	data := CreateSubjectPatch{
+	data := CreateCharacterPatch{
 		Name:                form.Get("name"),
 		Infobox:             form.Get("infobox"),
 		Summary:             form.Get("summary"),
 		Reason:              strings.TrimSpace(form.Get("reason")),
 		PatchDesc:           strings.TrimSpace(form.Get("patch_desc")),
 		CfTurnstileResponse: form.Get("cf_turnstile_response"),
-		Nsfw:                form.Get("nsfw"), // Will be "on" if checked, "" otherwise
 	}
 
 	if data.Reason == "" {
@@ -385,48 +380,49 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 	}
 
 	// --- Fetch Original Data ---
-	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/subjects/%d", subjectID)
-	var originalWiki dto.WikiSubject
+	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/characters/%d", characterID)
+	var originalWiki dto.WikiCharacter
 	resp, err := h.client.R().
 		SetContext(r.Context()).
-		SetResult(&originalWiki). // Tell resty to unmarshal into originalWiki on success
+		SetResult(&originalWiki).
 		Get(fetchURL)
 	if err != nil {
-		// This usually indicates a network error or DNS issue before the request was even sent
-		fmt.Printf("Error executing request to fetch original wiki: %v\n", err)
+		log.Error().Err(err).Msg("failed to fetch original wiki")
 		http.Error(w, "Failed to communicate with wiki service", http.StatusBadGateway)
 		return nil
 	}
 
 	if resp.IsError() {
-		// The request was sent, but the server returned an error status code (>= 400)
-		fmt.Printf("Error fetching original wiki (%s): status %d, body: %s\n", fetchURL, resp.StatusCode(), resp.String())
+		log.Warn().Str("url", fetchURL).Int("status", resp.StatusCode()).Msg("error fetching original wiki")
 		if resp.StatusCode() == http.StatusNotFound {
-			http.Error(w, "Original subject not found", http.StatusNotFound)
+			http.Error(w, "Original character not found", http.StatusNotFound)
 		} else {
-			http.Error(w, "Failed to fetch original subject data", http.StatusBadGateway)
+			http.Error(w, "Failed to fetch original character data", http.StatusBadGateway)
 		}
 		return nil
 	}
 
 	if originalWiki.Locked || originalWiki.Redirect != 0 {
-		http.Error(w, "Subject is locked and cannot be edited", http.StatusForbidden)
+		http.Error(w, "Character is locked and cannot be edited", http.StatusForbidden)
 		return nil
 	}
 
 	var changed bool
 	pk := uuid.Must(uuid.NewV7())
-	var param = dal.CreateSubjectEditPatchParams{
+	var param = dal.CreateCharacterEditPatchParams{
 		ID:           pk,
-		SubjectID:    int32(subjectID),
+		CharacterID:  int32(characterID),
 		FromUserID:   user.UserID,
 		Reason:       data.Reason,
 		OriginalName: originalWiki.Name,
-		SubjectType:  originalWiki.TypeID,
 		PatchDesc:    data.PatchDesc,
 	}
 
 	if data.Name != originalWiki.Name {
+		if data.Name == "" {
+			http.Error(w, "角色名不能为空", http.StatusBadRequest)
+			return nil
+		}
 		changed = true
 		param.Name = pgtype.Text{
 			String: data.Name,
@@ -460,17 +456,6 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	// Compare NSFW status
-	// Form sends "on" if checked, "" if not. Presence means true.
-	nsfwInput := data.Nsfw != "" // True if checkbox was checked
-	if nsfwInput != originalWiki.Nsfw {
-		changed = true
-		param.Nsfw = pgtype.Bool{
-			Bool:  nsfwInput,
-			Valid: true,
-		}
-	}
-
 	if !changed {
 		http.Error(w, "No changes found", http.StatusBadRequest)
 		return nil
@@ -479,9 +464,9 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err = h.q.CreateSubjectEditPatch(ctx, param)
+	err = h.q.CreateCharacterEditPatch(ctx, param)
 	if err != nil {
-		fmt.Printf("Error inserting subject patch: %v\n", err)
+		log.Error().Err(err).Msg("failed to insert character patch")
 		http.Error(w, "Failed to save suggestion", http.StatusInternalServerError)
 		return nil
 	}
@@ -491,19 +476,19 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 			_ = h.q.CreateComment(ctx, dal.CreateCommentParams{
 				ID:        uuid.Must(uuid.NewV7()),
 				PatchID:   param.ID,
-				PatchType: PatchTypeSubject,
+				PatchType: PatchTypeCharacter,
 				Text:      fmt.Sprintf("包含语法错误，请仔细检查\n\n%s", err.Error()),
 				FromUser:  wikiBotUserID,
 			})
-			_ = h.q.UpdateSubjectPatchCommentCount(ctx, param.ID)
+			_ = h.q.UpdateCharacterPatchCommentCount(ctx, param.ID)
 		}
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/subject/%s", pk), http.StatusFound)
+	http.Redirect(w, r, fmt.Sprintf("/character/%s", pk), http.StatusFound)
 	return nil
 }
 
-func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) updateCharacterEditPatch(w http.ResponseWriter, r *http.Request) error {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, fmt.Sprintf("Failed to parse form data: %v", err), http.StatusBadRequest)
 		return nil
@@ -515,7 +500,7 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		return nil
 	}
 
-	patch, err := h.q.GetSubjectPatchByID(r.Context(), patchID)
+	patch, err := h.q.GetCharacterPatchByID(r.Context(), patchID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			http.Error(w, "Patch not found", http.StatusNotFound)
@@ -524,17 +509,16 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		return err
 	}
 
-	subjectID := patch.SubjectID
+	characterID := patch.CharacterID
 
 	form := r.PostForm
-	data := CreateSubjectPatch{
+	data := CreateCharacterPatch{
 		Name:                form.Get("name"),
 		Infobox:             form.Get("infobox"),
 		Summary:             form.Get("summary"),
 		Reason:              strings.TrimSpace(form.Get("reason")),
 		PatchDesc:           strings.TrimSpace(form.Get("patch_desc")),
 		CfTurnstileResponse: form.Get("cf_turnstile_response"),
-		Nsfw:                form.Get("nsfw"),
 	}
 
 	if data.Reason == "" {
@@ -559,36 +543,35 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		return nil
 	}
 
-	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/subjects/%d", subjectID)
-	var originalWiki dto.WikiSubject
+	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/characters/%d", characterID)
+	var originalWiki dto.WikiCharacter
 	resp, err := h.client.R().
 		SetContext(r.Context()).
 		SetResult(&originalWiki).
 		Get(fetchURL)
 	if err != nil {
-		fmt.Printf("Error executing request to fetch original wiki: %v\n", err)
+		log.Error().Err(err).Msg("failed to fetch original wiki")
 		http.Error(w, "Failed to communicate with wiki service", http.StatusBadGateway)
 		return nil
 	}
 
 	if resp.IsError() {
-		fmt.Printf("Error fetching original wiki (%s): status %d, body: %s\n",
-			fetchURL, resp.StatusCode(), resp.String())
+		log.Warn().Str("url", fetchURL).Int("status", resp.StatusCode()).Msg("error fetching original wiki")
 		if resp.StatusCode() == http.StatusNotFound {
-			http.Error(w, "Original subject not found", http.StatusNotFound)
+			http.Error(w, "Original character not found", http.StatusNotFound)
 		} else {
-			http.Error(w, "Failed to fetch original subject data", http.StatusBadGateway)
+			http.Error(w, "Failed to fetch original character data", http.StatusBadGateway)
 		}
 		return nil
 	}
 
 	if originalWiki.Locked || originalWiki.Redirect != 0 {
-		http.Error(w, "Subject is locked and cannot be edited", http.StatusForbidden)
+		http.Error(w, "Character is locked and cannot be edited", http.StatusForbidden)
 		return nil
 	}
 
 	var changed bool
-	var param = dal.UpdateSubjectPatchParams{
+	var param = dal.UpdateCharacterPatchParams{
 		ID:           patchID,
 		Reason:       data.Reason,
 		PatchDesc:    data.PatchDesc,
@@ -596,6 +579,10 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 	}
 
 	if data.Name != originalWiki.Name {
+		if data.Name == "" {
+			http.Error(w, "角色名不能为空", http.StatusBadRequest)
+			return nil
+		}
 		changed = true
 		param.Name = pgtype.Text{String: data.Name, Valid: true}
 	}
@@ -614,15 +601,6 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		param.Summary = pgtype.Text{String: data.Summary, Valid: true}
 	}
 
-	nsfwInput := data.Nsfw != ""
-	if nsfwInput != originalWiki.Nsfw {
-		changed = true
-		param.Nsfw = pgtype.Bool{
-			Bool:  nsfwInput,
-			Valid: true,
-		}
-	}
-
 	if !changed {
 		http.Error(w, "No changes found", http.StatusBadRequest)
 		return nil
@@ -633,7 +611,7 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 
 	err = h.tx(ctx, func(tx pgx.Tx) error {
 		qx := h.q.WithTx(tx)
-		p, err := qx.GetSubjectPatchByIDForUpdate(ctx, patchID)
+		p, err := qx.GetCharacterPatchByIDForUpdate(ctx, patchID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
 				http.Error(w, "patch not found", http.StatusNotFound)
@@ -651,15 +629,15 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 			return nil
 		}
 
-		err = qx.UpdateSubjectPatch(ctx, param)
+		err = qx.UpdateCharacterPatch(ctx, param)
 		if err != nil {
-			return errgo.Wrap(err, "failed to update subject patch")
+			return errgo.Wrap(err, "failed to update character patch")
 		}
 
 		_ = qx.CreateComment(ctx, dal.CreateCommentParams{
 			ID:        uuid.Must(uuid.NewV7()),
 			PatchID:   param.ID,
-			PatchType: PatchTypeSubject,
+			PatchType: PatchTypeCharacter,
 			Text:      "作者进行了修改",
 			FromUser:  0,
 		})
@@ -669,11 +647,11 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 				_ = qx.CreateComment(ctx, dal.CreateCommentParams{
 					ID:        uuid.Must(uuid.NewV7()),
 					PatchID:   param.ID,
-					PatchType: PatchTypeSubject,
+					PatchType: PatchTypeCharacter,
 					Text:      fmt.Sprintf("包含语法错误，请仔细检查\n\n%s", err.Error()),
 					FromUser:  wikiBotUserID,
 				})
-				_ = qx.UpdateSubjectPatchCommentCount(ctx, patchID)
+				_ = qx.UpdateCharacterPatchCommentCount(ctx, patchID)
 			}
 		}
 
@@ -684,21 +662,20 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		return err
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/subject/%s", patch.ID), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/character/%s", patch.ID), http.StatusSeeOther)
 	return nil
 }
 
-type CreateSubjectPatch struct {
+type CreateCharacterPatch struct {
 	Name                string
 	Infobox             string
 	Summary             string
 	Reason              string
 	PatchDesc           string
 	CfTurnstileResponse string
-	Nsfw                string
 }
 
-func (h *handler) deleteSubjectPatch(w http.ResponseWriter, r *http.Request) error {
+func (h *handler) deleteCharacterPatch(w http.ResponseWriter, r *http.Request) error {
 	patchID, err := uuid.FromString(chi.URLParam(r, "patch-id"))
 	if err != nil {
 		http.Error(w, "invalid patch id, must be uuid", http.StatusBadRequest)
@@ -727,7 +704,7 @@ func (h *handler) deleteSubjectPatch(w http.ResponseWriter, r *http.Request) err
 
 	return h.tx(ctx, func(tx pgx.Tx) error {
 		qx := h.q.WithTx(tx)
-		p, err := qx.GetSubjectPatchByIDForUpdate(ctx, patchID)
+		p, err := qx.GetCharacterPatchByIDForUpdate(ctx, patchID)
 		if err != nil {
 			return err
 		}
@@ -741,9 +718,9 @@ func (h *handler) deleteSubjectPatch(w http.ResponseWriter, r *http.Request) err
 			return nil
 		}
 
-		err = qx.DeleteSubjectPatch(ctx, patchID)
+		err = qx.DeleteCharacterPatch(ctx, patchID)
 		if err != nil {
-			return errgo.Wrap(err, "failed to delete subject patch")
+			return errgo.Wrap(err, "failed to delete character patch")
 		}
 
 		http.Redirect(w, r, "/", http.StatusFound)
@@ -751,13 +728,10 @@ func (h *handler) deleteSubjectPatch(w http.ResponseWriter, r *http.Request) err
 	})
 }
 
-const contentTypeApplicationJSON = "application/json"
-
-type RequestToUpdateSubject struct {
+type RequestToUpdateCharacter struct {
 	Name    null.String `json:"name"`
 	Infobox null.String `json:"infobox"`
 	Summary null.String `json:"summary"`
-	Nsfw    null.Bool   `json:"nsfw"`
 
 	Reason    string `json:"reason"`
 	PatchDesc string `json:"patch_desc"`
@@ -765,12 +739,12 @@ type RequestToUpdateSubject struct {
 	CfTurnstileResponse string `json:"cf_turnstile_response"`
 }
 
-func (h *handler) createSubjectEditPatchAPI(w http.ResponseWriter, r *http.Request) error {
-	subjectID, err := strconv.ParseInt(chi.URLParam(r, "subject-id"), 10, 32)
-	if err != nil || subjectID <= 0 {
+func (h *handler) createCharacterEditPatchAPI(w http.ResponseWriter, r *http.Request) error {
+	characterID, err := strconv.ParseInt(chi.URLParam(r, "character-id"), 10, 32)
+	if err != nil || characterID <= 0 {
 		return &HttpError{
 			StatusCode: http.StatusBadRequest,
-			Message:    "Invalid or missing subject_id query parameter",
+			Message:    "Invalid or missing character-id query parameter",
 		}
 	}
 
@@ -781,7 +755,7 @@ func (h *handler) createSubjectEditPatchAPI(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
-	var req RequestToUpdateSubject
+	var req RequestToUpdateCharacter
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return &HttpError{
 			StatusCode: http.StatusBadRequest,
@@ -792,7 +766,7 @@ func (h *handler) createSubjectEditPatchAPI(w http.ResponseWriter, r *http.Reque
 	if req.Reason == "" {
 		return &HttpError{
 			StatusCode: http.StatusBadRequest,
-			Message:    "at least give a reason to change the subject",
+			Message:    "at least give a reason to change the character",
 		}
 	}
 
@@ -809,46 +783,46 @@ func (h *handler) createSubjectEditPatchAPI(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
-	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/subjects/%d", subjectID)
-	var originalWiki dto.WikiSubject
+	fetchURL := fmt.Sprintf("https://next.bgm.tv/p1/wiki/characters/%d", characterID)
+	var originalWiki dto.WikiCharacter
 	resp, err := h.client.R().
 		SetContext(r.Context()).
 		SetResult(&originalWiki).
 		Get(fetchURL)
 	if err != nil {
-		// This usually indicates a network error or DNS issue before the request was even sent
-		fmt.Printf("Error executing request to fetch original wiki: %v\n", err)
+		log.Error().Err(err).Msg("failed to fetch original wiki")
 		http.Error(w, "Failed to communicate with wiki service", http.StatusBadGateway)
 		return nil
 	}
 
 	if resp.IsError() {
-		// The request was sent, but the server returned an error status code (>= 400)
-		fmt.Printf("Error fetching original wiki (%s): status %d, body: %s\n", fetchURL, resp.StatusCode(), resp.String())
+		log.Warn().Str("url", fetchURL).Int("status", resp.StatusCode()).Msg("error fetching original wiki")
 		if resp.StatusCode() == http.StatusNotFound {
-			http.Error(w, "Original subject not found", http.StatusNotFound)
+			http.Error(w, "Original character not found", http.StatusNotFound)
 		} else {
-			http.Error(w, "Failed to fetch original subject req", http.StatusBadGateway)
+			http.Error(w, "Failed to fetch original character req", http.StatusBadGateway)
 		}
 		return nil
 	}
 
 	if originalWiki.Locked || originalWiki.Redirect != 0 {
-		http.Error(w, "Subject is locked and cannot be edited", http.StatusForbidden)
+		http.Error(w, "Character is locked and cannot be edited", http.StatusForbidden)
 		return nil
 	}
 
 	var changed bool
-	var param = dal.CreateSubjectEditPatchParams{
-		SubjectID:    int32(subjectID),
+	var param = dal.CreateCharacterEditPatchParams{
+		CharacterID:  int32(characterID),
 		FromUserID:   user.UserID,
 		Reason:       req.Reason,
 		OriginalName: originalWiki.Name,
-		SubjectType:  originalWiki.TypeID,
 		PatchDesc:    req.PatchDesc,
 	}
 
 	if req.Name.Set && req.Name.Value != originalWiki.Name {
+		if req.Name.Value == "" {
+			return &HttpError{StatusCode: http.StatusBadRequest, Message: "角色名不能为空"}
+		}
 		changed = true
 		param.Name = pgtype.Text{
 			String: req.Name.Value,
@@ -882,14 +856,6 @@ func (h *handler) createSubjectEditPatchAPI(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
-	if req.Nsfw.Set && req.Nsfw.Value != originalWiki.Nsfw {
-		changed = true
-		param.Nsfw = pgtype.Bool{
-			Bool:  req.Nsfw.Value,
-			Valid: true,
-		}
-	}
-
 	if !changed {
 		http.Error(w, "No changes found", http.StatusBadRequest)
 		return nil
@@ -897,9 +863,9 @@ func (h *handler) createSubjectEditPatchAPI(w http.ResponseWriter, r *http.Reque
 
 	param.ID = uuid.Must(uuid.NewV7())
 
-	err = h.q.CreateSubjectEditPatch(r.Context(), param)
+	err = h.q.CreateCharacterEditPatch(r.Context(), param)
 	if err != nil {
-		fmt.Printf("Error inserting subject patch: %v\n", err)
+		log.Error().Err(err).Msg("failed to insert character patch")
 		http.Error(w, "Failed to save suggestion", http.StatusInternalServerError)
 		return nil
 	}

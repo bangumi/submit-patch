@@ -38,7 +38,7 @@ tasks:
     generates:
       - "templates/*.go"
     cmds:
-      - templ generate -path templates/
+      - go tool github.com/a-h/templ/cmd/templ generate -path templates/
 
   gen:
     cmds:

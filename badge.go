@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"golang.org/x/sync/errgroup"
 )
 
 func (h *handler) badge(w http.ResponseWriter, r *http.Request) {
@@ -22,26 +21,17 @@ func (h *handler) badge(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 2. Query database concurrently to get pending counts
-	var wg errgroup.Group
-	var countSubject, countEpisode int64
-
-	wg.Go(func() error {
-		return h.db.QueryRow(ctx, "SELECT count(1) FROM subject_patch WHERE state = $1 and deleted_at is null", PatchStatePending).Scan(&countSubject)
-	})
-
-	wg.Go(func() error {
-		return h.db.QueryRow(ctx, "SELECT count(1) FROM episode_patch WHERE state = $1 and deleted_at is null", PatchStatePending).Scan(&countEpisode)
-	})
-
-	err = wg.Wait()
+	pendingCount, err := CountPendingPatch(ctx, h.q)
 	if err != nil {
 		log.Err(err).Msg("failed to get pending count from database")
 		http.Error(w, "failed to get pending count from database", http.StatusInternalServerError)
 		return
 	}
 
-	totalCount := countSubject + countEpisode
+	totalCount := pendingCount.SubjectPatchCount +
+		pendingCount.EpisodePatchCount +
+		pendingCount.CharacterPatchCount +
+		pendingCount.PersonPatchCount
 
 	badge, err := h.getBadge(ctx, totalCount)
 	if err != nil {
@@ -65,14 +55,18 @@ func (h *handler) getBadge(ctx context.Context, count int64) ([]byte, error) {
 	var cacheKey string
 	displayCountStr := strconv.FormatInt(count, 10)
 
-	// Determine the specific cache key and potentially adjust the display string
-	// based on the count, rounding down for counts >= 100.
-	if count >= 100 {
-		roundedCount := (count / 100) * 100                        // e.g., 123 -> 100, 250 -> 200
-		cacheKey = fmt.Sprintf("%s:%d", cachePrefix, roundedCount) // Cache key uses rounded value
-		displayCountStr = fmt.Sprintf(">%d", roundedCount)         // Display string shows ">100", ">200", etc.
+	// Determine cache key and badge display buckets.
+	if count >= 300 {
+		cacheKey = fmt.Sprintf("%s:300plus", cachePrefix)
+		displayCountStr = "300+"
+	} else if count >= 200 {
+		cacheKey = fmt.Sprintf("%s:200plus", cachePrefix)
+		displayCountStr = "200+"
+	} else if count >= 100 {
+		cacheKey = fmt.Sprintf("%s:100plus", cachePrefix)
+		displayCountStr = "100+"
 	} else {
-		cacheKey = fmt.Sprintf("%s:%d", cachePrefix, count) // Cache key uses exact count
+		cacheKey = fmt.Sprintf("%s:%d", cachePrefix, count)
 	}
 
 	// 1. Check Redis cache for this specific count/range badge

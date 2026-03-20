@@ -16,7 +16,7 @@ type key int
 const tokenKey = key(1)
 const signerKey = key(2)
 
-const CookiesName = "x-csrf-token"
+const CookiesName = "x-csrf-token-3"
 const FormName = "x-csrf-token"
 
 func GetToken(r *http.Request) string {
@@ -45,11 +45,14 @@ func New() func(http.Handler) http.Handler {
 				return
 			}
 
+			ctx := r.Context()
+			ctx = context.WithValue(ctx, signerKey, signer)
+
 			c, err := r.Cookie(CookiesName)
 			if err == nil && c.Value != "" {
-				next.ServeHTTP(w, r.WithContext(
-					context.WithValue(context.WithValue(r.Context(), signerKey, signer), tokenKey, c.Value),
-				))
+				ctx = context.WithValue(ctx, tokenKey, c.Value)
+
+				next.ServeHTTP(w, r.WithContext(ctx))
 				return
 			}
 
@@ -69,18 +72,32 @@ func New() func(http.Handler) http.Handler {
 				MaxAge:   int(time.Hour/time.Second) * 24 * 7,
 			})
 
-			next.ServeHTTP(w, r.WithContext(
-				context.WithValue(context.WithValue(r.Context(), signerKey, signer), tokenKey, encoded),
-			))
+			ctx = context.WithValue(ctx, tokenKey, encoded)
+
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
 
-func Verify(r *http.Request, token string) bool {
+func newToken(ctx context.Context, signer *securecookie.SecureCookie) (string, error) {
+	encoded, err := signer.Encode(CookiesName, cookieValue{UserID: session.GetSession(ctx).UserID})
+	if err != nil {
+		return "", err
+	}
+
+	return encoded, nil
+}
+
+func Verify(r *http.Request, formValue string) bool {
 	signer := r.Context().Value(signerKey).(*securecookie.SecureCookie)
+	cookieToken := r.Context().Value(tokenKey).(string)
+
+	if cookieToken != formValue {
+		return false
+	}
 
 	var v cookieValue
-	err := signer.Decode(CookiesName, token, &v)
+	err := signer.Decode(CookiesName, formValue, &v)
 	if err != nil {
 		return false
 	}
@@ -88,13 +105,19 @@ func Verify(r *http.Request, token string) bool {
 	return v.UserID == session.GetSession(r.Context()).UserID
 }
 
-func Clear(w http.ResponseWriter) {
+func Clear(w http.ResponseWriter, r *http.Request) {
+	token, err := newToken(r.Context(), r.Context().Value(signerKey).(*securecookie.SecureCookie))
+	if err != nil {
+		panic("failed to encode new token")
+	}
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     CookiesName,
-		Value:    "",
+		Value:    token,
 		Path:     "/",
 		Secure:   true,
 		HttpOnly: true,
+		MaxAge:   int(time.Hour/time.Second) * 24 * 7,
 	})
 }
 

@@ -12,7 +12,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: "true"
 
@@ -23,7 +23,7 @@ jobs:
       - uses: sigoden/install-binary@v1
         with:
           repo: gotestyourself/gotestsum
-          tag: v1.12.1
+          tag: v1.13.0
 
       - run: gotestsum --hide-summary=skipped --format-hide-empty-pkg
 
@@ -44,7 +44,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: "true"
 

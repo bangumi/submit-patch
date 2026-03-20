@@ -16,7 +16,7 @@ import (
 	"net/http"
 )
 
-func EpisodePatchList(r *http.Request, data view.EpisodePatchList) templ.Component {
+func CharacterPatchList(r *http.Request, data view.CharacterPatchList) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -39,11 +39,11 @@ func EpisodePatchList(r *http.Request, data view.EpisodePatchList) templ.Compone
 		ctx = templ.ClearChildren(ctx)
 		templ_7745c5c3_Err = Layout(
 			data.Title,
-			episodeListHead(),
+			characterListHead(),
 			templ.Join(
 				header(data.Title, data.Session),
-				listFilter(r.URL, "episode", data.CurrentStateFilter, data.PendingCount),
-				episodePatchList(data, time.Now()),
+				listFilter(r.URL, "character", data.CurrentStateFilter, data.PendingCount),
+				characterPatchList(data, time.Now()),
 				Pagination(data.Pagination),
 			),
 		).Render(ctx, templ_7745c5c3_Buffer)
@@ -54,7 +54,7 @@ func EpisodePatchList(r *http.Request, data view.EpisodePatchList) templ.Compone
 	})
 }
 
-func episodeListHead() templ.Component {
+func characterListHead() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -83,9 +83,7 @@ func episodeListHead() templ.Component {
 	})
 }
 
-// templ episodeListContent(r *http.Request, data view.EpisodePatchList) {
-// }
-func episodePatchList(data view.EpisodePatchList, now time.Time) templ.Component {
+func characterPatchList(data view.CharacterPatchList, now time.Time) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -111,7 +109,7 @@ func episodePatchList(data view.EpisodePatchList, now time.Time) templ.Component
 			return templ_7745c5c3_Err
 		}
 		for _, patch := range data.Patches {
-			templ_7745c5c3_Err = episodePatch(patch, now).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = characterPatch(patch, now).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -124,7 +122,7 @@ func episodePatchList(data view.EpisodePatchList, now time.Time) templ.Component
 	})
 }
 
-func episodePatch(patch view.EpisodePatchListItem, now time.Time) templ.Component {
+func characterPatch(patch view.CharacterPatchListItem, now time.Time) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -150,9 +148,9 @@ func episodePatch(patch view.EpisodePatchListItem, now time.Time) templ.Componen
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 templ.SafeURL
-		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("/episode/" + patch.ID))
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("/character/" + patch.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 62, Col: 46}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `character-list.templ`, Line: 60, Col: 48}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -165,7 +163,7 @@ func episodePatch(patch view.EpisodePatchListItem, now time.Time) templ.Componen
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(patch.ID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 63, Col: 15}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `character-list.templ`, Line: 61, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -175,140 +173,146 @@ func episodePatch(patch view.EpisodePatchListItem, now time.Time) templ.Componen
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		switch patch.State {
-		case 0:
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<h5 class=\"me-2\"><span class=\"badge bg-primary\">待审核</span></h5>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		case 1:
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<h5 class=\"me-2\"><span class=\"badge bg-success\">Accepted</span></h5>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		case 2:
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<h5 class=\"me-2\"><span class=\"badge bg-danger\">Rejected</span></h5>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		case 3:
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<h5 class=\"me-2\"><span class=\"badge bg-secondary\">Outdated</span></h5>")
+		if patch.Action == 2 {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<h5 class=\"me-2\"><span class=\"badge bg-success\">新角色</span></h5>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<p class=\"patch_reason\">")
+		switch patch.State {
+		case 0:
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<h5 class=\"me-2\"><span class=\"badge bg-primary\">待审核</span></h5>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		case 1:
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<h5 class=\"me-2\"><span class=\"badge bg-success\">Accepted</span></h5>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		case 2:
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<h5 class=\"me-2\"><span class=\"badge bg-danger\">Rejected</span></h5>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		case 3:
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<h5 class=\"me-2\"><span class=\"badge bg-secondary\">Outdated</span></h5>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<p class=\"patch_reason\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(patch.Reason)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 81, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `character-list.templ`, Line: 79, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</p>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if patch.CommentsCount > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<h5 class=\"me-2\"><span class=\"badge bg-warning text-dark d-block\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<h5 class=\"me-2\"><span class=\"badge bg-warning text-dark d-block\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(patch.CommentsCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 84, Col: 87}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `character-list.templ`, Line: 82, Col: 87}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, " comments</span></h5>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, " comments</span></h5>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div><div class=\"d-block d-sm-flex w-100 flex-wrap\"><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">created</p><span class=\"badge bg-light text-dark border border-info\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</div><div class=\"d-block d-sm-flex w-100 flex-wrap\"><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">created</p><span class=\"badge bg-light text-dark border border-info\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(relativeTime(now, patch.CreatedAt))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 94, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `character-list.templ`, Line: 92, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</span></div></div><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">updated</p><span class=\"badge bg-light text-dark border border-info\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</span></div></div><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">updated</p><span class=\"badge bg-light text-dark border border-info\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(relativeTime(now, patch.UpdatedAt))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 102, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `character-list.templ`, Line: 100, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</span></div></div><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">条目名</p><span class=\"badge bg-light text-dark border border-info\" style=\"max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</span></div></div><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">角色名</p><span class=\"badge bg-light text-dark border border-info\" style=\"max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(patch.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 109, Col: 164}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `character-list.templ`, Line: 107, Col: 164}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</span></div></div><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">author</p><span class=\"badge bg-light text-dark border border-info\" style=\"max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</span></div></div><div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">author</p><span class=\"badge bg-light text-dark border border-info\" style=\"max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(patch.Author.Username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 115, Col: 175}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `character-list.templ`, Line: 113, Col: 175}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</span></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</span></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if patch.Reviewer != nil {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">reviewer</p><span class=\"badge bg-light text-dark border border-info\" style=\"max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<div class=\"d-flex\"><div class=\"d-none d-sm-flex pe-2 flex-row\"><p class=\"m-0 pe-1\" style=\"white-space: nowrap\">reviewer</p><span class=\"badge bg-light text-dark border border-info\" style=\"max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(patch.Reviewer.Username)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `episode-list.templ`, Line: 122, Col: 178}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `character-list.templ`, Line: 120, Col: 178}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</span></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</span></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</div></a>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</div></a>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

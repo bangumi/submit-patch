@@ -12,6 +12,27 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const acceptCharacterPatch = `-- name: AcceptCharacterPatch :exec
+update character_patch
+set wiki_user_id = $1,
+    state        = $2,
+    updated_at   = current_timestamp
+where id = $3
+  and deleted_at is null
+  and state = 0
+`
+
+type AcceptCharacterPatchParams struct {
+	WikiUserID int32
+	State      int32
+	ID         uuid.UUID
+}
+
+func (q *Queries) AcceptCharacterPatch(ctx context.Context, arg AcceptCharacterPatchParams) error {
+	_, err := q.db.Exec(ctx, acceptCharacterPatch, arg.WikiUserID, arg.State, arg.ID)
+	return err
+}
+
 const acceptEpisodePatch = `-- name: AcceptEpisodePatch :exec
 update episode_patch
 set wiki_user_id = $1,
@@ -30,6 +51,27 @@ type AcceptEpisodePatchParams struct {
 
 func (q *Queries) AcceptEpisodePatch(ctx context.Context, arg AcceptEpisodePatchParams) error {
 	_, err := q.db.Exec(ctx, acceptEpisodePatch, arg.WikiUserID, arg.State, arg.ID)
+	return err
+}
+
+const acceptPersonPatch = `-- name: AcceptPersonPatch :exec
+update person_patch
+set wiki_user_id = $1,
+    state        = $2,
+    updated_at   = current_timestamp
+where id = $3
+  and deleted_at is null
+  and state = 0
+`
+
+type AcceptPersonPatchParams struct {
+	WikiUserID int32
+	State      int32
+	ID         uuid.UUID
+}
+
+func (q *Queries) AcceptPersonPatch(ctx context.Context, arg AcceptPersonPatchParams) error {
+	_, err := q.db.Exec(ctx, acceptPersonPatch, arg.WikiUserID, arg.State, arg.ID)
 	return err
 }
 
@@ -54,6 +96,29 @@ func (q *Queries) AcceptSubjectPatch(ctx context.Context, arg AcceptSubjectPatch
 	return err
 }
 
+const countCharacterPatches = `-- name: CountCharacterPatches :one
+select count(1)
+from character_patch
+where deleted_at is null
+  and state = any ($1::int[])
+  and ((from_user_id = $2 and $2 != 0) or $2 = 0)
+  and ((wiki_user_id = $3 and $3 != 0) or $3 = 0)
+  and action = 1
+`
+
+type CountCharacterPatchesParams struct {
+	State      []int32
+	FromUserID int32
+	WikiUserID int32
+}
+
+func (q *Queries) CountCharacterPatches(ctx context.Context, arg CountCharacterPatchesParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countCharacterPatches, arg.State, arg.FromUserID, arg.WikiUserID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countEpisodePatches = `-- name: CountEpisodePatches :one
 select count(1)
 from episode_patch
@@ -76,27 +141,83 @@ func (q *Queries) CountEpisodePatches(ctx context.Context, arg CountEpisodePatch
 	return count, err
 }
 
-const countPendingPatch = `-- name: CountPendingPatch :one
-select (select count(1)
-        from subject_patch
-        where deleted_at is null
-          and state = 0) as subject_patch_count,
-       (select count(1)
-        from episode_patch
-        where deleted_at is null
-          and state = 0) as episode_patch_count
+const countPendingCharacterPatch = `-- name: CountPendingCharacterPatch :one
+select count(1)
+from character_patch
+where deleted_at is null
+  and state = 0
 `
 
-type CountPendingPatchRow struct {
-	SubjectPatchCount int64
-	EpisodePatchCount int64
+func (q *Queries) CountPendingCharacterPatch(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countPendingCharacterPatch)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
-func (q *Queries) CountPendingPatch(ctx context.Context) (CountPendingPatchRow, error) {
-	row := q.db.QueryRow(ctx, countPendingPatch)
-	var i CountPendingPatchRow
-	err := row.Scan(&i.SubjectPatchCount, &i.EpisodePatchCount)
-	return i, err
+const countPendingEpisodePatch = `-- name: CountPendingEpisodePatch :one
+select count(1)
+from episode_patch
+where deleted_at is null
+  and state = 0
+`
+
+func (q *Queries) CountPendingEpisodePatch(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countPendingEpisodePatch)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countPendingPersonPatch = `-- name: CountPendingPersonPatch :one
+select count(1)
+from person_patch
+where deleted_at is null
+  and state = 0
+`
+
+func (q *Queries) CountPendingPersonPatch(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countPendingPersonPatch)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countPendingSubjectPatch = `-- name: CountPendingSubjectPatch :one
+select count(1)
+from subject_patch
+where deleted_at is null
+  and state = 0
+`
+
+func (q *Queries) CountPendingSubjectPatch(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countPendingSubjectPatch)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countPersonPatches = `-- name: CountPersonPatches :one
+select count(1)
+from person_patch
+where deleted_at is null
+  and state = any ($1::int[])
+  and ((from_user_id = $2 and $2 != 0) or $2 = 0)
+  and ((wiki_user_id = $3 and $3 != 0) or $3 = 0)
+  and action = 1
+`
+
+type CountPersonPatchesParams struct {
+	State      []int32
+	FromUserID int32
+	WikiUserID int32
+}
+
+func (q *Queries) CountPersonPatches(ctx context.Context, arg CountPersonPatchesParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countPersonPatches, arg.State, arg.FromUserID, arg.WikiUserID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const countSubjectPatches = `-- name: CountSubjectPatches :one
@@ -120,6 +241,46 @@ func (q *Queries) CountSubjectPatches(ctx context.Context, arg CountSubjectPatch
 	var count int64
 	err := row.Scan(&count)
 	return count, err
+}
+
+const createCharacterEditPatch = `-- name: CreateCharacterEditPatch :exec
+INSERT INTO character_patch (id,
+                             character_id, from_user_id, reason, name, infobox,
+                             summary,
+                             original_name, original_infobox,
+                             original_summary, patch_desc)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+`
+
+type CreateCharacterEditPatchParams struct {
+	ID              uuid.UUID
+	CharacterID     int32
+	FromUserID      int32
+	Reason          string
+	Name            pgtype.Text
+	Infobox         pgtype.Text
+	Summary         pgtype.Text
+	OriginalName    string
+	OriginalInfobox pgtype.Text
+	OriginalSummary pgtype.Text
+	PatchDesc       string
+}
+
+func (q *Queries) CreateCharacterEditPatch(ctx context.Context, arg CreateCharacterEditPatchParams) error {
+	_, err := q.db.Exec(ctx, createCharacterEditPatch,
+		arg.ID,
+		arg.CharacterID,
+		arg.FromUserID,
+		arg.Reason,
+		arg.Name,
+		arg.Infobox,
+		arg.Summary,
+		arg.OriginalName,
+		arg.OriginalInfobox,
+		arg.OriginalSummary,
+		arg.PatchDesc,
+	)
+	return err
 }
 
 const createComment = `-- name: CreateComment :exec
@@ -211,6 +372,46 @@ func (q *Queries) CreateEpisodePatch(ctx context.Context, arg CreateEpisodePatch
 	return err
 }
 
+const createPersonEditPatch = `-- name: CreatePersonEditPatch :exec
+INSERT INTO person_patch (id,
+                           person_id, from_user_id, reason, name, infobox,
+                           summary,
+                           original_name, original_infobox,
+                           original_summary, patch_desc)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+`
+
+type CreatePersonEditPatchParams struct {
+	ID              uuid.UUID
+	PersonID        int32
+	FromUserID      int32
+	Reason          string
+	Name            pgtype.Text
+	Infobox         pgtype.Text
+	Summary         pgtype.Text
+	OriginalName    string
+	OriginalInfobox pgtype.Text
+	OriginalSummary pgtype.Text
+	PatchDesc       string
+}
+
+func (q *Queries) CreatePersonEditPatch(ctx context.Context, arg CreatePersonEditPatchParams) error {
+	_, err := q.db.Exec(ctx, createPersonEditPatch,
+		arg.ID,
+		arg.PersonID,
+		arg.FromUserID,
+		arg.Reason,
+		arg.Name,
+		arg.Infobox,
+		arg.Summary,
+		arg.OriginalName,
+		arg.OriginalInfobox,
+		arg.OriginalSummary,
+		arg.PatchDesc,
+	)
+	return err
+}
+
 const createSubjectEditPatch = `-- name: CreateSubjectEditPatch :exec
 INSERT INTO subject_patch (id,
                            subject_id, from_user_id, reason, name, infobox,
@@ -255,6 +456,18 @@ func (q *Queries) CreateSubjectEditPatch(ctx context.Context, arg CreateSubjectE
 	return err
 }
 
+const deleteCharacterPatch = `-- name: DeleteCharacterPatch :exec
+update character_patch
+set deleted_at = current_timestamp
+where id = $1
+  and deleted_at is null
+`
+
+func (q *Queries) DeleteCharacterPatch(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteCharacterPatch, id)
+	return err
+}
+
 const deleteEpisodePatch = `-- name: DeleteEpisodePatch :exec
 update episode_patch
 set deleted_at = current_timestamp
@@ -264,6 +477,18 @@ where id = $1
 
 func (q *Queries) DeleteEpisodePatch(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteEpisodePatch, id)
+	return err
+}
+
+const deletePersonPatch = `-- name: DeletePersonPatch :exec
+update person_patch
+set deleted_at = current_timestamp
+where id = $1
+  and deleted_at is null
+`
+
+func (q *Queries) DeletePersonPatch(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deletePersonPatch, id)
 	return err
 }
 
@@ -277,6 +502,78 @@ where id = $1
 func (q *Queries) DeleteSubjectPatch(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteSubjectPatch, id)
 	return err
+}
+
+const getCharacterPatchByID = `-- name: GetCharacterPatchByID :one
+select id, character_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, created_at, updated_at, deleted_at, reject_reason, comments_count, patch_desc, action, num_id
+from character_patch
+where deleted_at is null
+  and id = $1
+limit 1
+`
+
+func (q *Queries) GetCharacterPatchByID(ctx context.Context, id uuid.UUID) (CharacterPatch, error) {
+	row := q.db.QueryRow(ctx, getCharacterPatchByID, id)
+	var i CharacterPatch
+	err := row.Scan(
+		&i.ID,
+		&i.CharacterID,
+		&i.State,
+		&i.FromUserID,
+		&i.WikiUserID,
+		&i.Reason,
+		&i.Name,
+		&i.OriginalName,
+		&i.Infobox,
+		&i.OriginalInfobox,
+		&i.Summary,
+		&i.OriginalSummary,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.RejectReason,
+		&i.CommentsCount,
+		&i.PatchDesc,
+		&i.Action,
+		&i.NumID,
+	)
+	return i, err
+}
+
+const getCharacterPatchByIDForUpdate = `-- name: GetCharacterPatchByIDForUpdate :one
+select id, character_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, created_at, updated_at, deleted_at, reject_reason, comments_count, patch_desc, action, num_id
+from character_patch
+where deleted_at is null
+  and id = $1
+limit 1 for update
+`
+
+func (q *Queries) GetCharacterPatchByIDForUpdate(ctx context.Context, id uuid.UUID) (CharacterPatch, error) {
+	row := q.db.QueryRow(ctx, getCharacterPatchByIDForUpdate, id)
+	var i CharacterPatch
+	err := row.Scan(
+		&i.ID,
+		&i.CharacterID,
+		&i.State,
+		&i.FromUserID,
+		&i.WikiUserID,
+		&i.Reason,
+		&i.Name,
+		&i.OriginalName,
+		&i.Infobox,
+		&i.OriginalInfobox,
+		&i.Summary,
+		&i.OriginalSummary,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.RejectReason,
+		&i.CommentsCount,
+		&i.PatchDesc,
+		&i.Action,
+		&i.NumID,
+	)
+	return i, err
 }
 
 const getComments = `-- name: GetComments :many
@@ -421,6 +718,216 @@ func (q *Queries) GetEpisodePatchByIDForUpdate(ctx context.Context, id uuid.UUID
 	return i, err
 }
 
+const getPendingCharacterPatchesByCharacterID = `-- name: GetPendingCharacterPatchesByCharacterID :many
+select id, name, original_name, infobox, original_infobox, summary, original_summary
+from character_patch
+where character_id = $1
+  and state = 0
+  and deleted_at is null
+`
+
+type GetPendingCharacterPatchesByCharacterIDRow struct {
+	ID              uuid.UUID
+	Name            pgtype.Text
+	OriginalName    string
+	Infobox         pgtype.Text
+	OriginalInfobox pgtype.Text
+	Summary         pgtype.Text
+	OriginalSummary pgtype.Text
+}
+
+func (q *Queries) GetPendingCharacterPatchesByCharacterID(ctx context.Context, characterID int32) ([]GetPendingCharacterPatchesByCharacterIDRow, error) {
+	rows, err := q.db.Query(ctx, getPendingCharacterPatchesByCharacterID, characterID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPendingCharacterPatchesByCharacterIDRow
+	for rows.Next() {
+		var i GetPendingCharacterPatchesByCharacterIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.OriginalName,
+			&i.Infobox,
+			&i.OriginalInfobox,
+			&i.Summary,
+			&i.OriginalSummary,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPendingPersonPatchesByPersonID = `-- name: GetPendingPersonPatchesByPersonID :many
+select id, name, original_name, infobox, original_infobox, summary, original_summary
+from person_patch
+where person_id = $1
+  and state = 0
+  and deleted_at is null
+`
+
+type GetPendingPersonPatchesByPersonIDRow struct {
+	ID              uuid.UUID
+	Name            pgtype.Text
+	OriginalName    string
+	Infobox         pgtype.Text
+	OriginalInfobox pgtype.Text
+	Summary         pgtype.Text
+	OriginalSummary pgtype.Text
+}
+
+func (q *Queries) GetPendingPersonPatchesByPersonID(ctx context.Context, personID int32) ([]GetPendingPersonPatchesByPersonIDRow, error) {
+	rows, err := q.db.Query(ctx, getPendingPersonPatchesByPersonID, personID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPendingPersonPatchesByPersonIDRow
+	for rows.Next() {
+		var i GetPendingPersonPatchesByPersonIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.OriginalName,
+			&i.Infobox,
+			&i.OriginalInfobox,
+			&i.Summary,
+			&i.OriginalSummary,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPendingSubjectPatchesBySubjectID = `-- name: GetPendingSubjectPatchesBySubjectID :many
+select id, name, original_name, infobox, original_infobox, summary, original_summary
+from subject_patch
+where subject_id = $1
+  and state = 0
+  and deleted_at is null
+`
+
+type GetPendingSubjectPatchesBySubjectIDRow struct {
+	ID              uuid.UUID
+	Name            pgtype.Text
+	OriginalName    string
+	Infobox         pgtype.Text
+	OriginalInfobox pgtype.Text
+	Summary         pgtype.Text
+	OriginalSummary pgtype.Text
+}
+
+func (q *Queries) GetPendingSubjectPatchesBySubjectID(ctx context.Context, subjectID int32) ([]GetPendingSubjectPatchesBySubjectIDRow, error) {
+	rows, err := q.db.Query(ctx, getPendingSubjectPatchesBySubjectID, subjectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPendingSubjectPatchesBySubjectIDRow
+	for rows.Next() {
+		var i GetPendingSubjectPatchesBySubjectIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.OriginalName,
+			&i.Infobox,
+			&i.OriginalInfobox,
+			&i.Summary,
+			&i.OriginalSummary,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPersonPatchByID = `-- name: GetPersonPatchByID :one
+select id, person_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, created_at, updated_at, deleted_at, reject_reason, comments_count, patch_desc, action, num_id
+from person_patch
+where deleted_at is null
+  and id = $1
+limit 1
+`
+
+func (q *Queries) GetPersonPatchByID(ctx context.Context, id uuid.UUID) (PersonPatch, error) {
+	row := q.db.QueryRow(ctx, getPersonPatchByID, id)
+	var i PersonPatch
+	err := row.Scan(
+		&i.ID,
+		&i.PersonID,
+		&i.State,
+		&i.FromUserID,
+		&i.WikiUserID,
+		&i.Reason,
+		&i.Name,
+		&i.OriginalName,
+		&i.Infobox,
+		&i.OriginalInfobox,
+		&i.Summary,
+		&i.OriginalSummary,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.RejectReason,
+		&i.CommentsCount,
+		&i.PatchDesc,
+		&i.Action,
+		&i.NumID,
+	)
+	return i, err
+}
+
+const getPersonPatchByIDForUpdate = `-- name: GetPersonPatchByIDForUpdate :one
+select id, person_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, created_at, updated_at, deleted_at, reject_reason, comments_count, patch_desc, action, num_id
+from person_patch
+where deleted_at is null
+  and id = $1
+limit 1 for update
+`
+
+func (q *Queries) GetPersonPatchByIDForUpdate(ctx context.Context, id uuid.UUID) (PersonPatch, error) {
+	row := q.db.QueryRow(ctx, getPersonPatchByIDForUpdate, id)
+	var i PersonPatch
+	err := row.Scan(
+		&i.ID,
+		&i.PersonID,
+		&i.State,
+		&i.FromUserID,
+		&i.WikiUserID,
+		&i.Reason,
+		&i.Name,
+		&i.OriginalName,
+		&i.Infobox,
+		&i.OriginalInfobox,
+		&i.Summary,
+		&i.OriginalSummary,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.RejectReason,
+		&i.CommentsCount,
+		&i.PatchDesc,
+		&i.Action,
+		&i.NumID,
+	)
+	return i, err
+}
+
 const getSubjectPatchByID = `-- name: GetSubjectPatchByID :one
 select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action, num_id
 from subject_patch
@@ -514,6 +1021,103 @@ func (q *Queries) GetUserByID(ctx context.Context, userID int32) (PatchUser, err
 	return i, err
 }
 
+const listCharacterPatches = `-- name: ListCharacterPatches :many
+select character_patch.id,
+       character_patch.original_name,
+       character_patch.state,
+       character_patch.action,
+       character_patch.created_at,
+       character_patch.updated_at,
+       character_patch.comments_count,
+       character_patch.reason,
+       author.user_id    as author_user_id,
+       author.username   as author_username,
+       author.nickname   as author_nickname,
+       reviewer.user_id  as reviewer_user_id,
+       reviewer.username as reviewer_username,
+       reviewer.nickname as reviewer_nickname
+from character_patch
+         inner join patch_users as author on author.user_id = character_patch.from_user_id
+         left outer join patch_users as reviewer on reviewer.user_id = character_patch.wiki_user_id
+where deleted_at is null
+  and state = any ($1::int[])
+  and ((from_user_id = $2 and $2 != 0) or $2 = 0)
+  and ((wiki_user_id = $3 and $3 != 0) or $3 = 0)
+  and action = 1
+order by case when $4::text = 'created_at' then created_at end desc,
+         case when $4 = 'updated_at' then updated_at end desc,
+         case when $4 = '' then created_at end desc
+limit $6 offset $5
+`
+
+type ListCharacterPatchesParams struct {
+	State      []int32
+	FromUserID int32
+	WikiUserID int32
+	OrderBy    string
+	Skip       int64
+	Size       int64
+}
+
+type ListCharacterPatchesRow struct {
+	ID               uuid.UUID
+	OriginalName     string
+	State            int32
+	Action           pgtype.Int4
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+	CommentsCount    int32
+	Reason           string
+	AuthorUserID     int32
+	AuthorUsername   string
+	AuthorNickname   string
+	ReviewerUserID   pgtype.Int4
+	ReviewerUsername pgtype.Text
+	ReviewerNickname pgtype.Text
+}
+
+func (q *Queries) ListCharacterPatches(ctx context.Context, arg ListCharacterPatchesParams) ([]ListCharacterPatchesRow, error) {
+	rows, err := q.db.Query(ctx, listCharacterPatches,
+		arg.State,
+		arg.FromUserID,
+		arg.WikiUserID,
+		arg.OrderBy,
+		arg.Skip,
+		arg.Size,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListCharacterPatchesRow
+	for rows.Next() {
+		var i ListCharacterPatchesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OriginalName,
+			&i.State,
+			&i.Action,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.CommentsCount,
+			&i.Reason,
+			&i.AuthorUserID,
+			&i.AuthorUsername,
+			&i.AuthorNickname,
+			&i.ReviewerUserID,
+			&i.ReviewerUsername,
+			&i.ReviewerNickname,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listEpisodePatches = `-- name: ListEpisodePatches :many
 select episode_patch.id,
        episode_patch.original_name,
@@ -538,7 +1142,7 @@ where deleted_at is null
 order by case when $4::text = 'created_at' then created_at end desc,
          case when $4 = 'updated_at' then updated_at end desc,
          case when $4 = '' then created_at end desc
-limit $6::int8 offset $5::int8
+limit $6 offset $5
 `
 
 type ListEpisodePatchesParams struct {
@@ -607,6 +1211,47 @@ func (q *Queries) ListEpisodePatches(ctx context.Context, arg ListEpisodePatches
 	return items, nil
 }
 
+const listPendingCharacterPatches = `-- name: ListPendingCharacterPatches :many
+select id, character_id, created_at, updated_at, from_user_id
+from character_patch
+where state = 0
+  and deleted_at is null
+`
+
+type ListPendingCharacterPatchesRow struct {
+	ID          uuid.UUID
+	CharacterID int32
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+	FromUserID  int32
+}
+
+func (q *Queries) ListPendingCharacterPatches(ctx context.Context) ([]ListPendingCharacterPatchesRow, error) {
+	rows, err := q.db.Query(ctx, listPendingCharacterPatches)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPendingCharacterPatchesRow
+	for rows.Next() {
+		var i ListPendingCharacterPatchesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CharacterID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.FromUserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPendingEpisodePatches = `-- name: ListPendingEpisodePatches :many
 select id, episode_id, created_at, updated_at, from_user_id
 from episode_patch
@@ -634,6 +1279,47 @@ func (q *Queries) ListPendingEpisodePatches(ctx context.Context) ([]ListPendingE
 		if err := rows.Scan(
 			&i.ID,
 			&i.EpisodeID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.FromUserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPendingPersonPatches = `-- name: ListPendingPersonPatches :many
+select id, person_id, created_at, updated_at, from_user_id
+from person_patch
+where state = 0
+  and deleted_at is null
+`
+
+type ListPendingPersonPatchesRow struct {
+	ID         uuid.UUID
+	PersonID   int32
+	CreatedAt  pgtype.Timestamptz
+	UpdatedAt  pgtype.Timestamptz
+	FromUserID int32
+}
+
+func (q *Queries) ListPendingPersonPatches(ctx context.Context) ([]ListPendingPersonPatchesRow, error) {
+	rows, err := q.db.Query(ctx, listPendingPersonPatches)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPendingPersonPatchesRow
+	for rows.Next() {
+		var i ListPendingPersonPatchesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.PersonID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.FromUserID,
@@ -689,6 +1375,103 @@ func (q *Queries) ListPendingSubjectPatches(ctx context.Context) ([]ListPendingS
 	return items, nil
 }
 
+const listPersonPatches = `-- name: ListPersonPatches :many
+select person_patch.id,
+       person_patch.original_name,
+       person_patch.state,
+       person_patch.action,
+       person_patch.created_at,
+       person_patch.updated_at,
+       person_patch.comments_count,
+       person_patch.reason,
+       author.user_id    as author_user_id,
+       author.username   as author_username,
+       author.nickname   as author_nickname,
+       reviewer.user_id  as reviewer_user_id,
+       reviewer.username as reviewer_username,
+       reviewer.nickname as reviewer_nickname
+from person_patch
+         inner join patch_users as author on author.user_id = person_patch.from_user_id
+         left outer join patch_users as reviewer on reviewer.user_id = person_patch.wiki_user_id
+where deleted_at is null
+  and state = any ($1::int[])
+  and ((from_user_id = $2 and $2 != 0) or $2 = 0)
+  and ((wiki_user_id = $3 and $3 != 0) or $3 = 0)
+  and action = 1
+order by case when $4::text = 'created_at' then created_at end desc,
+         case when $4 = 'updated_at' then updated_at end desc,
+         case when $4 = '' then created_at end desc
+limit $6 offset $5
+`
+
+type ListPersonPatchesParams struct {
+	State      []int32
+	FromUserID int32
+	WikiUserID int32
+	OrderBy    string
+	Skip       int64
+	Size       int64
+}
+
+type ListPersonPatchesRow struct {
+	ID               uuid.UUID
+	OriginalName     string
+	State            int32
+	Action           pgtype.Int4
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+	CommentsCount    int32
+	Reason           string
+	AuthorUserID     int32
+	AuthorUsername   string
+	AuthorNickname   string
+	ReviewerUserID   pgtype.Int4
+	ReviewerUsername pgtype.Text
+	ReviewerNickname pgtype.Text
+}
+
+func (q *Queries) ListPersonPatches(ctx context.Context, arg ListPersonPatchesParams) ([]ListPersonPatchesRow, error) {
+	rows, err := q.db.Query(ctx, listPersonPatches,
+		arg.State,
+		arg.FromUserID,
+		arg.WikiUserID,
+		arg.OrderBy,
+		arg.Skip,
+		arg.Size,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPersonPatchesRow
+	for rows.Next() {
+		var i ListPersonPatchesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OriginalName,
+			&i.State,
+			&i.Action,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.CommentsCount,
+			&i.Reason,
+			&i.AuthorUserID,
+			&i.AuthorUsername,
+			&i.AuthorNickname,
+			&i.ReviewerUserID,
+			&i.ReviewerUsername,
+			&i.ReviewerNickname,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listSubjectPatches = `-- name: ListSubjectPatches :many
 select subject_patch.id,
        subject_patch.original_name,
@@ -716,7 +1499,7 @@ where deleted_at is null
 order by case when $4::text = 'created_at' then created_at end desc,
          case when $4 = 'updated_at' then updated_at end desc,
          case when $4 = '' then created_at end desc
-limit $6::int8 offset $5::int8
+limit $6 offset $5
 `
 
 type ListSubjectPatchesParams struct {
@@ -789,6 +1572,22 @@ func (q *Queries) ListSubjectPatches(ctx context.Context, arg ListSubjectPatches
 	return items, nil
 }
 
+const nextPendingCharacterPatch = `-- name: NextPendingCharacterPatch :one
+select id
+from character_patch
+where state = 0
+  and deleted_at is null
+  and id < $1
+order by id desc
+limit 1
+`
+
+func (q *Queries) NextPendingCharacterPatch(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, nextPendingCharacterPatch, id)
+	err := row.Scan(&id)
+	return id, err
+}
+
 const nextPendingEpisodePatch = `-- name: NextPendingEpisodePatch :one
 select id
 from episode_patch
@@ -801,6 +1600,22 @@ limit 1
 
 func (q *Queries) NextPendingEpisodePatch(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
 	row := q.db.QueryRow(ctx, nextPendingEpisodePatch, id)
+	err := row.Scan(&id)
+	return id, err
+}
+
+const nextPendingPersonPatch = `-- name: NextPendingPersonPatch :one
+select id
+from person_patch
+where state = 0
+  and deleted_at is null
+  and id < $1
+order by id desc
+limit 1
+`
+
+func (q *Queries) NextPendingPersonPatch(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, nextPendingPersonPatch, id)
 	err := row.Scan(&id)
 	return id, err
 }
@@ -819,6 +1634,34 @@ func (q *Queries) NextPendingSubjectPatch(ctx context.Context, id uuid.UUID) (uu
 	row := q.db.QueryRow(ctx, nextPendingSubjectPatch, id)
 	err := row.Scan(&id)
 	return id, err
+}
+
+const rejectCharacterPatch = `-- name: RejectCharacterPatch :exec
+update character_patch
+set wiki_user_id  = $1,
+    state         = $2,
+    reject_reason = $3,
+    updated_at    = current_timestamp
+where id = $4
+  and deleted_at is null
+  and state = 0
+`
+
+type RejectCharacterPatchParams struct {
+	WikiUserID   int32
+	State        int32
+	RejectReason string
+	ID           uuid.UUID
+}
+
+func (q *Queries) RejectCharacterPatch(ctx context.Context, arg RejectCharacterPatchParams) error {
+	_, err := q.db.Exec(ctx, rejectCharacterPatch,
+		arg.WikiUserID,
+		arg.State,
+		arg.RejectReason,
+		arg.ID,
+	)
+	return err
 }
 
 const rejectEpisodePatch = `-- name: RejectEpisodePatch :exec
@@ -841,6 +1684,34 @@ type RejectEpisodePatchParams struct {
 
 func (q *Queries) RejectEpisodePatch(ctx context.Context, arg RejectEpisodePatchParams) error {
 	_, err := q.db.Exec(ctx, rejectEpisodePatch,
+		arg.WikiUserID,
+		arg.State,
+		arg.RejectReason,
+		arg.ID,
+	)
+	return err
+}
+
+const rejectPersonPatch = `-- name: RejectPersonPatch :exec
+update person_patch
+set wiki_user_id  = $1,
+    state         = $2,
+    reject_reason = $3,
+    updated_at    = current_timestamp
+where id = $4
+  and deleted_at is null
+  and state = 0
+`
+
+type RejectPersonPatchParams struct {
+	WikiUserID   int32
+	State        int32
+	RejectReason string
+	ID           uuid.UUID
+}
+
+func (q *Queries) RejectPersonPatch(ctx context.Context, arg RejectPersonPatchParams) error {
+	_, err := q.db.Exec(ctx, rejectPersonPatch,
 		arg.WikiUserID,
 		arg.State,
 		arg.RejectReason,
@@ -885,6 +1756,63 @@ where id = $1
 
 func (q *Queries) TestDelete(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, testDelete, id)
+	return err
+}
+
+const updateCharacterPatch = `-- name: UpdateCharacterPatch :exec
+update character_patch
+set original_name    = $2,
+    name             = $3,
+    original_infobox = $4,
+    infobox          = $5,
+    original_summary = $6,
+    summary          = $7,
+    reason           = $8,
+    patch_desc       = $9,
+    updated_at       = current_timestamp
+where id = $1
+`
+
+type UpdateCharacterPatchParams struct {
+	ID              uuid.UUID
+	OriginalName    string
+	Name            pgtype.Text
+	OriginalInfobox pgtype.Text
+	Infobox         pgtype.Text
+	OriginalSummary pgtype.Text
+	Summary         pgtype.Text
+	Reason          string
+	PatchDesc       string
+}
+
+func (q *Queries) UpdateCharacterPatch(ctx context.Context, arg UpdateCharacterPatchParams) error {
+	_, err := q.db.Exec(ctx, updateCharacterPatch,
+		arg.ID,
+		arg.OriginalName,
+		arg.Name,
+		arg.OriginalInfobox,
+		arg.Infobox,
+		arg.OriginalSummary,
+		arg.Summary,
+		arg.Reason,
+		arg.PatchDesc,
+	)
+	return err
+}
+
+const updateCharacterPatchCommentCount = `-- name: UpdateCharacterPatchCommentCount :exec
+update character_patch
+set comments_count = (select count(1)
+                      from edit_suggestion
+                      where patch_type = 'character'
+                        and patch_id = $1
+                        and edit_suggestion.from_user != 0)
+where id = $1
+  and deleted_at is null
+`
+
+func (q *Queries) UpdateCharacterPatchCommentCount(ctx context.Context, patchID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, updateCharacterPatchCommentCount, patchID)
 	return err
 }
 
@@ -954,6 +1882,63 @@ where id = $1
 
 func (q *Queries) UpdateEpisodePatchCommentCount(ctx context.Context, patchID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, updateEpisodePatchCommentCount, patchID)
+	return err
+}
+
+const updatePersonPatch = `-- name: UpdatePersonPatch :exec
+update person_patch
+set original_name    = $2,
+    name             = $3,
+    original_infobox = $4,
+    infobox          = $5,
+    original_summary = $6,
+    summary          = $7,
+    reason           = $8,
+    patch_desc       = $9,
+    updated_at       = current_timestamp
+where id = $1
+`
+
+type UpdatePersonPatchParams struct {
+	ID              uuid.UUID
+	OriginalName    string
+	Name            pgtype.Text
+	OriginalInfobox pgtype.Text
+	Infobox         pgtype.Text
+	OriginalSummary pgtype.Text
+	Summary         pgtype.Text
+	Reason          string
+	PatchDesc       string
+}
+
+func (q *Queries) UpdatePersonPatch(ctx context.Context, arg UpdatePersonPatchParams) error {
+	_, err := q.db.Exec(ctx, updatePersonPatch,
+		arg.ID,
+		arg.OriginalName,
+		arg.Name,
+		arg.OriginalInfobox,
+		arg.Infobox,
+		arg.OriginalSummary,
+		arg.Summary,
+		arg.Reason,
+		arg.PatchDesc,
+	)
+	return err
+}
+
+const updatePersonPatchCommentCount = `-- name: UpdatePersonPatchCommentCount :exec
+update person_patch
+set comments_count = (select count(1)
+                      from edit_suggestion
+                      where patch_type = 'person'
+                        and patch_id = $1
+                        and edit_suggestion.from_user != 0)
+where id = $1
+  and deleted_at is null
+`
+
+func (q *Queries) UpdatePersonPatchCommentCount(ctx context.Context, patchID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, updatePersonPatchCommentCount, patchID)
 	return err
 }
 
