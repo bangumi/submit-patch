@@ -18,6 +18,7 @@ require (
 	github.com/redis/rueidis v1.0.72
 	github.com/rs/zerolog v1.34.0
 	github.com/samber/lo v1.53.0
+	github.com/segmentio/kafka-go v0.4.50
 	github.com/stretchr/testify v1.11.1
 	github.com/trim21/errgo v0.0.6
 	github.com/trim21/pkg v0.0.4
@@ -53,7 +54,6 @@ require (
 	github.com/natefinch/atomic v1.0.1 // indirect
 	github.com/pierrec/lz4/v4 v4.1.16 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/segmentio/kafka-go v0.4.50 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/cast v1.8.0 // indirect
 	go.uber.org/dig v1.19.0 // indirect
