@@ -14,7 +14,7 @@ Key flows:
 
 ## Code Style
 
-- Go 1.24, standard library style
+- Go 1.26, standard library style
 - Templates: [templ](https://templ.guide/) (`.templ` files in `templates/`)
 - SQL: sqlc for type-safe query generation from `db/query.sql`
 - Error handling: `handleError` helper returns appropriate HTTP responses
