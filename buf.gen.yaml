@@ -1,0 +1,7 @@
+version: v2
+inputs:
+  - directory: upstream/proto
+plugins:
+  - protoc_builtin: go
+    out: gen/proto
+    opt: paths=source_relative

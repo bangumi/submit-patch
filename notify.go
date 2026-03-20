@@ -5,7 +5,9 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"
-	"google.golang.org/protobuf/encoding/protowire"
+	"google.golang.org/protobuf/proto"
+
+	notifypb "app/gen/proto/mq/v1"
 )
 
 const notifyTopic = "notify.v1"
@@ -20,47 +22,23 @@ const (
 	NotifyTypeEpisodePatchExpired  = 40
 )
 
-// encodeNotify encodes a Notify protobuf message matching mq.v1.Notify:
-//
-//	message Notify {
-//	  uint32 mid = 1;
-//	  uint32 user_id = 2;
-//	  uint32 from_user_id = 3;
-//	  int32 type = 4;
-//	  string title = 5;
-//	}
-func encodeNotify(mid uint32, userID uint32, fromUserID uint32, notifyType int32, title string) []byte {
-	var buf []byte
-	if mid != 0 {
-		buf = protowire.AppendTag(buf, 1, protowire.VarintType)
-		buf = protowire.AppendVarint(buf, uint64(mid))
-	}
-	if userID != 0 {
-		buf = protowire.AppendTag(buf, 2, protowire.VarintType)
-		buf = protowire.AppendVarint(buf, uint64(userID))
-	}
-	if fromUserID != 0 {
-		buf = protowire.AppendTag(buf, 3, protowire.VarintType)
-		buf = protowire.AppendVarint(buf, uint64(fromUserID))
-	}
-	if notifyType != 0 {
-		buf = protowire.AppendTag(buf, 4, protowire.VarintType)
-		buf = protowire.AppendVarint(buf, uint64(notifyType))
-	}
-	if title != "" {
-		buf = protowire.AppendTag(buf, 5, protowire.BytesType)
-		buf = protowire.AppendString(buf, title)
-	}
-	return buf
-}
-
 func (h *handler) sendNotify(ctx context.Context, mid uint32, userID uint32, notifyType int32, title string) {
 	if h.k == nil {
 		return
 	}
 
-	data := encodeNotify(mid, userID, 0, notifyType, title)
-	err := h.k.WriteMessages(ctx, kafka.Message{
+	data, err := proto.Marshal(&notifypb.Notify{
+		Mid:    mid,
+		UserId: userID,
+		Type:   notifyType,
+		Title:  title,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("failed to marshal notification")
+		return
+	}
+
+	err = h.k.WriteMessages(ctx, kafka.Message{
 		Topic: notifyTopic,
 		Value: data,
 	})

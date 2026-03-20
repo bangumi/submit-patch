@@ -40,6 +40,10 @@ tasks:
     cmds:
       - go tool github.com/a-h/templ/cmd/templ generate -path templates/
 
+  gen:proto:
+    cmds:
+      - buf generate
+
   gen:
     cmds:
       - sqlc generate

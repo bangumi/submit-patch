@@ -71,11 +71,6 @@ type EpisodePatch struct {
 	NumID               int64
 }
 
-type PatchTablesMigration struct {
-	Version int64
-	Dirty   bool
-}
-
 type PatchUser struct {
 	UserID   int32
 	Username string
