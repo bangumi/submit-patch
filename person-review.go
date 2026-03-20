@@ -152,6 +152,21 @@ func (h *handler) handlePersonApprove(w http.ResponseWriter, r *http.Request, qx
 			return nil
 		}
 
+		if errRes.Code == ErrCodeValidationError {
+			err = qx.RejectPersonPatch(r.Context(), dal.RejectPersonPatchParams{
+				WikiUserID:   s.UserID,
+				State:        PatchStateRejected,
+				ID:           patch.ID,
+				RejectReason: fmt.Sprintf("包含错误，已经自动拒绝:\n %s", errRes.Message),
+			})
+			if err != nil {
+				return errgo.Wrap(err, "failed to reject patch")
+			}
+
+			http.Redirect(w, r, "/person/"+patch.ID.String(), http.StatusSeeOther)
+			return nil
+		}
+
 		log.Error().RawJSON("body", resp.Body()).Msg("unexpected response from submit patch")
 		return errors.New("failed to submit patch")
 	}
