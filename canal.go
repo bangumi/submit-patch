@@ -156,6 +156,8 @@ func handleSubjectChange(ctx context.Context, h *handler, key []byte, afterRaw j
 			ID:           patch.ID,
 		}); err != nil {
 			log.Error().Err(err).Stringer("id", patch.ID).Msg("canal: failed to mark subject patch outdated")
+		} else {
+			h.sendNotifySubjectPatchExpired(ctx, patch.NumID, patch.FromUserID)
 		}
 	}
 	return nil
@@ -209,6 +211,8 @@ func handleCharacterChange(ctx context.Context, h *handler, key []byte, afterRaw
 			ID:           patch.ID,
 		}); err != nil {
 			log.Error().Err(err).Stringer("id", patch.ID).Msg("canal: failed to mark character patch outdated")
+		} else {
+			h.sendNotifyCharacterPatchExpired(ctx, patch)
 		}
 	}
 	return nil
@@ -262,6 +266,8 @@ func handlePersonChange(ctx context.Context, h *handler, key []byte, afterRaw js
 			ID:           patch.ID,
 		}); err != nil {
 			log.Error().Err(err).Stringer("id", patch.ID).Msg("canal: failed to mark person patch outdated")
+		} else {
+			h.sendNotifyPersonPatchExpired(ctx, patch)
 		}
 	}
 	return nil

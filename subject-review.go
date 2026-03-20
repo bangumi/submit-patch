@@ -123,7 +123,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 				return errgo.Wrap(err, "failed to reject patch")
 			}
 
-			h.sendNotify(context.WithoutCancel(r.Context()), uint32(patch.NumID), uint32(patch.FromUserID), NotifyTypeSubjectPatchRejected, fmt.Sprintf("#%d", patch.NumID))
+			h.sendNotifySubjectPatchRejected(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
 
 			http.Redirect(w, r, "/subject/"+patch.ID.String(), http.StatusSeeOther)
 			return nil
@@ -140,7 +140,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 				return errgo.Wrap(err, "failed to reject patch")
 			}
 
-			h.sendNotify(context.WithoutCancel(r.Context()), uint32(patch.NumID), uint32(patch.FromUserID), NotifyTypeSubjectPatchExpired, fmt.Sprintf("#%d", patch.NumID))
+			h.sendNotifySubjectPatchExpired(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
 
 			http.Redirect(w, r, "/subject/"+patch.ID.String(), http.StatusSeeOther)
 			return nil
@@ -157,7 +157,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 				return errgo.Wrap(err, "failed to reject patch")
 			}
 
-			h.sendNotify(context.WithoutCancel(r.Context()), uint32(patch.NumID), uint32(patch.FromUserID), NotifyTypeSubjectPatchRejected, fmt.Sprintf("#%d", patch.NumID))
+			h.sendNotifySubjectPatchRejected(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
 
 			http.Redirect(w, r, "/subject/"+patch.ID.String(), http.StatusSeeOther)
 			return nil
@@ -192,7 +192,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 		return errgo.Wrap(err, "failed to accept patch")
 	}
 
-	h.sendNotify(context.WithoutCancel(r.Context()), uint32(patch.NumID), uint32(patch.FromUserID), NotifyTypeSubjectPatchAccepted, fmt.Sprintf("#%d", patch.NumID))
+	h.sendNotifySubjectPatchAccepted(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
 
 	nextID, err := h.q.NextPendingSubjectPatch(r.Context(), patch.ID)
 	if err != nil {
@@ -218,7 +218,7 @@ func (h *handler) handleSubjectReject(w http.ResponseWriter, r *http.Request, qx
 		return templates.Error(r.Method, r.URL.String(), err.Error(), "", "").Render(r.Context(), w)
 	}
 
-	h.sendNotify(context.WithoutCancel(r.Context()), uint32(p.NumID), uint32(p.FromUserID), NotifyTypeSubjectPatchRejected, fmt.Sprintf("#%d", p.NumID))
+	h.sendNotifySubjectPatchRejected(context.WithoutCancel(r.Context()), p.NumID, p.FromUserID)
 
 	http.Redirect(w, r, "/subject/"+p.ID.String(), http.StatusFound)
 	return nil

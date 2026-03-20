@@ -719,7 +719,7 @@ func (q *Queries) GetEpisodePatchByIDForUpdate(ctx context.Context, id uuid.UUID
 }
 
 const getPendingCharacterPatchesByCharacterID = `-- name: GetPendingCharacterPatchesByCharacterID :many
-select id, name, original_name, infobox, original_infobox, summary, original_summary
+select id, from_user_id, num_id, name, original_name, infobox, original_infobox, summary, original_summary
 from character_patch
 where character_id = $1
   and state = 0
@@ -728,6 +728,8 @@ where character_id = $1
 
 type GetPendingCharacterPatchesByCharacterIDRow struct {
 	ID              uuid.UUID
+	FromUserID      int32
+	NumID           int64
 	Name            pgtype.Text
 	OriginalName    string
 	Infobox         pgtype.Text
@@ -747,6 +749,8 @@ func (q *Queries) GetPendingCharacterPatchesByCharacterID(ctx context.Context, c
 		var i GetPendingCharacterPatchesByCharacterIDRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.FromUserID,
+			&i.NumID,
 			&i.Name,
 			&i.OriginalName,
 			&i.Infobox,
@@ -765,7 +769,7 @@ func (q *Queries) GetPendingCharacterPatchesByCharacterID(ctx context.Context, c
 }
 
 const getPendingPersonPatchesByPersonID = `-- name: GetPendingPersonPatchesByPersonID :many
-select id, name, original_name, infobox, original_infobox, summary, original_summary
+select id, from_user_id, num_id, name, original_name, infobox, original_infobox, summary, original_summary
 from person_patch
 where person_id = $1
   and state = 0
@@ -774,6 +778,8 @@ where person_id = $1
 
 type GetPendingPersonPatchesByPersonIDRow struct {
 	ID              uuid.UUID
+	FromUserID      int32
+	NumID           int64
 	Name            pgtype.Text
 	OriginalName    string
 	Infobox         pgtype.Text
@@ -793,6 +799,8 @@ func (q *Queries) GetPendingPersonPatchesByPersonID(ctx context.Context, personI
 		var i GetPendingPersonPatchesByPersonIDRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.FromUserID,
+			&i.NumID,
 			&i.Name,
 			&i.OriginalName,
 			&i.Infobox,
@@ -811,7 +819,7 @@ func (q *Queries) GetPendingPersonPatchesByPersonID(ctx context.Context, personI
 }
 
 const getPendingSubjectPatchesBySubjectID = `-- name: GetPendingSubjectPatchesBySubjectID :many
-select id, name, original_name, infobox, original_infobox, summary, original_summary
+select id, from_user_id, num_id, name, original_name, infobox, original_infobox, summary, original_summary
 from subject_patch
 where subject_id = $1
   and state = 0
@@ -820,6 +828,8 @@ where subject_id = $1
 
 type GetPendingSubjectPatchesBySubjectIDRow struct {
 	ID              uuid.UUID
+	FromUserID      int32
+	NumID           int64
 	Name            pgtype.Text
 	OriginalName    string
 	Infobox         pgtype.Text
@@ -839,6 +849,8 @@ func (q *Queries) GetPendingSubjectPatchesBySubjectID(ctx context.Context, subje
 		var i GetPendingSubjectPatchesBySubjectIDRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.FromUserID,
+			&i.NumID,
 			&i.Name,
 			&i.OriginalName,
 			&i.Infobox,

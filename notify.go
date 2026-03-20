@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
 
+	"app/dal"
 	notifypb "app/gen/proto/mq/v1"
 )
 
@@ -48,4 +50,36 @@ func (h *handler) sendNotify(ctx context.Context, mid uint32, userID uint32, not
 			Int32("notify_type", notifyType).
 			Msg("failed to send notification")
 	}
+}
+
+func (h *handler) sendNotifySubjectPatchAccepted(ctx context.Context, numID int64, fromUserID int32) {
+	h.sendNotify(ctx, uint32(numID), uint32(fromUserID), NotifyTypeSubjectPatchAccepted, fmt.Sprintf("#%d", numID))
+}
+
+func (h *handler) sendNotifySubjectPatchRejected(ctx context.Context, numID int64, fromUserID int32) {
+	h.sendNotify(ctx, uint32(numID), uint32(fromUserID), NotifyTypeSubjectPatchRejected, fmt.Sprintf("#%d", numID))
+}
+
+func (h *handler) sendNotifySubjectPatchExpired(ctx context.Context, numID int64, fromUserID int32) {
+	h.sendNotify(ctx, uint32(numID), uint32(fromUserID), NotifyTypeSubjectPatchExpired, fmt.Sprintf("#%d", numID))
+}
+
+func (h *handler) sendNotifyEpisodePatchAccepted(ctx context.Context, numID int64, fromUserID int32) {
+	h.sendNotify(ctx, uint32(numID), uint32(fromUserID), NotifyTypeEpisodePatchAccepted, fmt.Sprintf("#%d", numID))
+}
+
+func (h *handler) sendNotifyEpisodePatchRejected(ctx context.Context, numID int64, fromUserID int32) {
+	h.sendNotify(ctx, uint32(numID), uint32(fromUserID), NotifyTypeEpisodePatchRejected, fmt.Sprintf("#%d", numID))
+}
+
+func (h *handler) sendNotifyEpisodePatchExpired(ctx context.Context, numID int64, fromUserID int32) {
+	h.sendNotify(ctx, uint32(numID), uint32(fromUserID), NotifyTypeEpisodePatchExpired, fmt.Sprintf("#%d", numID))
+}
+
+// TODO: implement character patch expired notification
+func (h *handler) sendNotifyCharacterPatchExpired(_ context.Context, _ dal.GetPendingCharacterPatchesByCharacterIDRow) {
+}
+
+// TODO: implement person patch expired notification
+func (h *handler) sendNotifyPersonPatchExpired(_ context.Context, _ dal.GetPendingPersonPatchesByPersonIDRow) {
 }
