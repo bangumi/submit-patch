@@ -30,10 +30,11 @@ func (h *handler) sendNotify(ctx context.Context, mid uint32, userID uint32, not
 	}
 
 	data, err := proto.Marshal(&notifypb.Notify{
-		Mid:    mid,
-		UserId: userID,
-		Type:   notifyType,
-		Title:  title,
+		Mid:        mid,
+		UserId:     userID,
+		FromUserId: 427613,
+		Type:       notifyType,
+		Title:      title,
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("failed to marshal notification")
