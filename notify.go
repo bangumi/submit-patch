@@ -25,6 +25,13 @@ const (
 )
 
 func (h *handler) sendNotify(ctx context.Context, mid uint32, userID uint32, notifyType int32, title string) {
+	log.Debug().
+		Uint32("mid", mid).
+		Uint32("user_id", userID).
+		Int32("notify_type", notifyType).
+		Str("title", title).
+		Msg("sending notification")
+
 	if h.k == nil {
 		return
 	}
@@ -54,33 +61,41 @@ func (h *handler) sendNotify(ctx context.Context, mid uint32, userID uint32, not
 }
 
 func (h *handler) sendNotifySubjectPatchAccepted(ctx context.Context, numID int64, fromUserID int32) {
+	log.Debug().Int64("num_id", numID).Int32("from_user_id", fromUserID).Msg("sendNotifySubjectPatchAccepted")
 	h.sendNotify(ctx, uint32(numID), uint32(fromUserID), NotifyTypeSubjectPatchAccepted, fmt.Sprintf("#%d", numID))
 }
 
 func (h *handler) sendNotifySubjectPatchRejected(ctx context.Context, numID int64, fromUserID int32) {
+	log.Debug().Int64("num_id", numID).Int32("from_user_id", fromUserID).Msg("sendNotifySubjectPatchRejected")
 	h.sendNotify(ctx, uint32(numID), uint32(fromUserID), NotifyTypeSubjectPatchRejected, fmt.Sprintf("#%d", numID))
 }
 
 func (h *handler) sendNotifySubjectPatchExpired(ctx context.Context, numID int64, fromUserID int32) {
+	log.Debug().Int64("num_id", numID).Int32("from_user_id", fromUserID).Msg("sendNotifySubjectPatchExpired")
 	h.sendNotify(ctx, uint32(numID), uint32(fromUserID), NotifyTypeSubjectPatchExpired, fmt.Sprintf("#%d", numID))
 }
 
 func (h *handler) sendNotifyEpisodePatchAccepted(ctx context.Context, numID int64, fromUserID int32) {
+	log.Debug().Int64("num_id", numID).Int32("from_user_id", fromUserID).Msg("sendNotifyEpisodePatchAccepted")
 	h.sendNotify(ctx, uint32(numID), uint32(fromUserID), NotifyTypeEpisodePatchAccepted, fmt.Sprintf("#%d", numID))
 }
 
 func (h *handler) sendNotifyEpisodePatchRejected(ctx context.Context, numID int64, fromUserID int32) {
+	log.Debug().Int64("num_id", numID).Int32("from_user_id", fromUserID).Msg("sendNotifyEpisodePatchRejected")
 	h.sendNotify(ctx, uint32(numID), uint32(fromUserID), NotifyTypeEpisodePatchRejected, fmt.Sprintf("#%d", numID))
 }
 
 func (h *handler) sendNotifyEpisodePatchExpired(ctx context.Context, numID int64, fromUserID int32) {
+	log.Debug().Int64("num_id", numID).Int32("from_user_id", fromUserID).Msg("sendNotifyEpisodePatchExpired")
 	h.sendNotify(ctx, uint32(numID), uint32(fromUserID), NotifyTypeEpisodePatchExpired, fmt.Sprintf("#%d", numID))
 }
 
 // TODO: implement character patch expired notification
-func (h *handler) sendNotifyCharacterPatchExpired(_ context.Context, _ dal.GetPendingCharacterPatchesByCharacterIDRow) {
+func (h *handler) sendNotifyCharacterPatchExpired(_ context.Context, p dal.GetPendingCharacterPatchesByCharacterIDRow) {
+	log.Debug().Stringer("patch_id", p.ID).Msg("sendNotifyCharacterPatchExpired (not implemented)")
 }
 
 // TODO: implement person patch expired notification
-func (h *handler) sendNotifyPersonPatchExpired(_ context.Context, _ dal.GetPendingPersonPatchesByPersonIDRow) {
+func (h *handler) sendNotifyPersonPatchExpired(_ context.Context, p dal.GetPendingPersonPatchesByPersonIDRow) {
+	log.Debug().Stringer("patch_id", p.ID).Msg("sendNotifyPersonPatchExpired (not implemented)")
 }
