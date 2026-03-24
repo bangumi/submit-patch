@@ -50,10 +50,12 @@ func New() func(http.Handler) http.Handler {
 
 			c, err := r.Cookie(CookiesName)
 			if err == nil && c.Value != "" {
-				ctx = context.WithValue(ctx, tokenKey, c.Value)
-
-				next.ServeHTTP(w, r.WithContext(ctx))
-				return
+				var v cookieValue
+				if decodeErr := signer.Decode(CookiesName, c.Value, &v); decodeErr == nil {
+					ctx = context.WithValue(ctx, tokenKey, c.Value)
+					next.ServeHTTP(w, r.WithContext(ctx))
+					return
+				}
 			}
 
 			encoded, err := signer.Encode(CookiesName, cookieValue{UserID: s.UserID})
