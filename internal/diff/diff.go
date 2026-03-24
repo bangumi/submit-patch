@@ -2,6 +2,7 @@ package diff
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/aymanbagabas/go-udiff"
 
@@ -10,6 +11,9 @@ import (
 )
 
 func Diff(name, before, after string) string {
+	before = strings.ReplaceAll(before, "\r\n", "\n")
+	after = strings.ReplaceAll(after, "\r\n", "\n")
+
 	before = util.EscapeInvisible(before)
 	after = util.EscapeInvisible(after)
 
