@@ -4,7 +4,8 @@
     "ci:auto-merge",
     "dependencies"
   ],
-  "prConcurrentLimit": 3,
+  "rebaseWhen": "conflicted",
+  "prConcurrentLimit": 5,
   "extends": [
     "local>Trim21/renovate-config",
     "local>Trim21/renovate-config:go",
