@@ -7,7 +7,7 @@ tool github.com/a-h/templ/cmd/templ
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/a-h/templ v0.3.1001
-	github.com/aymanbagabas/go-udiff v0.4.0
+	github.com/aymanbagabas/go-udiff v0.4.1
 	github.com/bangumi/wiki-parser-go v0.0.2
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-resty/resty/v2 v2.17.2
@@ -15,7 +15,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/gorilla/securecookie v1.1.2
 	github.com/jackc/pgx/v5 v5.8.0
-	github.com/redis/rueidis v1.0.72
+	github.com/redis/rueidis v1.0.73
 	github.com/rs/zerolog v1.34.0
 	github.com/samber/lo v1.53.0
 	github.com/segmentio/kafka-go v0.4.50
@@ -25,7 +25,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0
 	go-simpler.org/env v0.12.0
 	go.uber.org/fx v1.24.0
-	golang.org/x/sync v0.19.0
+	golang.org/x/sync v0.20.0
 	google.golang.org/protobuf v1.36.11
 )
 
