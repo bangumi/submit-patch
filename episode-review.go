@@ -86,6 +86,7 @@ type ApiEpisode struct {
 
 type ApiUpdateEpisode struct {
 	CommieMessage    string             `json:"commitMessage"`
+	AuthorID         int32              `json:"authorID"`
 	ExpectedRevision ApiExpectedSubject `json:"expectedRevision"`
 	Episode          ApiEpisode         `json:"episode"`
 }
@@ -105,6 +106,7 @@ func (h *handler) handleEpisodeApprove(
 	s *session.Session,
 ) error {
 	var body = ApiUpdateEpisode{
+		AuthorID:      patch.FromUserID,
 		CommieMessage: fmt.Sprintf("%s [https://patch.bgm38.tv/e/%d]", patch.Reason, patch.NumID),
 		ExpectedRevision: ApiExpectedSubject{
 			Name:     valuePtrIfChanged(patch.OriginalName.String, patch.Name.String),
@@ -125,6 +127,7 @@ func (h *handler) handleEpisodeApprove(
 	resp, err := h.client.R().
 		SetHeader("cf-ray", r.Header.Get("cf-ray")).
 		SetHeader("Authorization", "Bearer "+s.AccessToken).
+		SetHeader("x-admin-token", h.config.AdminToken).
 		SetBody(body).
 		Patch(fmt.Sprintf("https://next.bgm.tv/p1/wiki/ep/%d", patch.EpisodeID))
 	if err != nil {
