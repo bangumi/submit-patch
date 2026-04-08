@@ -118,6 +118,8 @@ func (h *handler) handleCharacterApprove(w http.ResponseWriter, r *http.Request,
 				return errgo.Wrap(err, "failed to reject patch")
 			}
 
+			h.sendNotifyCharacterPatchRejected(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
+
 			http.Redirect(w, r, "/character/"+patch.ID.String(), http.StatusSeeOther)
 			return nil
 		}
@@ -133,6 +135,8 @@ func (h *handler) handleCharacterApprove(w http.ResponseWriter, r *http.Request,
 				return errgo.Wrap(err, "failed to reject patch")
 			}
 
+			h.sendNotifyCharacterPatchExpired(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
+
 			http.Redirect(w, r, "/character/"+patch.ID.String(), http.StatusSeeOther)
 			return nil
 		}
@@ -147,6 +151,8 @@ func (h *handler) handleCharacterApprove(w http.ResponseWriter, r *http.Request,
 			if err != nil {
 				return errgo.Wrap(err, "failed to reject patch")
 			}
+
+			h.sendNotifyCharacterPatchRejected(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
 
 			http.Redirect(w, r, "/character/"+patch.ID.String(), http.StatusSeeOther)
 			return nil
@@ -181,6 +187,8 @@ func (h *handler) handleCharacterApprove(w http.ResponseWriter, r *http.Request,
 		return errgo.Wrap(err, "failed to accept patch")
 	}
 
+	h.sendNotifyCharacterPatchAccepted(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
+
 	nextID, err := h.q.NextPendingCharacterPatch(r.Context(), patch.ID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -205,12 +213,22 @@ func (h *handler) handleCharacterReject(w http.ResponseWriter, r *http.Request, 
 		return templates.Error(r.Method, r.URL.String(), err.Error(), "", "").Render(r.Context(), w)
 	}
 
+	h.sendNotifyCharacterPatchRejected(context.WithoutCancel(r.Context()), p.NumID, p.FromUserID)
+
 	http.Redirect(w, r, "/character/"+p.ID.String(), http.StatusFound)
 	return nil
 }
 
 func (h *handler) handleCharacterComment(w http.ResponseWriter, r *http.Request, tx *dal.Queries, patch dal.CharacterPatch, text string, s *session.Session) error {
-	err := tx.CreateComment(r.Context(), dal.CreateCommentParams{
+	comments, err := tx.GetComments(r.Context(), dal.GetCommentsParams{
+		PatchID:   patch.ID,
+		PatchType: PatchTypeCharacter,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = tx.CreateComment(r.Context(), dal.CreateCommentParams{
 		ID:        uuid.Must(uuid.NewV7()),
 		PatchID:   patch.ID,
 		PatchType: PatchTypeCharacter,
@@ -225,6 +243,8 @@ func (h *handler) handleCharacterComment(w http.ResponseWriter, r *http.Request,
 	if err != nil {
 		return err
 	}
+
+	h.sendNotifyPatchReply(context.WithoutCancel(r.Context()), patch.NumID, s.UserID, patch.FromUserID, comments, NotifyTypeCharacterPatchReply)
 
 	http.Redirect(w, r, "/character/"+patch.ID.String(), http.StatusFound)
 	return nil

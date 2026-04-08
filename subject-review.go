@@ -225,7 +225,15 @@ func (h *handler) handleSubjectReject(w http.ResponseWriter, r *http.Request, qx
 }
 
 func (h *handler) handleSubjectComment(w http.ResponseWriter, r *http.Request, tx *dal.Queries, patch dal.SubjectPatch, text string, s *session.Session) error {
-	err := tx.CreateComment(r.Context(), dal.CreateCommentParams{
+	comments, err := tx.GetComments(r.Context(), dal.GetCommentsParams{
+		PatchID:   patch.ID,
+		PatchType: PatchTypeSubject,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = tx.CreateComment(r.Context(), dal.CreateCommentParams{
 		ID:        uuid.Must(uuid.NewV7()),
 		PatchID:   patch.ID,
 		PatchType: PatchTypeSubject,
@@ -240,6 +248,8 @@ func (h *handler) handleSubjectComment(w http.ResponseWriter, r *http.Request, t
 	if err != nil {
 		return err
 	}
+
+	h.sendNotifyPatchReply(context.WithoutCancel(r.Context()), patch.NumID, s.UserID, patch.FromUserID, comments, NotifyTypeSubjectPatchReply)
 
 	http.Redirect(w, r, "/subject/"+patch.ID.String(), http.StatusFound)
 	return nil

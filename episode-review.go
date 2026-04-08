@@ -48,7 +48,15 @@ func (h *handler) handleEpisodeReview(w http.ResponseWriter, r *http.Request,
 
 func (h *handler) handleEpisodeComment(w http.ResponseWriter, r *http.Request,
 	tx *dal.Queries, patch dal.EpisodePatch, text string, s *session.Session) error {
-	err := tx.CreateComment(r.Context(), dal.CreateCommentParams{
+	comments, err := tx.GetComments(r.Context(), dal.GetCommentsParams{
+		PatchID:   patch.ID,
+		PatchType: PatchTypeEpisode,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = tx.CreateComment(r.Context(), dal.CreateCommentParams{
 		ID:        uuid.Must(uuid.NewV7()),
 		PatchID:   patch.ID,
 		PatchType: PatchTypeEpisode,
@@ -63,6 +71,8 @@ func (h *handler) handleEpisodeComment(w http.ResponseWriter, r *http.Request,
 	if err != nil {
 		return errgo.Wrap(err, "failed to update ")
 	}
+
+	h.sendNotifyPatchReply(context.WithoutCancel(r.Context()), patch.NumID, s.UserID, patch.FromUserID, comments, NotifyTypeEpisodePatchReply)
 
 	http.Redirect(w, r, "/episode/"+patch.ID.String(), http.StatusFound)
 	return nil
