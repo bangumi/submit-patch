@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/rs/zerolog/log"
@@ -49,20 +50,29 @@ func (h *handler) sendNotify(ctx context.Context, mid uint32, userID uint32, sen
 		return
 	}
 
-	data, err := proto.Marshal(&notifypb.Notify{
+	msg := &notifypb.Notify{
 		Mid:        mid,
 		UserId:     userID,
 		FromUserId: senderID,
 		Type:       notifyType,
 		Title:      title,
-	})
+	}
+
+	data, err := proto.Marshal(msg)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to marshal notification")
 		return
 	}
 
+	key, err := json.Marshal(msg)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to marshal notification key")
+		return
+	}
+
 	err = h.k.WriteMessages(ctx, kafka.Message{
 		Topic: notifyTopic,
+		Key:   key,
 		Value: data,
 	})
 	if err != nil {
