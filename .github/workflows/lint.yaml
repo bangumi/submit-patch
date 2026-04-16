@@ -12,7 +12,7 @@ jobs:
   fmt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
         with:
           submodules: "true"
 
@@ -21,7 +21,7 @@ jobs:
           cache-namespace: lint
 
       - name: Install Task
-        uses: arduino/setup-task@v2
+        uses: arduino/setup-task@v2.0.0
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -38,6 +38,6 @@ jobs:
       - run: git diff --exit-code
 
       - name: Run linters
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@v9.2.0
         with:
           version: v2.11.4
