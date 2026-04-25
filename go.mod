@@ -18,7 +18,7 @@ require (
 	github.com/redis/rueidis v1.0.74
 	github.com/rs/zerolog v1.35.1
 	github.com/samber/lo v1.53.0
-	github.com/segmentio/kafka-go v0.4.50
+	github.com/segmentio/kafka-go v0.4.51
 	github.com/stretchr/testify v1.11.1
 	github.com/trim21/errgo v0.0.6
 	github.com/trim21/pkg v0.0.4
