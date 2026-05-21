@@ -1,4 +1,4 @@
-create table if not exists character_patch
+create table character_patch
 (
     id                uuid                                                   not null
         primary key,
@@ -25,28 +25,28 @@ create table if not exists character_patch
 
 comment on column character_patch.action is '1 for update 2 for create';
 
-create index if not exists idx_character_id
+create index idx_character_id
     on character_patch (character_id);
 
-create index if not exists idx_character_patch_list
+create index idx_character_patch_list
     on character_patch (created_at, state, deleted_at);
 
-create index if not exists idx_character_patch_list2
+create index idx_character_patch_list2
     on character_patch (updated_at, state, deleted_at);
 
-create index if not exists idx_character_patch_list3
+create index idx_character_patch_list3
     on character_patch (deleted_at, state, created_at);
 
-create index if not exists idx_character_count
+create index idx_character_count
     on character_patch (state, deleted_at);
 
-create index if not exists idx_character_character_id
+create index idx_character_character_id
     on character_patch (character_id, state);
 
-create index if not exists idx_character_patch_num_id
+create index idx_character_patch_num_id
     on character_patch (num_id);
 
-create table if not exists person_patch
+create table person_patch
 (
     id                uuid                                                   not null
         primary key,
@@ -73,23 +73,23 @@ create table if not exists person_patch
 
 comment on column person_patch.action is '1 for update 2 for create';
 
-create index if not exists idx_person_id
+create index idx_person_id
     on person_patch (person_id);
 
-create index if not exists idx_person_patch_list
+create index idx_person_patch_list
     on person_patch (created_at, state, deleted_at);
 
-create index if not exists idx_person_patch_list2
+create index idx_person_patch_list2
     on person_patch (updated_at, state, deleted_at);
 
-create index if not exists idx_person_patch_list3
+create index idx_person_patch_list3
     on person_patch (deleted_at, state, created_at);
 
-create index if not exists idx_person_count
+create index idx_person_count
     on person_patch (state, deleted_at);
 
-create index if not exists idx_person_person_id
+create index idx_person_person_id
     on person_patch (person_id, state);
 
-create index if not exists idx_person_patch_num_id
+create index idx_person_patch_num_id
     on person_patch (num_id);
