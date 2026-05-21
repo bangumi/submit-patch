@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -68,6 +70,7 @@ func (h *handler) editSubjectView(w http.ResponseWriter, r *http.Request) error 
 		CsrfToken:        csrf.GetToken(r),
 		Reason:           "",
 		Description:      "",
+		MetaTags:         strings.Join(subject.MetaTags, " "),
 		Data:             subject,
 		TurnstileSiteKey: h.config.TurnstileSiteKey,
 	})
@@ -134,12 +137,17 @@ func (h *handler) editSubjectPatchView(w http.ResponseWriter, r *http.Request) e
 		subject.Nsfw = patch.Nsfw.Bool
 	}
 
+	if patch.MetaTags != nil {
+		subject.MetaTags = patch.MetaTags
+	}
+
 	return h.template.EditSubject.Execute(w, view.SubjectPatchEdit{
 		PatchID:          patch.ID.String(),
 		SubjectID:        patch.SubjectID,
 		CsrfToken:        csrf.GetToken(r),
 		Reason:           patch.Reason,
 		Description:      patch.PatchDesc,
+		MetaTags:         strings.Join(subject.MetaTags, " "),
 		Data:             subject,
 		TurnstileSiteKey: h.config.TurnstileSiteKey,
 	})
@@ -329,6 +337,15 @@ func (h *handler) subjectPatchDetailView(
 		})
 	}
 
+	if patch.MetaTags != nil || patch.OriginalMetaTags != nil {
+		if !metaTagsEqual(patch.OriginalMetaTags, patch.MetaTags) {
+			changes = append(changes, view.Change{
+				Name: "公共标签",
+				Diff: diff.Diff("meta_tags", strings.Join(patch.OriginalMetaTags, " "), strings.Join(patch.MetaTags, " ")),
+			})
+		}
+	}
+
 	return templates.SubjectPatchPage(
 		csrf.GetToken(r),
 		s,
@@ -357,6 +374,7 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		Name:                form.Get("name"),
 		Infobox:             form.Get("infobox"),
 		Summary:             form.Get("summary"),
+		MetaTags:            form.Get("meta_tags"),
 		Reason:              strings.TrimSpace(form.Get("reason")),
 		PatchDesc:           strings.TrimSpace(form.Get("patch_desc")),
 		CfTurnstileResponse: form.Get("cf_turnstile_response"),
@@ -414,16 +432,18 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		return nil
 	}
 
+	metaTags := parseMetaTags(data.MetaTags)
 	var changed bool
 	pk := uuid.Must(uuid.NewV7())
 	var param = dal.CreateSubjectEditPatchParams{
-		ID:           pk,
-		SubjectID:    int32(subjectID),
-		FromUserID:   user.UserID,
-		Reason:       data.Reason,
-		OriginalName: originalWiki.Name,
-		SubjectType:  originalWiki.TypeID,
-		PatchDesc:    data.PatchDesc,
+		ID:               pk,
+		SubjectID:        int32(subjectID),
+		FromUserID:       user.UserID,
+		Reason:           data.Reason,
+		OriginalName:     originalWiki.Name,
+		OriginalMetaTags: originalWiki.MetaTags,
+		SubjectType:      originalWiki.TypeID,
+		PatchDesc:        data.PatchDesc,
 	}
 
 	if data.Name != originalWiki.Name {
@@ -458,6 +478,11 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 			String: data.Summary,
 			Valid:  true,
 		}
+	}
+
+	if !metaTagsEqual(originalWiki.MetaTags, metaTags) {
+		changed = true
+		param.MetaTags = metaTags
 	}
 
 	// Compare NSFW status
@@ -531,6 +556,7 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		Name:                form.Get("name"),
 		Infobox:             form.Get("infobox"),
 		Summary:             form.Get("summary"),
+		MetaTags:            form.Get("meta_tags"),
 		Reason:              strings.TrimSpace(form.Get("reason")),
 		PatchDesc:           strings.TrimSpace(form.Get("patch_desc")),
 		CfTurnstileResponse: form.Get("cf_turnstile_response"),
@@ -587,12 +613,14 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		return nil
 	}
 
+	metaTags := parseMetaTags(data.MetaTags)
 	var changed bool
 	var param = dal.UpdateSubjectPatchParams{
-		ID:           patchID,
-		Reason:       data.Reason,
-		PatchDesc:    data.PatchDesc,
-		OriginalName: originalWiki.Name,
+		ID:               patchID,
+		Reason:           data.Reason,
+		PatchDesc:        data.PatchDesc,
+		OriginalName:     originalWiki.Name,
+		OriginalMetaTags: originalWiki.MetaTags,
 	}
 
 	if data.Name != originalWiki.Name {
@@ -612,6 +640,11 @@ func (h *handler) updateSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 
 		param.OriginalSummary = pgtype.Text{String: originalWiki.Summary, Valid: true}
 		param.Summary = pgtype.Text{String: data.Summary, Valid: true}
+	}
+
+	if !metaTagsEqual(originalWiki.MetaTags, metaTags) {
+		changed = true
+		param.MetaTags = metaTags
 	}
 
 	nsfwInput := data.Nsfw != ""
@@ -692,10 +725,28 @@ type CreateSubjectPatch struct {
 	Name                string
 	Infobox             string
 	Summary             string
+	MetaTags            string
 	Reason              string
 	PatchDesc           string
 	CfTurnstileResponse string
 	Nsfw                string
+}
+
+func parseMetaTags(value string) []string {
+	parts := strings.Fields(value)
+	return parts
+}
+
+func formatMetaTags(tags []string) string {
+	copy := append([]string(nil), tags...)
+	sort.Strings(copy)
+	return strings.Join(slices.Compact(copy), " ")
+}
+
+func metaTagsEqual(a, b []string) bool {
+	aStr := formatMetaTags(a)
+	bStr := formatMetaTags(b)
+	return aStr == bStr
 }
 
 func (h *handler) deleteSubjectPatch(w http.ResponseWriter, r *http.Request) error {
@@ -754,10 +805,11 @@ func (h *handler) deleteSubjectPatch(w http.ResponseWriter, r *http.Request) err
 const contentTypeApplicationJSON = "application/json"
 
 type RequestToUpdateSubject struct {
-	Name    null.String `json:"name"`
-	Infobox null.String `json:"infobox"`
-	Summary null.String `json:"summary"`
-	Nsfw    null.Bool   `json:"nsfw"`
+	Name     null.String `json:"name"`
+	Infobox  null.String `json:"infobox"`
+	Summary  null.String `json:"summary"`
+	MetaTags *[]string   `json:"metaTags"`
+	Nsfw     null.Bool   `json:"nsfw"`
 
 	Reason    string `json:"reason"`
 	PatchDesc string `json:"patch_desc"`
@@ -840,12 +892,13 @@ func (h *handler) createSubjectEditPatchAPI(w http.ResponseWriter, r *http.Reque
 
 	var changed bool
 	var param = dal.CreateSubjectEditPatchParams{
-		SubjectID:    int32(subjectID),
-		FromUserID:   user.UserID,
-		Reason:       req.Reason,
-		OriginalName: originalWiki.Name,
-		SubjectType:  originalWiki.TypeID,
-		PatchDesc:    req.PatchDesc,
+		SubjectID:        int32(subjectID),
+		FromUserID:       user.UserID,
+		Reason:           req.Reason,
+		OriginalName:     originalWiki.Name,
+		OriginalMetaTags: originalWiki.MetaTags,
+		SubjectType:      originalWiki.TypeID,
+		PatchDesc:        req.PatchDesc,
 	}
 
 	if req.Name.Set && req.Name.Value != originalWiki.Name {
@@ -888,6 +941,11 @@ func (h *handler) createSubjectEditPatchAPI(w http.ResponseWriter, r *http.Reque
 			Bool:  req.Nsfw.Value,
 			Valid: true,
 		}
+	}
+
+	if req.MetaTags != nil && !metaTagsEqual(*req.MetaTags, originalWiki.MetaTags) {
+		changed = true
+		param.MetaTags = *req.MetaTags
 	}
 
 	if !changed {

@@ -114,6 +114,8 @@ type SubjectPatch struct {
 	OriginalInfobox  pgtype.Text
 	Summary          pgtype.Text
 	OriginalSummary  pgtype.Text
+	MetaTags         []string
+	OriginalMetaTags []string
 	Nsfw             pgtype.Bool
 	CreatedAt        pgtype.Timestamptz
 	UpdatedAt        pgtype.Timestamptz

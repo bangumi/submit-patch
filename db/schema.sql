@@ -21,6 +21,8 @@ create table subject_patch
     original_infobox  text,
     summary           text,
     original_summary  text,
+    meta_tags         text[],
+    original_meta_tags text[],
     nsfw              boolean,
     created_at        timestamp with time zone default CURRENT_TIMESTAMP     not null,
     updated_at        timestamp with time zone default CURRENT_TIMESTAMP     not null,

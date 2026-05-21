@@ -23,15 +23,17 @@ type ApiPatchSubject struct {
 	CommieMessage    string `json:"commitMessage"`
 	AuthorID         int32  `json:"authorID"`
 	ExpectedRevision struct {
-		Infobox string `json:"infobox,omitempty"`
-		Name    string `json:"name,omitempty"`
-		Summary string `json:"summary,omitempty"`
+		Infobox  string   `json:"infobox,omitempty"`
+		Name     string   `json:"name,omitempty"`
+		Summary  string   `json:"summary,omitempty"`
+		MetaTags []string `json:"metaTags,omitempty"`
 	} `json:"expectedRevision"`
 	Subject struct {
-		Infobox string `json:"infobox,omitempty"`
-		Name    string `json:"name,omitempty"`
-		Summary string `json:"summary,omitempty"`
-		Nsfw    *bool  `json:"nsfw,omitempty"`
+		Infobox  string   `json:"infobox,omitempty"`
+		Name     string   `json:"name,omitempty"`
+		Summary  string   `json:"summary,omitempty"`
+		MetaTags []string `json:"metaTags,omitempty"`
+		Nsfw     *bool    `json:"nsfw,omitempty"`
 	} `json:"subject"`
 }
 
@@ -70,6 +72,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 
 	body.ExpectedRevision.Infobox = patch.OriginalInfobox.String
 	body.ExpectedRevision.Summary = patch.OriginalSummary.String
+	body.ExpectedRevision.MetaTags = patch.OriginalMetaTags
 
 	if patch.Name.Valid {
 		body.ExpectedRevision.Name = patch.OriginalName
@@ -77,6 +80,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 	body.Subject.Name = patch.Name.String
 	body.Subject.Infobox = patch.Infobox.String
 	body.Subject.Summary = patch.Summary.String
+	body.Subject.MetaTags = patch.MetaTags
 	if patch.Nsfw.Valid {
 		body.Subject.Nsfw = lo.ToPtr(patch.Nsfw.Bool)
 	}
