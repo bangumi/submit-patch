@@ -76,5 +76,6 @@ func (h *handler) handleReview(w http.ResponseWriter, r *http.Request) error {
 const ErrCodeValidationError = "REQUEST_VALIDATION_ERROR"
 const ErrCodeWikiChanged = "WIKI_CHANGED"
 const ErrCodeInvalidWikiSyntax = "INVALID_SYNTAX_ERROR"
+const ErrCodeInvalidMetaTags = "INVALID_META_TAGS"
 const ErrCodeInvalidToken = "TOKEN_INVALID"
 const ErrCodeItemLocked = "ITEM_LOCKED"

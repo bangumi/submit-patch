@@ -148,6 +148,7 @@ type SubjectPatchEdit struct {
 
 	Reason      string
 	Description string
+	MetaTags    string
 
 	Data dto.WikiSubject
 

@@ -44,6 +44,13 @@
                 name="summary">{{.Data.Summary}}</textarea>
     </div>
 
+    <div class="form-group">
+      <label for="meta_tags">公共标签</label>
+      <input class="form-control" id="meta_tags" name="meta_tags" value="{{.MetaTags}}">
+      <small class="form-text text-muted">以空格分隔多个标签，可用的标签请参考
+        <a href="https://bgm.tv/wiki/tag/list?type={{.Data.TypeID}}" target="_blank">此处</a></small>
+    </div>
+
     <div class="form-check">
       <label class="form-check-label" for="exampleCheck1">NSFW</label>
       <input type="checkbox" name="nsfw" class="form-check-input"

@@ -188,10 +188,10 @@ where id = $1
 -- name: CreateSubjectEditPatch :exec
 INSERT INTO subject_patch (id,
                            subject_id, from_user_id, reason, name, infobox,
-                           summary, nsfw,
+                           summary, meta_tags, nsfw,
                            original_name, original_infobox,
-                           original_summary, subject_type, patch_desc)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
+                           original_summary, original_meta_tags, subject_type, patch_desc)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);
 
 -- name: CreateEpisodePatch :exec
 insert into episode_patch (created_at, updated_at, id, episode_id, state, from_user_id,
@@ -209,16 +209,18 @@ values (current_timestamp, current_timestamp,
 
 -- name: UpdateSubjectPatch :exec
 update subject_patch
-set original_name    = $2,
-    name             = $3,
-    original_infobox = $4,
-    infobox          = $5,
-    original_summary = $6,
-    summary          = $7,
-    nsfw             = $8,
-    reason           = $9,
-    patch_desc       = $10,
-    updated_at       = current_timestamp
+set original_name      = $2,
+    name               = $3,
+    original_infobox   = $4,
+    infobox            = $5,
+    original_summary   = $6,
+    summary            = $7,
+    original_meta_tags = $8,
+    meta_tags          = $9,
+    nsfw               = $10,
+    reason             = $11,
+    patch_desc         = $12,
+    updated_at         = current_timestamp
 where id = $1;
 
 -- name: UpdateEpisodePatch :exec

@@ -415,26 +415,28 @@ func (q *Queries) CreatePersonEditPatch(ctx context.Context, arg CreatePersonEdi
 const createSubjectEditPatch = `-- name: CreateSubjectEditPatch :exec
 INSERT INTO subject_patch (id,
                            subject_id, from_user_id, reason, name, infobox,
-                           summary, nsfw,
+                           summary, meta_tags, nsfw,
                            original_name, original_infobox,
-                           original_summary, subject_type, patch_desc)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                           original_summary, original_meta_tags, subject_type, patch_desc)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 `
 
 type CreateSubjectEditPatchParams struct {
-	ID              uuid.UUID
-	SubjectID       int32
-	FromUserID      int32
-	Reason          string
-	Name            pgtype.Text
-	Infobox         pgtype.Text
-	Summary         pgtype.Text
-	Nsfw            pgtype.Bool
-	OriginalName    string
-	OriginalInfobox pgtype.Text
-	OriginalSummary pgtype.Text
-	SubjectType     int64
-	PatchDesc       string
+	ID               uuid.UUID
+	SubjectID        int32
+	FromUserID       int32
+	Reason           string
+	Name             pgtype.Text
+	Infobox          pgtype.Text
+	Summary          pgtype.Text
+	MetaTags         []string
+	Nsfw             pgtype.Bool
+	OriginalName     string
+	OriginalInfobox  pgtype.Text
+	OriginalSummary  pgtype.Text
+	OriginalMetaTags []string
+	SubjectType      int64
+	PatchDesc        string
 }
 
 func (q *Queries) CreateSubjectEditPatch(ctx context.Context, arg CreateSubjectEditPatchParams) error {
@@ -446,10 +448,12 @@ func (q *Queries) CreateSubjectEditPatch(ctx context.Context, arg CreateSubjectE
 		arg.Name,
 		arg.Infobox,
 		arg.Summary,
+		arg.MetaTags,
 		arg.Nsfw,
 		arg.OriginalName,
 		arg.OriginalInfobox,
 		arg.OriginalSummary,
+		arg.OriginalMetaTags,
 		arg.SubjectType,
 		arg.PatchDesc,
 	)
@@ -941,7 +945,7 @@ func (q *Queries) GetPersonPatchByIDForUpdate(ctx context.Context, id uuid.UUID)
 }
 
 const getSubjectPatchByID = `-- name: GetSubjectPatchByID :one
-select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action, num_id
+select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, meta_tags, original_meta_tags, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action, num_id
 from subject_patch
 where deleted_at is null
   and id = $1
@@ -964,6 +968,8 @@ func (q *Queries) GetSubjectPatchByID(ctx context.Context, id uuid.UUID) (Subjec
 		&i.OriginalInfobox,
 		&i.Summary,
 		&i.OriginalSummary,
+		&i.MetaTags,
+		&i.OriginalMetaTags,
 		&i.Nsfw,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -981,7 +987,7 @@ func (q *Queries) GetSubjectPatchByID(ctx context.Context, id uuid.UUID) (Subjec
 }
 
 const getSubjectPatchByIDForUpdate = `-- name: GetSubjectPatchByIDForUpdate :one
-select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action, num_id
+select id, subject_id, state, from_user_id, wiki_user_id, reason, name, original_name, infobox, original_infobox, summary, original_summary, meta_tags, original_meta_tags, nsfw, created_at, updated_at, deleted_at, reject_reason, subject_type, comments_count, patch_desc, original_platform, platform, action, num_id
 from subject_patch
 where deleted_at is null
   and id = $1
@@ -1004,6 +1010,8 @@ func (q *Queries) GetSubjectPatchByIDForUpdate(ctx context.Context, id uuid.UUID
 		&i.OriginalInfobox,
 		&i.Summary,
 		&i.OriginalSummary,
+		&i.MetaTags,
+		&i.OriginalMetaTags,
 		&i.Nsfw,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -1956,30 +1964,34 @@ func (q *Queries) UpdatePersonPatchCommentCount(ctx context.Context, patchID uui
 
 const updateSubjectPatch = `-- name: UpdateSubjectPatch :exec
 update subject_patch
-set original_name    = $2,
-    name             = $3,
-    original_infobox = $4,
-    infobox          = $5,
-    original_summary = $6,
-    summary          = $7,
-    nsfw             = $8,
-    reason           = $9,
-    patch_desc       = $10,
-    updated_at       = current_timestamp
+set original_name      = $2,
+    name               = $3,
+    original_infobox   = $4,
+    infobox            = $5,
+    original_summary   = $6,
+    summary            = $7,
+    original_meta_tags = $8,
+    meta_tags          = $9,
+    nsfw               = $10,
+    reason             = $11,
+    patch_desc         = $12,
+    updated_at         = current_timestamp
 where id = $1
 `
 
 type UpdateSubjectPatchParams struct {
-	ID              uuid.UUID
-	OriginalName    string
-	Name            pgtype.Text
-	OriginalInfobox pgtype.Text
-	Infobox         pgtype.Text
-	OriginalSummary pgtype.Text
-	Summary         pgtype.Text
-	Nsfw            pgtype.Bool
-	Reason          string
-	PatchDesc       string
+	ID               uuid.UUID
+	OriginalName     string
+	Name             pgtype.Text
+	OriginalInfobox  pgtype.Text
+	Infobox          pgtype.Text
+	OriginalSummary  pgtype.Text
+	Summary          pgtype.Text
+	OriginalMetaTags []string
+	MetaTags         []string
+	Nsfw             pgtype.Bool
+	Reason           string
+	PatchDesc        string
 }
 
 func (q *Queries) UpdateSubjectPatch(ctx context.Context, arg UpdateSubjectPatchParams) error {
@@ -1991,6 +2003,8 @@ func (q *Queries) UpdateSubjectPatch(ctx context.Context, arg UpdateSubjectPatch
 		arg.Infobox,
 		arg.OriginalSummary,
 		arg.Summary,
+		arg.OriginalMetaTags,
+		arg.MetaTags,
 		arg.Nsfw,
 		arg.Reason,
 		arg.PatchDesc,

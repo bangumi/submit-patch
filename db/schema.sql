@@ -8,31 +8,33 @@ create table patch_users
 
 create table subject_patch
 (
-    id                uuid                                                   not null
+    id                 uuid                                                   not null
         primary key,
-    subject_id        integer                                                not null,
-    state             integer                  default 0                     not null,
-    from_user_id      integer                                                not null,
-    wiki_user_id      integer                  default 0                     not null,
-    reason            text                                                   not null,
-    name              text,
-    original_name     text                     default ''::text              not null,
-    infobox           text,
-    original_infobox  text,
-    summary           text,
-    original_summary  text,
-    nsfw              boolean,
-    created_at        timestamp with time zone default CURRENT_TIMESTAMP     not null,
-    updated_at        timestamp with time zone default CURRENT_TIMESTAMP     not null,
-    deleted_at        timestamp with time zone,
-    reject_reason     text                     default ''::character varying not null,
-    subject_type      bigint                   default 0                     not null,
-    comments_count    integer                  default 0                     not null,
-    patch_desc        text                     default ''::text              not null,
-    original_platform integer,
-    platform          integer,
-    action            integer                  default 1,
-    num_id            bigserial                                              not null
+    subject_id         integer                                                not null,
+    state              integer                  default 0                     not null,
+    from_user_id       integer                                                not null,
+    wiki_user_id       integer                  default 0                     not null,
+    reason             text                                                   not null,
+    name               text,
+    original_name      text                     default ''::text              not null,
+    infobox            text,
+    original_infobox   text,
+    summary            text,
+    original_summary   text,
+    meta_tags          text[],
+    original_meta_tags text[],
+    nsfw               boolean,
+    created_at         timestamp with time zone default CURRENT_TIMESTAMP     not null,
+    updated_at         timestamp with time zone default CURRENT_TIMESTAMP     not null,
+    deleted_at         timestamp with time zone,
+    reject_reason      text                     default ''::character varying not null,
+    subject_type       bigint                   default 0                     not null,
+    comments_count     integer                  default 0                     not null,
+    patch_desc         text                     default ''::text              not null,
+    original_platform  integer,
+    platform           integer,
+    action             integer                  default 1,
+    num_id             bigserial                                              not null
 );
 
 comment on column subject_patch.action is '1 for update 2 for create';
