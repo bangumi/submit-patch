@@ -133,6 +133,23 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 			return nil
 		}
 
+		if errRes.Code == ErrCodeInvalidMetaTags {
+			err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
+				WikiUserID:   s.UserID,
+				State:        PatchStateRejected,
+				ID:           patch.ID,
+				RejectReason: fmt.Sprintf("建议包含不存在的公共标签，已经自动拒绝:\n %s", errRes.Message),
+			})
+			if err != nil {
+				return errgo.Wrap(err, "failed to reject patch")
+			}
+
+			h.sendNotifySubjectPatchRejected(context.WithoutCancel(r.Context()), patch.NumID, patch.FromUserID)
+
+			http.Redirect(w, r, "/subject/"+patch.ID.String(), http.StatusSeeOther)
+			return nil
+		}
+
 		if errRes.Code == ErrCodeWikiChanged {
 			err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
 				WikiUserID:   s.UserID,
