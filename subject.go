@@ -480,9 +480,9 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
+	param.MetaTags = metaTags
 	if !metaTagsEqual(originalWiki.MetaTags, metaTags) {
 		changed = true
-		param.MetaTags = metaTags
 	}
 
 	// Compare NSFW status
