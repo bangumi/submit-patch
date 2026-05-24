@@ -38,3 +38,24 @@ Uses [Taskfile](https://taskfile.dev/):
 - Database transactions use a `tx` helper pattern
 - Kafka messages use manual protowire encoding (no generated Go protobuf code)
 - External wiki API calls go through `api.go` client methods
+
+## Patch Field Change Detection
+
+Each patch table (subject_patch, character_patch, person_patch, episode_patch) uses **NULL vs non-NULL** to distinguish which fields the user explicitly modified:
+
+- **NULL** — user did not submit/change this field
+- **non-NULL** — user provided a new value
+
+The `original_*` columns always store the baseline wiki value at submission time (used for conflict detection during approval). They are unconditionally populated regardless of which fields changed.
+
+Example for `subject_patch`:
+
+| Column | NULL? | Meaning |
+|---|---|---|
+| `name` | non-NULL | user changed the name |
+| `name` | NULL | user did not change the name |
+| `meta_tags` | non-NULL | user changed meta_tags |
+| `meta_tags` | NULL | user did not change meta_tags |
+| `original_meta_tags` | always non-NULL | baseline for conflict detection |
+
+When building patch creation/update handlers, only set the field column when the user's value actually differs from the original. Never unconditionally assign a field column — doing so would incorrectly mark an unchanged field as "user modified" and produce spurious diffs.

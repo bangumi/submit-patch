@@ -337,13 +337,11 @@ func (h *handler) subjectPatchDetailView(
 		})
 	}
 
-	if patch.MetaTags != nil || patch.OriginalMetaTags != nil {
-		if !metaTagsEqual(patch.OriginalMetaTags, patch.MetaTags) {
-			changes = append(changes, view.Change{
-				Name: "公共标签",
-				Diff: diff.Diff("meta_tags", strings.Join(patch.OriginalMetaTags, " "), strings.Join(patch.MetaTags, " ")),
-			})
-		}
+	if patch.MetaTags != nil && !metaTagsEqual(patch.OriginalMetaTags, patch.MetaTags) {
+		changes = append(changes, view.Change{
+			Name: "公共标签",
+			Diff: diff.Diff("meta_tags", strings.Join(patch.OriginalMetaTags, " "), strings.Join(patch.MetaTags, " ")),
+		})
 	}
 
 	return templates.SubjectPatchPage(
@@ -480,9 +478,9 @@ func (h *handler) createSubjectEditPatch(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	param.MetaTags = metaTags
 	if !metaTagsEqual(originalWiki.MetaTags, metaTags) {
 		changed = true
+		param.MetaTags = metaTags
 	}
 
 	// Compare NSFW status
@@ -805,11 +803,11 @@ func (h *handler) deleteSubjectPatch(w http.ResponseWriter, r *http.Request) err
 const contentTypeApplicationJSON = "application/json"
 
 type RequestToUpdateSubject struct {
-	Name     null.String `json:"name"`
-	Infobox  null.String `json:"infobox"`
-	Summary  null.String `json:"summary"`
-	MetaTags *[]string   `json:"metaTags"`
-	Nsfw     null.Bool   `json:"nsfw"`
+	Name     null.String         `json:"name"`
+	Infobox  null.String         `json:"infobox"`
+	Summary  null.String         `json:"summary"`
+	MetaTags null.Null[[]string] `json:"metaTags"`
+	Nsfw     null.Bool           `json:"nsfw"`
 
 	Reason    string `json:"reason"`
 	PatchDesc string `json:"patch_desc"`
@@ -943,9 +941,9 @@ func (h *handler) createSubjectEditPatchAPI(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
-	if req.MetaTags != nil && !metaTagsEqual(*req.MetaTags, originalWiki.MetaTags) {
+	if req.MetaTags.Set && !metaTagsEqual(req.MetaTags.Value, originalWiki.MetaTags) {
 		changed = true
-		param.MetaTags = *req.MetaTags
+		param.MetaTags = req.MetaTags.Value
 	}
 
 	if !changed {
