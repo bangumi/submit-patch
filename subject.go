@@ -803,11 +803,11 @@ func (h *handler) deleteSubjectPatch(w http.ResponseWriter, r *http.Request) err
 const contentTypeApplicationJSON = "application/json"
 
 type RequestToUpdateSubject struct {
-	Name     null.String `json:"name"`
-	Infobox  null.String `json:"infobox"`
-	Summary  null.String `json:"summary"`
+	Name     null.String         `json:"name"`
+	Infobox  null.String         `json:"infobox"`
+	Summary  null.String         `json:"summary"`
 	MetaTags null.Null[[]string] `json:"metaTags"`
-	Nsfw     null.Bool   `json:"nsfw"`
+	Nsfw     null.Bool           `json:"nsfw"`
 
 	Reason    string `json:"reason"`
 	PatchDesc string `json:"patch_desc"`
