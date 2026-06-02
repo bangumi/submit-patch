@@ -9,13 +9,13 @@ require (
 	github.com/a-h/templ v0.3.1001
 	github.com/aymanbagabas/go-udiff v0.4.1
 	github.com/bangumi/wiki-parser-go v0.0.2
-	github.com/go-chi/chi/v5 v5.2.5
+	github.com/go-chi/chi/v5 v5.3.0
 	github.com/go-resty/resty/v2 v2.17.2
 	github.com/gofrs/uuid/v5 v5.4.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/gorilla/securecookie v1.1.2
 	github.com/jackc/pgx/v5 v5.9.2
-	github.com/redis/rueidis v1.0.74
+	github.com/redis/rueidis v1.0.75
 	github.com/rs/zerolog v1.35.1
 	github.com/samber/lo v1.53.0
 	github.com/segmentio/kafka-go v0.4.51
