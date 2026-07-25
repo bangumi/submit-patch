@@ -325,11 +325,6 @@ func (h *handler) characterPatchDetailView(
 		})
 	}
 
-	nextPatchURL := ""
-	if nextID, err := h.q.NextPendingCharacterPatch(r.Context(), id); err == nil {
-		nextPatchURL = "/character/" + nextID.String()
-	}
-
 	return templates.CharacterPatchPage(
 		csrf.GetToken(r),
 		s,
@@ -338,7 +333,6 @@ func (h *handler) characterPatchDetailView(
 		reviewer,
 		comments,
 		changes,
-		nextPatchURL,
 	).Render(r.Context(), w)
 }
 

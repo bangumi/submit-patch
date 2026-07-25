@@ -15,11 +15,10 @@ templ SubjectPatchPage(
 	reviewer *dal.PatchUser,
 	comments []dal.GetCommentsRow,
 	changes []view.Change,
-	nextPatchURL string,
 ) {
 	@Layout(
 		"",
-		patchDetailHead(nextPatchURL),
+		patchDetailHead(),
 		subjectPatchDetailContent(
 			csrfToken,
 			user,
@@ -32,11 +31,8 @@ templ SubjectPatchPage(
 	)
 }
 
-templ patchDetailHead(nextPatchURL string) {
+templ patchDetailHead() {
 	<title>查看修改请求</title>
-	if nextPatchURL != "" {
-		<link rel="prefetch" href={ templ.SafeURL(nextPatchURL) }/>
-	}
 	<link
 		rel="stylesheet"
 		type="text/css"

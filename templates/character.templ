@@ -15,11 +15,10 @@ templ CharacterPatchPage(
 	reviewer *dal.PatchUser,
 	comments []dal.GetCommentsRow,
 	changes []view.Change,
-	nextPatchURL string,
 ) {
 	@Layout(
 		"",
-		patchDetailHead(nextPatchURL),
+		patchDetailHead(),
 		characterPatchDetailContent(
 			csrfToken,
 			user,

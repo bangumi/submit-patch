@@ -334,11 +334,6 @@ func (h *handler) episodePatchDetailView(
 		return errgo.Wrap(err, "GetComments")
 	}
 
-	nextPatchURL := ""
-	if nextID, err := h.q.NextPendingEpisodePatch(r.Context(), id); err == nil {
-		nextPatchURL = "/episode/" + nextID.String()
-	}
-
 	return templates.EpisodePatchPage(
 		csrf.GetToken(r),
 		s,
@@ -346,7 +341,6 @@ func (h *handler) episodePatchDetailView(
 		author,
 		reviewer,
 		comments,
-		nextPatchURL,
 	).Render(r.Context(), w)
 }
 
