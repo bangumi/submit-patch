@@ -16,10 +16,11 @@ templ EpisodePatchPage(
 	author dal.PatchUser,
 	reviewer *dal.PatchUser,
 	comments []dal.GetCommentsRow,
+	nextPatchURL string,
 ) {
 	@Layout(
 		"",
-		patchDetailHead(),
+		patchDetailHead(nextPatchURL),
 		episodePatchDetailContent(
 			csrfToken,
 			user,

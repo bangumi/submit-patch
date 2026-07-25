@@ -344,6 +344,11 @@ func (h *handler) subjectPatchDetailView(
 		})
 	}
 
+	nextPatchURL := ""
+	if nextID, err := h.q.NextPendingSubjectPatch(r.Context(), id); err == nil {
+		nextPatchURL = "/subject/" + nextID.String()
+	}
+
 	return templates.SubjectPatchPage(
 		csrf.GetToken(r),
 		s,
@@ -352,6 +357,7 @@ func (h *handler) subjectPatchDetailView(
 		reviewer,
 		comments,
 		changes,
+		nextPatchURL,
 	).Render(r.Context(), w)
 }
 

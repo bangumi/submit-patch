@@ -325,6 +325,11 @@ func (h *handler) personPatchDetailView(
 		})
 	}
 
+	nextPatchURL := ""
+	if nextID, err := h.q.NextPendingPersonPatch(r.Context(), id); err == nil {
+		nextPatchURL = "/person/" + nextID.String()
+	}
+
 	return templates.PersonPatchPage(
 		csrf.GetToken(r),
 		s,
@@ -333,6 +338,7 @@ func (h *handler) personPatchDetailView(
 		reviewer,
 		comments,
 		changes,
+		nextPatchURL,
 	).Render(r.Context(), w)
 }
 
