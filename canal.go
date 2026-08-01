@@ -16,6 +16,14 @@ import (
 
 const canalGroupID = "submit-patch-canal"
 
+// Debezium topic 命名格式为 {prefix}.{table}，这里维护本服务需要监听的表。
+// 必须与 handleCanalMessage 的 switch 分支保持一致。
+var canalTables = []string{
+	"chii_subjects",
+	"chii_characters",
+	"chii_persons",
+}
+
 const opUpdate = "u"
 
 type debeziumPayload struct {
@@ -59,10 +67,15 @@ type personAfter struct {
 }
 
 func startCanalConsumer(ctx context.Context, cfg Config, h *handler) error {
+	topics := make([]string, 0, len(canalTables))
+	for _, t := range canalTables {
+		topics = append(topics, cfg.KafkaTopicPrefix+"."+t)
+	}
+
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:     []string{cfg.KafkaBroker},
 		GroupID:     canalGroupID,
-		GroupTopics: cfg.KafkaTopics,
+		GroupTopics: topics,
 	})
 	defer r.Close()
 
