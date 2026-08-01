@@ -26,8 +26,8 @@ type Config struct {
 	TurnstileSiteKey   string `env:"TURNSTILE_SITE_KEY"`
 	TurnstileSecretKey string `env:"TURNSTILE_SECRET_KEY"`
 
-	KafkaBroker string   `env:"KAFKA_BROKER"`
-	KafkaTopics []string `env:"KAFKA_TOPICS"`
+	KafkaBroker      string `env:"KAFKA_BROKER"`
+	KafkaTopicPrefix string `env:"KAFKA_TOPIC_PREFIX"`
 }
 
 func newConfig() (Config, error) {
