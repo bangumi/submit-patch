@@ -9,9 +9,9 @@ require (
 	github.com/a-h/templ v0.3.1020
 	github.com/aymanbagabas/go-udiff v0.4.1
 	github.com/bangumi/wiki-parser-go v0.0.2
-	github.com/go-chi/chi/v5 v5.3.0
+	github.com/go-chi/chi/v5 v5.3.1
 	github.com/go-resty/resty/v2 v2.17.2
-	github.com/gofrs/uuid/v5 v5.4.0
+	github.com/gofrs/uuid/v5 v5.5.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/gorilla/securecookie v1.1.2
 	github.com/jackc/pgx/v5 v5.10.0
@@ -25,7 +25,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0
 	go-simpler.org/env v0.12.0
 	go.uber.org/fx v1.24.0
-	golang.org/x/sync v0.21.0
+	golang.org/x/sync v0.22.0
 	google.golang.org/protobuf v1.36.11
 )
 
