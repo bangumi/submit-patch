@@ -10,6 +10,10 @@ type Config struct {
 
 	AdminToken string `env:"ADMIN_TOKEN"`
 
+	// 提交 patch 的专用 token，通过 x-submit-token 请求头携带，
+	// 命中后视为 wikiBotUserID 身份提交，绕过 OAuth 登录
+	SubmitToken string `env:"SUBMIT_TOKEN"`
+
 	BangumiAppId     string `env:"BGM_TV_APP_ID"`
 	BangumiAppSecret string `env:"BGM_TV_APP_SECRET"`
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -125,6 +126,26 @@ func (h *handler) callback(w http.ResponseWriter, r *http.Request) error {
 }
 
 var ErrLoginRequired = errors.New("need user to login again")
+
+// getUser 优先返回登录 session，否则尝试 x-submit-token 提交 token。
+// token 命中时返回 wikiBotUserID 对应的 session（superuser，跳过 turnstile）。
+func (h *handler) getUser(r *http.Request) *session.Session {
+	user := session.GetSession(r.Context())
+	if user.UserID != 0 {
+		return user
+	}
+
+	token := r.Header.Get("x-submit-token")
+	if h.config.SubmitToken == "" || token == "" {
+		return nil
+	}
+
+	if subtle.ConstantTimeCompare([]byte(token), []byte(h.config.SubmitToken)) != 1 {
+		return nil
+	}
+
+	return &session.Session{UserID: wikiBotUserID}
+}
 
 func needLogin(w http.ResponseWriter, r *http.Request, backTo string) {
 	http.SetCookie(w, &http.Cookie{Name: cookieBackTo, Value: backTo})

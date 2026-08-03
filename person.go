@@ -770,8 +770,8 @@ func (h *handler) createPersonEditPatchAPI(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
-	user := session.GetSession(r.Context())
-	if user.UserID == 0 {
+	user := h.getUser(r)
+	if user == nil {
 		http.Error(w, "please login before submit any patch", http.StatusUnauthorized)
 		return nil
 	}
