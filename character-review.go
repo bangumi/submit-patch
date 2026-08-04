@@ -108,7 +108,7 @@ func (h *handler) handleCharacterApprove(w http.ResponseWriter, r *http.Request,
 		}
 
 		if errRes.Code == ErrCodeInvalidWikiSyntax {
-			err = qx.RejectCharacterPatch(r.Context(), dal.RejectCharacterPatchParams{
+			_, err = qx.RejectCharacterPatch(r.Context(), dal.RejectCharacterPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateRejected,
 				ID:           patch.ID,
@@ -125,7 +125,7 @@ func (h *handler) handleCharacterApprove(w http.ResponseWriter, r *http.Request,
 		}
 
 		if errRes.Code == ErrCodeWikiChanged {
-			err = qx.RejectCharacterPatch(r.Context(), dal.RejectCharacterPatchParams{
+			_, err = qx.RejectCharacterPatch(r.Context(), dal.RejectCharacterPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateOutdated,
 				ID:           patch.ID,
@@ -142,7 +142,7 @@ func (h *handler) handleCharacterApprove(w http.ResponseWriter, r *http.Request,
 		}
 
 		if errRes.Code == ErrCodeItemLocked {
-			err = qx.RejectCharacterPatch(r.Context(), dal.RejectCharacterPatchParams{
+			_, err = qx.RejectCharacterPatch(r.Context(), dal.RejectCharacterPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateRejected,
 				ID:           patch.ID,
@@ -159,7 +159,7 @@ func (h *handler) handleCharacterApprove(w http.ResponseWriter, r *http.Request,
 		}
 
 		if errRes.Code == ErrCodeValidationError {
-			err = qx.RejectCharacterPatch(r.Context(), dal.RejectCharacterPatchParams{
+			_, err = qx.RejectCharacterPatch(r.Context(), dal.RejectCharacterPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateRejected,
 				ID:           patch.ID,
@@ -177,7 +177,7 @@ func (h *handler) handleCharacterApprove(w http.ResponseWriter, r *http.Request,
 		return errors.New("failed to submit patch")
 	}
 
-	err = qx.AcceptCharacterPatch(context.WithoutCancel(r.Context()), dal.AcceptCharacterPatchParams{
+	_, err = qx.AcceptCharacterPatch(context.WithoutCancel(r.Context()), dal.AcceptCharacterPatchParams{
 		WikiUserID: s.UserID,
 		State:      PatchStateAccepted,
 		ID:         patch.ID,
@@ -203,7 +203,7 @@ func (h *handler) handleCharacterApprove(w http.ResponseWriter, r *http.Request,
 }
 
 func (h *handler) handleCharacterReject(w http.ResponseWriter, r *http.Request, qx *dal.Queries, p dal.CharacterPatch, s *session.Session) error {
-	err := qx.RejectCharacterPatch(r.Context(), dal.RejectCharacterPatchParams{
+	_, err := qx.RejectCharacterPatch(r.Context(), dal.RejectCharacterPatchParams{
 		WikiUserID: s.UserID,
 		State:      PatchStateRejected,
 		ID:         p.ID,

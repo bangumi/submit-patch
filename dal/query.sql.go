@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const acceptCharacterPatch = `-- name: AcceptCharacterPatch :exec
+const acceptCharacterPatch = `-- name: AcceptCharacterPatch :execrows
 update character_patch
 set wiki_user_id = $1,
     state        = $2,
@@ -28,9 +28,12 @@ type AcceptCharacterPatchParams struct {
 	ID         uuid.UUID
 }
 
-func (q *Queries) AcceptCharacterPatch(ctx context.Context, arg AcceptCharacterPatchParams) error {
-	_, err := q.db.Exec(ctx, acceptCharacterPatch, arg.WikiUserID, arg.State, arg.ID)
-	return err
+func (q *Queries) AcceptCharacterPatch(ctx context.Context, arg AcceptCharacterPatchParams) (int64, error) {
+	result, err := q.db.Exec(ctx, acceptCharacterPatch, arg.WikiUserID, arg.State, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const acceptEpisodePatch = `-- name: AcceptEpisodePatch :exec
@@ -54,7 +57,7 @@ func (q *Queries) AcceptEpisodePatch(ctx context.Context, arg AcceptEpisodePatch
 	return err
 }
 
-const acceptPersonPatch = `-- name: AcceptPersonPatch :exec
+const acceptPersonPatch = `-- name: AcceptPersonPatch :execrows
 update person_patch
 set wiki_user_id = $1,
     state        = $2,
@@ -70,12 +73,15 @@ type AcceptPersonPatchParams struct {
 	ID         uuid.UUID
 }
 
-func (q *Queries) AcceptPersonPatch(ctx context.Context, arg AcceptPersonPatchParams) error {
-	_, err := q.db.Exec(ctx, acceptPersonPatch, arg.WikiUserID, arg.State, arg.ID)
-	return err
+func (q *Queries) AcceptPersonPatch(ctx context.Context, arg AcceptPersonPatchParams) (int64, error) {
+	result, err := q.db.Exec(ctx, acceptPersonPatch, arg.WikiUserID, arg.State, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
-const acceptSubjectPatch = `-- name: AcceptSubjectPatch :exec
+const acceptSubjectPatch = `-- name: AcceptSubjectPatch :execrows
 update subject_patch
 set wiki_user_id = $1,
     state        = $2,
@@ -91,9 +97,12 @@ type AcceptSubjectPatchParams struct {
 	ID         uuid.UUID
 }
 
-func (q *Queries) AcceptSubjectPatch(ctx context.Context, arg AcceptSubjectPatchParams) error {
-	_, err := q.db.Exec(ctx, acceptSubjectPatch, arg.WikiUserID, arg.State, arg.ID)
-	return err
+func (q *Queries) AcceptSubjectPatch(ctx context.Context, arg AcceptSubjectPatchParams) (int64, error) {
+	result, err := q.db.Exec(ctx, acceptSubjectPatch, arg.WikiUserID, arg.State, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const countCharacterPatches = `-- name: CountCharacterPatches :one
@@ -1656,7 +1665,7 @@ func (q *Queries) NextPendingSubjectPatch(ctx context.Context, id uuid.UUID) (uu
 	return id, err
 }
 
-const rejectCharacterPatch = `-- name: RejectCharacterPatch :exec
+const rejectCharacterPatch = `-- name: RejectCharacterPatch :execrows
 update character_patch
 set wiki_user_id  = $1,
     state         = $2,
@@ -1674,14 +1683,17 @@ type RejectCharacterPatchParams struct {
 	ID           uuid.UUID
 }
 
-func (q *Queries) RejectCharacterPatch(ctx context.Context, arg RejectCharacterPatchParams) error {
-	_, err := q.db.Exec(ctx, rejectCharacterPatch,
+func (q *Queries) RejectCharacterPatch(ctx context.Context, arg RejectCharacterPatchParams) (int64, error) {
+	result, err := q.db.Exec(ctx, rejectCharacterPatch,
 		arg.WikiUserID,
 		arg.State,
 		arg.RejectReason,
 		arg.ID,
 	)
-	return err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const rejectEpisodePatch = `-- name: RejectEpisodePatch :exec
@@ -1712,7 +1724,7 @@ func (q *Queries) RejectEpisodePatch(ctx context.Context, arg RejectEpisodePatch
 	return err
 }
 
-const rejectPersonPatch = `-- name: RejectPersonPatch :exec
+const rejectPersonPatch = `-- name: RejectPersonPatch :execrows
 update person_patch
 set wiki_user_id  = $1,
     state         = $2,
@@ -1730,17 +1742,20 @@ type RejectPersonPatchParams struct {
 	ID           uuid.UUID
 }
 
-func (q *Queries) RejectPersonPatch(ctx context.Context, arg RejectPersonPatchParams) error {
-	_, err := q.db.Exec(ctx, rejectPersonPatch,
+func (q *Queries) RejectPersonPatch(ctx context.Context, arg RejectPersonPatchParams) (int64, error) {
+	result, err := q.db.Exec(ctx, rejectPersonPatch,
 		arg.WikiUserID,
 		arg.State,
 		arg.RejectReason,
 		arg.ID,
 	)
-	return err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
-const rejectSubjectPatch = `-- name: RejectSubjectPatch :exec
+const rejectSubjectPatch = `-- name: RejectSubjectPatch :execrows
 update subject_patch
 set wiki_user_id  = $1,
     state         = $2,
@@ -1758,14 +1773,17 @@ type RejectSubjectPatchParams struct {
 	ID           uuid.UUID
 }
 
-func (q *Queries) RejectSubjectPatch(ctx context.Context, arg RejectSubjectPatchParams) error {
-	_, err := q.db.Exec(ctx, rejectSubjectPatch,
+func (q *Queries) RejectSubjectPatch(ctx context.Context, arg RejectSubjectPatchParams) (int64, error) {
+	result, err := q.db.Exec(ctx, rejectSubjectPatch,
 		arg.WikiUserID,
 		arg.State,
 		arg.RejectReason,
 		arg.ID,
 	)
-	return err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const testDelete = `-- name: TestDelete :exec

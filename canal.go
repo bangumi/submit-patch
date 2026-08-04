@@ -162,16 +162,21 @@ func handleSubjectChange(ctx context.Context, h *handler, key []byte, afterRaw j
 		if !subjectPatchIsOutdated(patch, after) {
 			continue
 		}
-		if err := h.q.RejectSubjectPatch(ctx, dal.RejectSubjectPatchParams{
+		affected, err := h.q.RejectSubjectPatch(ctx, dal.RejectSubjectPatchParams{
 			WikiUserID:   0,
 			State:        PatchStateOutdated,
 			RejectReason: "条目已被修改，建议已过期",
 			ID:           patch.ID,
-		}); err != nil {
+		})
+		if err != nil {
 			log.Error().Err(err).Stringer("id", patch.ID).Msg("canal: failed to mark subject patch outdated")
-		} else {
-			h.sendNotifySubjectPatchExpired(ctx, patch.NumID, patch.FromUserID)
+			continue
 		}
+		if affected == 0 {
+			// patch 状态已被其他流程（如接受）改变，跳过过期通知，避免误报
+			continue
+		}
+		h.sendNotifySubjectPatchExpired(ctx, patch.NumID, patch.FromUserID)
 	}
 	return nil
 }
@@ -217,16 +222,21 @@ func handleCharacterChange(ctx context.Context, h *handler, key []byte, afterRaw
 		if !characterPatchIsOutdated(patch, after) {
 			continue
 		}
-		if err := h.q.RejectCharacterPatch(ctx, dal.RejectCharacterPatchParams{
+		affected, err := h.q.RejectCharacterPatch(ctx, dal.RejectCharacterPatchParams{
 			WikiUserID:   0,
 			State:        PatchStateOutdated,
 			RejectReason: "角色已被修改，建议已过期",
 			ID:           patch.ID,
-		}); err != nil {
+		})
+		if err != nil {
 			log.Error().Err(err).Stringer("id", patch.ID).Msg("canal: failed to mark character patch outdated")
-		} else {
-			h.sendNotifyCharacterPatchExpired(ctx, patch.NumID, patch.FromUserID)
+			continue
 		}
+		if affected == 0 {
+			// patch 状态已被其他流程（如接受）改变，跳过过期通知，避免误报
+			continue
+		}
+		h.sendNotifyCharacterPatchExpired(ctx, patch.NumID, patch.FromUserID)
 	}
 	return nil
 }
@@ -272,16 +282,21 @@ func handlePersonChange(ctx context.Context, h *handler, key []byte, afterRaw js
 		if !personPatchIsOutdated(patch, after) {
 			continue
 		}
-		if err := h.q.RejectPersonPatch(ctx, dal.RejectPersonPatchParams{
+		affected, err := h.q.RejectPersonPatch(ctx, dal.RejectPersonPatchParams{
 			WikiUserID:   0,
 			State:        PatchStateOutdated,
 			RejectReason: "人物已被修改，建议已过期",
 			ID:           patch.ID,
-		}); err != nil {
+		})
+		if err != nil {
 			log.Error().Err(err).Stringer("id", patch.ID).Msg("canal: failed to mark person patch outdated")
-		} else {
-			h.sendNotifyPersonPatchExpired(ctx, patch.NumID, patch.FromUserID)
+			continue
 		}
+		if affected == 0 {
+			// patch 状态已被其他流程（如接受）改变，跳过过期通知，避免误报
+			continue
+		}
+		h.sendNotifyPersonPatchExpired(ctx, patch.NumID, patch.FromUserID)
 	}
 	return nil
 }
