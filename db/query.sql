@@ -135,7 +135,7 @@ insert into edit_suggestion (id,
 values ($1, $2, $3, $4, $5, current_timestamp, null);
 
 
--- name: RejectSubjectPatch :exec
+-- name: RejectSubjectPatch :execrows
 update subject_patch
 set wiki_user_id  = $1,
     state         = $2,
@@ -145,7 +145,7 @@ where id = $4
   and deleted_at is null
   and state = 0;
 
--- name: AcceptSubjectPatch :exec
+-- name: AcceptSubjectPatch :execrows
 update subject_patch
 set wiki_user_id = $1,
     state        = $2,
@@ -465,7 +465,7 @@ set original_name    = $2,
     updated_at       = current_timestamp
 where id = $1;
 
--- name: RejectCharacterPatch :exec
+-- name: RejectCharacterPatch :execrows
 update character_patch
 set wiki_user_id  = $1,
     state         = $2,
@@ -475,7 +475,7 @@ where id = $4
   and deleted_at is null
   and state = 0;
 
--- name: RejectPersonPatch :exec
+-- name: RejectPersonPatch :execrows
 update person_patch
 set wiki_user_id  = $1,
     state         = $2,
@@ -485,7 +485,7 @@ where id = $4
   and deleted_at is null
   and state = 0;
 
--- name: AcceptCharacterPatch :exec
+-- name: AcceptCharacterPatch :execrows
 update character_patch
 set wiki_user_id = $1,
     state        = $2,
@@ -494,7 +494,7 @@ where id = $3
   and deleted_at is null
   and state = 0;
 
--- name: AcceptPersonPatch :exec
+-- name: AcceptPersonPatch :execrows
 update person_patch
 set wiki_user_id = $1,
     state        = $2,

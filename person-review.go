@@ -108,7 +108,7 @@ func (h *handler) handlePersonApprove(w http.ResponseWriter, r *http.Request, qx
 		}
 
 		if errRes.Code == ErrCodeInvalidWikiSyntax {
-			err = qx.RejectPersonPatch(r.Context(), dal.RejectPersonPatchParams{
+			_, err = qx.RejectPersonPatch(r.Context(), dal.RejectPersonPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateRejected,
 				ID:           patch.ID,
@@ -125,7 +125,7 @@ func (h *handler) handlePersonApprove(w http.ResponseWriter, r *http.Request, qx
 		}
 
 		if errRes.Code == ErrCodeWikiChanged {
-			err = qx.RejectPersonPatch(r.Context(), dal.RejectPersonPatchParams{
+			_, err = qx.RejectPersonPatch(r.Context(), dal.RejectPersonPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateOutdated,
 				ID:           patch.ID,
@@ -142,7 +142,7 @@ func (h *handler) handlePersonApprove(w http.ResponseWriter, r *http.Request, qx
 		}
 
 		if errRes.Code == ErrCodeItemLocked {
-			err = qx.RejectPersonPatch(r.Context(), dal.RejectPersonPatchParams{
+			_, err = qx.RejectPersonPatch(r.Context(), dal.RejectPersonPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateRejected,
 				ID:           patch.ID,
@@ -159,7 +159,7 @@ func (h *handler) handlePersonApprove(w http.ResponseWriter, r *http.Request, qx
 		}
 
 		if errRes.Code == ErrCodeValidationError {
-			err = qx.RejectPersonPatch(r.Context(), dal.RejectPersonPatchParams{
+			_, err = qx.RejectPersonPatch(r.Context(), dal.RejectPersonPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateRejected,
 				ID:           patch.ID,
@@ -177,7 +177,7 @@ func (h *handler) handlePersonApprove(w http.ResponseWriter, r *http.Request, qx
 		return errors.New("failed to submit patch")
 	}
 
-	err = qx.AcceptPersonPatch(context.WithoutCancel(r.Context()), dal.AcceptPersonPatchParams{
+	_, err = qx.AcceptPersonPatch(context.WithoutCancel(r.Context()), dal.AcceptPersonPatchParams{
 		WikiUserID: s.UserID,
 		State:      PatchStateAccepted,
 		ID:         patch.ID,
@@ -203,7 +203,7 @@ func (h *handler) handlePersonApprove(w http.ResponseWriter, r *http.Request, qx
 }
 
 func (h *handler) handlePersonReject(w http.ResponseWriter, r *http.Request, qx *dal.Queries, p dal.PersonPatch, s *session.Session) error {
-	err := qx.RejectPersonPatch(r.Context(), dal.RejectPersonPatchParams{
+	_, err := qx.RejectPersonPatch(r.Context(), dal.RejectPersonPatchParams{
 		WikiUserID: s.UserID,
 		State:      PatchStateRejected,
 		ID:         p.ID,

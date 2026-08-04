@@ -117,7 +117,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 		}
 
 		if errRes.Code == ErrCodeInvalidWikiSyntax {
-			err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
+			_, err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateRejected,
 				ID:           patch.ID,
@@ -134,7 +134,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 		}
 
 		if errRes.Code == ErrCodeInvalidMetaTags {
-			err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
+			_, err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateRejected,
 				ID:           patch.ID,
@@ -151,7 +151,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 		}
 
 		if errRes.Code == ErrCodeWikiChanged {
-			err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
+			_, err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateOutdated,
 				ID:           patch.ID,
@@ -168,7 +168,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 		}
 
 		if errRes.Code == ErrCodeItemLocked {
-			err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
+			_, err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateRejected,
 				ID:           patch.ID,
@@ -185,7 +185,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 		}
 
 		if errRes.Code == ErrCodeValidationError {
-			err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
+			_, err = qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
 				WikiUserID:   s.UserID,
 				State:        PatchStateRejected,
 				ID:           patch.ID,
@@ -203,7 +203,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 		return errors.New("failed to submit patch")
 	}
 
-	err = qx.AcceptSubjectPatch(context.WithoutCancel(r.Context()), dal.AcceptSubjectPatchParams{
+	_, err = qx.AcceptSubjectPatch(context.WithoutCancel(r.Context()), dal.AcceptSubjectPatchParams{
 		WikiUserID: s.UserID,
 		State:      PatchStateAccepted,
 		ID:         patch.ID,
@@ -229,7 +229,7 @@ func (h *handler) handleSubjectApprove(w http.ResponseWriter, r *http.Request, q
 }
 
 func (h *handler) handleSubjectReject(w http.ResponseWriter, r *http.Request, qx *dal.Queries, p dal.SubjectPatch, s *session.Session) error {
-	err := qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
+	_, err := qx.RejectSubjectPatch(r.Context(), dal.RejectSubjectPatchParams{
 		WikiUserID: s.UserID,
 		State:      PatchStateRejected,
 		ID:         p.ID,
