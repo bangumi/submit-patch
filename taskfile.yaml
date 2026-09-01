@@ -46,7 +46,7 @@ tasks:
 
   gen:
     cmds:
-      - sqlc generate
+      - go tool sqlc generate
 
   watch:template:
     cmd: watchexec --shell=none -e templ -w . -r -- task gen:template --force
