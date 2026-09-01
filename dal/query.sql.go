@@ -1665,6 +1665,206 @@ func (q *Queries) NextPendingSubjectPatch(ctx context.Context, id uuid.UUID) (uu
 	return id, err
 }
 
+const rejectAllCharacterPatchesByUser = `-- name: RejectAllCharacterPatchesByUser :many
+update character_patch
+set wiki_user_id  = $1,
+    state         = $2,
+    reject_reason = $3,
+    updated_at    = current_timestamp
+where from_user_id = $4
+  and deleted_at is null
+  and state = 0
+returning id, num_id, from_user_id
+`
+
+type RejectAllCharacterPatchesByUserParams struct {
+	WikiUserID   int32
+	State        int32
+	RejectReason string
+	FromUserID   int32
+}
+
+type RejectAllCharacterPatchesByUserRow struct {
+	ID         uuid.UUID
+	NumID      int64
+	FromUserID int32
+}
+
+func (q *Queries) RejectAllCharacterPatchesByUser(ctx context.Context, arg RejectAllCharacterPatchesByUserParams) ([]RejectAllCharacterPatchesByUserRow, error) {
+	rows, err := q.db.Query(ctx, rejectAllCharacterPatchesByUser,
+		arg.WikiUserID,
+		arg.State,
+		arg.RejectReason,
+		arg.FromUserID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []RejectAllCharacterPatchesByUserRow
+	for rows.Next() {
+		var i RejectAllCharacterPatchesByUserRow
+		if err := rows.Scan(&i.ID, &i.NumID, &i.FromUserID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const rejectAllEpisodePatchesByUser = `-- name: RejectAllEpisodePatchesByUser :many
+update episode_patch
+set wiki_user_id  = $1,
+    state         = $2,
+    reject_reason = $3,
+    updated_at    = current_timestamp
+where from_user_id = $4
+  and deleted_at is null
+  and state = 0
+returning id, num_id, from_user_id
+`
+
+type RejectAllEpisodePatchesByUserParams struct {
+	WikiUserID   int32
+	State        int32
+	RejectReason string
+	FromUserID   int32
+}
+
+type RejectAllEpisodePatchesByUserRow struct {
+	ID         uuid.UUID
+	NumID      int64
+	FromUserID int32
+}
+
+func (q *Queries) RejectAllEpisodePatchesByUser(ctx context.Context, arg RejectAllEpisodePatchesByUserParams) ([]RejectAllEpisodePatchesByUserRow, error) {
+	rows, err := q.db.Query(ctx, rejectAllEpisodePatchesByUser,
+		arg.WikiUserID,
+		arg.State,
+		arg.RejectReason,
+		arg.FromUserID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []RejectAllEpisodePatchesByUserRow
+	for rows.Next() {
+		var i RejectAllEpisodePatchesByUserRow
+		if err := rows.Scan(&i.ID, &i.NumID, &i.FromUserID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const rejectAllPersonPatchesByUser = `-- name: RejectAllPersonPatchesByUser :many
+update person_patch
+set wiki_user_id  = $1,
+    state         = $2,
+    reject_reason = $3,
+    updated_at    = current_timestamp
+where from_user_id = $4
+  and deleted_at is null
+  and state = 0
+returning id, num_id, from_user_id
+`
+
+type RejectAllPersonPatchesByUserParams struct {
+	WikiUserID   int32
+	State        int32
+	RejectReason string
+	FromUserID   int32
+}
+
+type RejectAllPersonPatchesByUserRow struct {
+	ID         uuid.UUID
+	NumID      int64
+	FromUserID int32
+}
+
+func (q *Queries) RejectAllPersonPatchesByUser(ctx context.Context, arg RejectAllPersonPatchesByUserParams) ([]RejectAllPersonPatchesByUserRow, error) {
+	rows, err := q.db.Query(ctx, rejectAllPersonPatchesByUser,
+		arg.WikiUserID,
+		arg.State,
+		arg.RejectReason,
+		arg.FromUserID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []RejectAllPersonPatchesByUserRow
+	for rows.Next() {
+		var i RejectAllPersonPatchesByUserRow
+		if err := rows.Scan(&i.ID, &i.NumID, &i.FromUserID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const rejectAllSubjectPatchesByUser = `-- name: RejectAllSubjectPatchesByUser :many
+update subject_patch
+set wiki_user_id  = $1,
+    state         = $2,
+    reject_reason = $3,
+    updated_at    = current_timestamp
+where from_user_id = $4
+  and deleted_at is null
+  and state = 0
+returning id, num_id, from_user_id
+`
+
+type RejectAllSubjectPatchesByUserParams struct {
+	WikiUserID   int32
+	State        int32
+	RejectReason string
+	FromUserID   int32
+}
+
+type RejectAllSubjectPatchesByUserRow struct {
+	ID         uuid.UUID
+	NumID      int64
+	FromUserID int32
+}
+
+func (q *Queries) RejectAllSubjectPatchesByUser(ctx context.Context, arg RejectAllSubjectPatchesByUserParams) ([]RejectAllSubjectPatchesByUserRow, error) {
+	rows, err := q.db.Query(ctx, rejectAllSubjectPatchesByUser,
+		arg.WikiUserID,
+		arg.State,
+		arg.RejectReason,
+		arg.FromUserID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []RejectAllSubjectPatchesByUserRow
+	for rows.Next() {
+		var i RejectAllSubjectPatchesByUserRow
+		if err := rows.Scan(&i.ID, &i.NumID, &i.FromUserID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const rejectCharacterPatch = `-- name: RejectCharacterPatch :execrows
 update character_patch
 set wiki_user_id  = $1,
@@ -2062,220 +2262,4 @@ type UpsertUserParams struct {
 func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) error {
 	_, err := q.db.Exec(ctx, upsertUser, arg.UserID, arg.Username, arg.Nickname)
 	return err
-}
-
-const rejectAllSubjectPatchesByUser = `-- name: RejectAllSubjectPatchesByUser :many
-update subject_patch
-set wiki_user_id  = $1,
-    state         = $2,
-    reject_reason = $3,
-    updated_at    = current_timestamp
-where from_user_id = $4
-  and deleted_at is null
-  and state = 0
-returning id, num_id, from_user_id
-`
-
-type RejectAllSubjectPatchesByUserParams struct {
-	WikiUserID   int32
-	State        int32
-	RejectReason string
-	FromUserID   int32
-}
-
-type RejectAllSubjectPatchesByUserRow struct {
-	ID         uuid.UUID
-	NumID      int64
-	FromUserID int32
-}
-
-func (q *Queries) RejectAllSubjectPatchesByUser(ctx context.Context, arg RejectAllSubjectPatchesByUserParams) ([]RejectAllSubjectPatchesByUserRow, error) {
-	rows, err := q.db.Query(ctx, rejectAllSubjectPatchesByUser,
-		arg.WikiUserID,
-		arg.State,
-		arg.RejectReason,
-		arg.FromUserID,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []RejectAllSubjectPatchesByUserRow
-	for rows.Next() {
-		var i RejectAllSubjectPatchesByUserRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.NumID,
-			&i.FromUserID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const rejectAllEpisodePatchesByUser = `-- name: RejectAllEpisodePatchesByUser :many
-update episode_patch
-set wiki_user_id  = $1,
-    state         = $2,
-    reject_reason = $3,
-    updated_at    = current_timestamp
-where from_user_id = $4
-  and deleted_at is null
-  and state = 0
-returning id, num_id, from_user_id
-`
-
-type RejectAllEpisodePatchesByUserParams struct {
-	WikiUserID   int32
-	State        int32
-	RejectReason string
-	FromUserID   int32
-}
-
-type RejectAllEpisodePatchesByUserRow struct {
-	ID         uuid.UUID
-	NumID      int64
-	FromUserID int32
-}
-
-func (q *Queries) RejectAllEpisodePatchesByUser(ctx context.Context, arg RejectAllEpisodePatchesByUserParams) ([]RejectAllEpisodePatchesByUserRow, error) {
-	rows, err := q.db.Query(ctx, rejectAllEpisodePatchesByUser,
-		arg.WikiUserID,
-		arg.State,
-		arg.RejectReason,
-		arg.FromUserID,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []RejectAllEpisodePatchesByUserRow
-	for rows.Next() {
-		var i RejectAllEpisodePatchesByUserRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.NumID,
-			&i.FromUserID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const rejectAllCharacterPatchesByUser = `-- name: RejectAllCharacterPatchesByUser :many
-update character_patch
-set wiki_user_id  = $1,
-    state         = $2,
-    reject_reason = $3,
-    updated_at    = current_timestamp
-where from_user_id = $4
-  and deleted_at is null
-  and state = 0
-returning id, num_id, from_user_id
-`
-
-type RejectAllCharacterPatchesByUserParams struct {
-	WikiUserID   int32
-	State        int32
-	RejectReason string
-	FromUserID   int32
-}
-
-type RejectAllCharacterPatchesByUserRow struct {
-	ID         uuid.UUID
-	NumID      int64
-	FromUserID int32
-}
-
-func (q *Queries) RejectAllCharacterPatchesByUser(ctx context.Context, arg RejectAllCharacterPatchesByUserParams) ([]RejectAllCharacterPatchesByUserRow, error) {
-	rows, err := q.db.Query(ctx, rejectAllCharacterPatchesByUser,
-		arg.WikiUserID,
-		arg.State,
-		arg.RejectReason,
-		arg.FromUserID,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []RejectAllCharacterPatchesByUserRow
-	for rows.Next() {
-		var i RejectAllCharacterPatchesByUserRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.NumID,
-			&i.FromUserID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const rejectAllPersonPatchesByUser = `-- name: RejectAllPersonPatchesByUser :many
-update person_patch
-set wiki_user_id  = $1,
-    state         = $2,
-    reject_reason = $3,
-    updated_at    = current_timestamp
-where from_user_id = $4
-  and deleted_at is null
-  and state = 0
-returning id, num_id, from_user_id
-`
-
-type RejectAllPersonPatchesByUserParams struct {
-	WikiUserID   int32
-	State        int32
-	RejectReason string
-	FromUserID   int32
-}
-
-type RejectAllPersonPatchesByUserRow struct {
-	ID         uuid.UUID
-	NumID      int64
-	FromUserID int32
-}
-
-func (q *Queries) RejectAllPersonPatchesByUser(ctx context.Context, arg RejectAllPersonPatchesByUserParams) ([]RejectAllPersonPatchesByUserRow, error) {
-	rows, err := q.db.Query(ctx, rejectAllPersonPatchesByUser,
-		arg.WikiUserID,
-		arg.State,
-		arg.RejectReason,
-		arg.FromUserID,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []RejectAllPersonPatchesByUserRow
-	for rows.Next() {
-		var i RejectAllPersonPatchesByUserRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.NumID,
-			&i.FromUserID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
