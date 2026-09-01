@@ -15,7 +15,7 @@ templ UserSubjectList(r *http.Request, user view.User, data view.SubjectPatchLis
 		subjectListHead(),
 		templ.Join(
 			header(data.Title, data.Session),
-			userHomepage(r, user, data.Session),
+			userHomepage(r, user, data.Session, "subject"),
 			listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
 			subjectPatchList(data, time.Now()),
 			Pagination(data.Pagination),
@@ -29,7 +29,7 @@ templ UserEpisodeList(r *http.Request, user view.User, data view.EpisodePatchLis
 		subjectListHead(),
 		templ.Join(
 			header(data.Title, data.Session),
-			userHomepage(r, user, data.Session),
+			userHomepage(r, user, data.Session, "episode"),
 			listFilter(r.URL, "episode", data.CurrentStateFilter, data.PendingCount),
 			episodePatchList(data, time.Now()),
 			Pagination(data.Pagination),
@@ -43,7 +43,7 @@ templ UserCharacterList(r *http.Request, user view.User, data view.CharacterPatc
 		subjectListHead(),
 		templ.Join(
 			header(data.Title, data.Session),
-			userHomepage(r, user, data.Session),
+			userHomepage(r, user, data.Session, "character"),
 			listFilter(r.URL, "character", data.CurrentStateFilter, data.PendingCount),
 			characterPatchList(data, time.Now()),
 			Pagination(data.Pagination),
@@ -57,7 +57,7 @@ templ UserPersonList(r *http.Request, user view.User, data view.PersonPatchList)
 		subjectListHead(),
 		templ.Join(
 			header(data.Title, data.Session),
-			userHomepage(r, user, data.Session),
+			userHomepage(r, user, data.Session, "person"),
 			listFilter(r.URL, "person", data.CurrentStateFilter, data.PendingCount),
 			personPatchList(data, time.Now()),
 			Pagination(data.Pagination),
@@ -65,7 +65,7 @@ templ UserPersonList(r *http.Request, user view.User, data view.PersonPatchList)
 	)
 }
 
-templ userHomepage(r *http.Request, user view.User, s *view.CurrentUser) {
+templ userHomepage(r *http.Request, user view.User, s *view.CurrentUser, patchType string) {
 	<div class="row mt-2 mb-2">
 		<div class="col d-flex justify-content-center">
 			<a href={ templ.SafeURL(fmt.Sprintf("https://bgm.tv/user/%d", user.ID)) }>
@@ -85,6 +85,7 @@ templ userHomepage(r *http.Request, user view.User, s *view.CurrentUser) {
 					onsubmit="return confirm('确定要拒绝该用户所有待审核的 patch 吗？')"
 				>
 					<input type="hidden" name="x-csrf-token" value={ csrf.GetToken(r) }/>
+					<input type="hidden" name="type" value={ patchType }/>
 					<input
 						type="text"
 						name="reason"
@@ -93,7 +94,7 @@ templ userHomepage(r *http.Request, user view.User, s *view.CurrentUser) {
 						style="max-width: 300px"
 					/>
 					<button type="submit" class="btn btn-danger">
-						拒绝该用户所有待审核 patch
+						拒绝该用户所有待审核 { patchType } patch
 					</button>
 				</form>
 			</div>
