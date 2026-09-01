@@ -48,19 +48,19 @@ jobs:
         with:
           submodules: "true"
 
-      - uses: sqlc-dev/setup-sqlc@v5.0.0
+      - uses: trim21/actions/setup-go@master
         with:
-          sqlc-version: '1.30.0'
+          cache-namespace: sqlc
 
       - run: env
 
       - run: sudo apt install postgresql-client -y
       - run: psql postgresql://pg-user:pg-password@127.0.0.1:5432/db_test?sslmode=disable -a -f db/schema.sql
 
-      - run: sqlc diff
+      - run: go tool sqlc diff
         env:
           PG_DSN: postgresql://pg-user:pg-password@127.0.0.1:5432/db_test?sslmode=disable
 
-      - run: sqlc vet
+      - run: go tool sqlc vet
         env:
           PG_DSN: postgresql://pg-user:pg-password@127.0.0.1:5432/db_test?sslmode=disable

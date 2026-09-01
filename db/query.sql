@@ -585,3 +585,47 @@ from person_patch
 where person_id = $1
   and state = 0
   and deleted_at is null;
+
+-- name: RejectAllSubjectPatchesByUser :many
+update subject_patch
+set wiki_user_id  = $1,
+    state         = $2,
+    reject_reason = $3,
+    updated_at    = current_timestamp
+where from_user_id = $4
+  and deleted_at is null
+  and state = 0
+returning id, num_id, from_user_id;
+
+-- name: RejectAllEpisodePatchesByUser :many
+update episode_patch
+set wiki_user_id  = $1,
+    state         = $2,
+    reject_reason = $3,
+    updated_at    = current_timestamp
+where from_user_id = $4
+  and deleted_at is null
+  and state = 0
+returning id, num_id, from_user_id;
+
+-- name: RejectAllCharacterPatchesByUser :many
+update character_patch
+set wiki_user_id  = $1,
+    state         = $2,
+    reject_reason = $3,
+    updated_at    = current_timestamp
+where from_user_id = $4
+  and deleted_at is null
+  and state = 0
+returning id, num_id, from_user_id;
+
+-- name: RejectAllPersonPatchesByUser :many
+update person_patch
+set wiki_user_id  = $1,
+    state         = $2,
+    reject_reason = $3,
+    updated_at    = current_timestamp
+where from_user_id = $4
+  and deleted_at is null
+  and state = 0
+returning id, num_id, from_user_id;

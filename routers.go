@@ -45,6 +45,8 @@ func routers(h *handler) *chi.Mux {
 
 	r.Post("/api/review/{patch-type}/{patch-id}", handleError(h.handleReview))
 
+	r.Post("/api/reject-user-patches/{user-id}", handleError(h.handleRejectUserPatches))
+
 	// subjects
 	r.Get("/suggest", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, fmt.Sprintf("/edit/subject/%s", r.URL.Query().Get("subject_id")), http.StatusSeeOther)

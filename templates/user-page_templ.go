@@ -11,6 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"fmt"
 
+	"app/csrf"
 	"app/view"
 	"net/http"
 	"time"
@@ -42,7 +43,7 @@ func UserSubjectList(r *http.Request, user view.User, data view.SubjectPatchList
 			subjectListHead(),
 			templ.Join(
 				header(data.Title, data.Session),
-				userHomepage(user),
+				userHomepage(r, user, data.Session),
 				listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
 				subjectPatchList(data, time.Now()),
 				Pagination(data.Pagination),
@@ -81,7 +82,7 @@ func UserEpisodeList(r *http.Request, user view.User, data view.EpisodePatchList
 			subjectListHead(),
 			templ.Join(
 				header(data.Title, data.Session),
-				userHomepage(user),
+				userHomepage(r, user, data.Session),
 				listFilter(r.URL, "episode", data.CurrentStateFilter, data.PendingCount),
 				episodePatchList(data, time.Now()),
 				Pagination(data.Pagination),
@@ -120,7 +121,7 @@ func UserCharacterList(r *http.Request, user view.User, data view.CharacterPatch
 			subjectListHead(),
 			templ.Join(
 				header(data.Title, data.Session),
-				userHomepage(user),
+				userHomepage(r, user, data.Session),
 				listFilter(r.URL, "character", data.CurrentStateFilter, data.PendingCount),
 				characterPatchList(data, time.Now()),
 				Pagination(data.Pagination),
@@ -159,7 +160,7 @@ func UserPersonList(r *http.Request, user view.User, data view.PersonPatchList) 
 			subjectListHead(),
 			templ.Join(
 				header(data.Title, data.Session),
-				userHomepage(user),
+				userHomepage(r, user, data.Session),
 				listFilter(r.URL, "person", data.CurrentStateFilter, data.PendingCount),
 				personPatchList(data, time.Now()),
 				Pagination(data.Pagination),
@@ -172,7 +173,7 @@ func UserPersonList(r *http.Request, user view.User, data view.PersonPatchList) 
 	})
 }
 
-func userHomepage(user view.User) templ.Component {
+func userHomepage(r *http.Request, user view.User, s *view.CurrentUser) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -200,7 +201,7 @@ func userHomepage(user view.User) templ.Component {
 		var templ_7745c5c3_Var6 templ.SafeURL
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("https://bgm.tv/user/%d", user.ID)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `user-page.templ`, Line: 70, Col: 74}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `user-page.templ`, Line: 71, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -213,7 +214,7 @@ func userHomepage(user view.User) templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("https://bgm.tv/user/%d", user.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `user-page.templ`, Line: 72, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `user-page.templ`, Line: 73, Col: 53}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -222,6 +223,38 @@ func userHomepage(user view.User) templ.Component {
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</h4></a></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
+		}
+		if s.SuperUser() {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"row mb-3\"><div class=\"col d-flex justify-content-center\"><form action=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var8 templ.SafeURL
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/api/reject-user-patches/%d", user.ID)))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `user-page.templ`, Line: 82, Col: 80}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" method=\"post\" class=\"d-flex flex-wrap gap-2 justify-content-center align-items-center\" onsubmit=\"return confirm('确定要拒绝该用户所有待审核的 patch 吗？')\"><input type=\"hidden\" name=\"x-csrf-token\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var9 string
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.ResolveAttributeValue(csrf.GetToken(r))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `user-page.templ`, Line: 87, Col: 70}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var9)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"> <input type=\"text\" name=\"reason\" class=\"form-control\" placeholder=\"拒绝理由（可选）\" style=\"max-width: 300px\"> <button type=\"submit\" class=\"btn btn-danger\">拒绝该用户所有待审核 patch</button></form></div></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
 		return nil
 	})
