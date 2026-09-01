@@ -43,7 +43,7 @@ func UserSubjectList(r *http.Request, user view.User, data view.SubjectPatchList
 			subjectListHead(),
 			templ.Join(
 				header(data.Title, data.Session),
-				userHomepage(r, user, data.Session),
+				userHomepage(r, user, data.Session, "subject"),
 				listFilter(r.URL, "subject", data.CurrentStateFilter, data.PendingCount),
 				subjectPatchList(data, time.Now()),
 				Pagination(data.Pagination),
@@ -82,7 +82,7 @@ func UserEpisodeList(r *http.Request, user view.User, data view.EpisodePatchList
 			subjectListHead(),
 			templ.Join(
 				header(data.Title, data.Session),
-				userHomepage(r, user, data.Session),
+				userHomepage(r, user, data.Session, "episode"),
 				listFilter(r.URL, "episode", data.CurrentStateFilter, data.PendingCount),
 				episodePatchList(data, time.Now()),
 				Pagination(data.Pagination),
@@ -121,7 +121,7 @@ func UserCharacterList(r *http.Request, user view.User, data view.CharacterPatch
 			subjectListHead(),
 			templ.Join(
 				header(data.Title, data.Session),
-				userHomepage(r, user, data.Session),
+				userHomepage(r, user, data.Session, "character"),
 				listFilter(r.URL, "character", data.CurrentStateFilter, data.PendingCount),
 				characterPatchList(data, time.Now()),
 				Pagination(data.Pagination),
@@ -160,7 +160,7 @@ func UserPersonList(r *http.Request, user view.User, data view.PersonPatchList) 
 			subjectListHead(),
 			templ.Join(
 				header(data.Title, data.Session),
-				userHomepage(r, user, data.Session),
+				userHomepage(r, user, data.Session, "person"),
 				listFilter(r.URL, "person", data.CurrentStateFilter, data.PendingCount),
 				personPatchList(data, time.Now()),
 				Pagination(data.Pagination),
@@ -173,7 +173,7 @@ func UserPersonList(r *http.Request, user view.User, data view.PersonPatchList) 
 	})
 }
 
-func userHomepage(r *http.Request, user view.User, s *view.CurrentUser) templ.Component {
+func userHomepage(r *http.Request, user view.User, s *view.CurrentUser, patchType string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -251,7 +251,33 @@ func userHomepage(r *http.Request, user view.User, s *view.CurrentUser) templ.Co
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"> <input type=\"text\" name=\"reason\" class=\"form-control\" placeholder=\"拒绝理由（可选）\" style=\"max-width: 300px\"> <button type=\"submit\" class=\"btn btn-danger\">拒绝该用户所有待审核 patch</button></form></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"> <input type=\"hidden\" name=\"type\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var10 string
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.ResolveAttributeValue(patchType)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `user-page.templ`, Line: 88, Col: 55}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var10)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\"> <input type=\"text\" name=\"reason\" class=\"form-control\" placeholder=\"拒绝理由（可选）\" style=\"max-width: 300px\"> <button type=\"submit\" class=\"btn btn-danger\">拒绝该用户所有待审核 ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var11 string
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(patchType)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `user-page.templ`, Line: 97, Col: 48}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, " patch</button></form></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
