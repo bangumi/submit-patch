@@ -3,8 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
-
-	"github.com/gofrs/uuid/v5"
+	"uuid"
 
 	"app/csrf"
 )
@@ -27,7 +26,7 @@ func (h *handler) handleReview(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 
-	id, err := uuid.FromString(patchID)
+	id, err := uuid.Parse(patchID)
 	if err != nil {
 		http.Error(w, "invalid patch id, must be uuid", http.StatusBadRequest)
 		return nil

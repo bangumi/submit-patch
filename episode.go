@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"uuid"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/trim21/errgo"
@@ -122,7 +122,7 @@ func (h *handler) createEpisodeEditPatch(w http.ResponseWriter, r *http.Request)
 	date := form.Get("date")
 	summary := form.Get("summary")
 
-	pk := uuid.Must(uuid.NewV7())
+	pk := uuid.NewV7()
 	var param = dal.CreateEpisodePatchParams{
 		ID:                  pk,
 		EpisodeID:           int32(episodeID),
@@ -297,7 +297,7 @@ func (h *handler) episodePatchDetailView(
 		return nil
 	}
 
-	id, err := uuid.FromString(patchID)
+	id, err := uuid.Parse(patchID)
 	if err != nil {
 		http.Error(w, "invalid patch id, must be uuid", http.StatusBadRequest)
 		return nil
@@ -345,7 +345,7 @@ func (h *handler) episodePatchDetailView(
 }
 
 func (h *handler) deleteEpisodePatch(w http.ResponseWriter, r *http.Request) error {
-	patchID, err := uuid.FromString(chi.URLParam(r, "patch-id"))
+	patchID, err := uuid.Parse(chi.URLParam(r, "patch-id"))
 	if err != nil {
 		http.Error(w, "invalid patch id, must be uuid", http.StatusBadRequest)
 		return nil
@@ -398,7 +398,7 @@ func (h *handler) deleteEpisodePatch(w http.ResponseWriter, r *http.Request) err
 }
 
 func (h *handler) editEpisodePatchView(w http.ResponseWriter, r *http.Request) error {
-	patchID, err := uuid.FromString(chi.URLParam(r, "patch-id"))
+	patchID, err := uuid.Parse(chi.URLParam(r, "patch-id"))
 	if err != nil {
 		http.Error(w, "patch-id must be a valid uuid", http.StatusBadRequest)
 		return nil
@@ -470,7 +470,7 @@ func (h *handler) editEpisodePatchView(w http.ResponseWriter, r *http.Request) e
 }
 
 func (h *handler) updateEpisodeEditPatch(w http.ResponseWriter, r *http.Request) error {
-	patchID, err := uuid.FromString(chi.URLParam(r, "patch-id"))
+	patchID, err := uuid.Parse(chi.URLParam(r, "patch-id"))
 	if err != nil {
 		http.Error(w, "Invalid patch-id", http.StatusBadRequest)
 		return nil
@@ -617,7 +617,7 @@ func (h *handler) updateEpisodeEditPatch(w http.ResponseWriter, r *http.Request)
 		}
 
 		_ = qx.CreateComment(ctx, dal.CreateCommentParams{
-			ID:        uuid.Must(uuid.NewV7()),
+			ID:        uuid.NewV7(),
 			PatchID:   param.ID,
 			PatchType: PatchTypeEpisode,
 			Text:      "作者进行了修改",
@@ -779,7 +779,7 @@ func (h *handler) createEpisodeEditPatchAPI(w http.ResponseWriter, r *http.Reque
 		return nil
 	}
 
-	param.ID = uuid.Must(uuid.NewV7())
+	param.ID = uuid.NewV7()
 
 	err = h.q.CreateEpisodePatch(r.Context(), param)
 	if err != nil {

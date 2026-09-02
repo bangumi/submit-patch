@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"uuid"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
@@ -255,7 +255,7 @@ func (h *handler) handleSubjectComment(w http.ResponseWriter, r *http.Request, t
 	}
 
 	err = tx.CreateComment(r.Context(), dal.CreateCommentParams{
-		ID:        uuid.Must(uuid.NewV7()),
+		ID:        uuid.NewV7(),
 		PatchID:   patch.ID,
 		PatchType: PatchTypeSubject,
 		Text:      text,

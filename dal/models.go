@@ -5,8 +5,8 @@
 package dal
 
 import (
-	uuid "github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"uuid"
 )
 
 type CharacterPatch struct {
