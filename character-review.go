@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"uuid"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
 	"github.com/trim21/errgo"
@@ -229,7 +229,7 @@ func (h *handler) handleCharacterComment(w http.ResponseWriter, r *http.Request,
 	}
 
 	err = tx.CreateComment(r.Context(), dal.CreateCommentParams{
-		ID:        uuid.Must(uuid.NewV7()),
+		ID:        uuid.NewV7(),
 		PatchID:   patch.ID,
 		PatchType: PatchTypeCharacter,
 		Text:      text,

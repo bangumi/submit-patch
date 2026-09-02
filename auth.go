@@ -11,8 +11,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	"uuid"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/rs/zerolog/log"
 	"github.com/trim21/errgo"
 
@@ -27,7 +27,7 @@ func (h *handler) loginView(w http.ResponseWriter, r *http.Request) {
 	query.Add("response_type", "code")
 	query.Add("redirect_uri", h.callbackURL)
 
-	state := uuid.Must(uuid.NewV4()).String()
+	state := uuid.NewV4().String()
 
 	http.SetCookie(w, &http.Cookie{
 		Name:  "bgm-patch-session",
@@ -107,7 +107,7 @@ func (h *handler) callback(w http.ResponseWriter, r *http.Request) error {
 		AccessTokenCreatedAt: now,
 		AccessTokenExpiresAt: now.Add(time.Second * time.Duration(oauthResponse.ExpiresIn)),
 		Tz:                   user.TimeOffset,
-		Key:                  uuid.Must(uuid.NewV4()).String(),
+		Key:                  uuid.NewV4().String(),
 	})
 	if err != nil {
 		return errgo.Wrap(err, "failed to set session")

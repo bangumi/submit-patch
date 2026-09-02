@@ -8,8 +8,8 @@ package dal
 import (
 	"context"
 
-	uuid "github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"uuid"
 )
 
 const acceptCharacterPatch = `-- name: AcceptCharacterPatch :execrows

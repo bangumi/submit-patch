@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"uuid"
 
 	"github.com/bangumi/wiki-parser-go"
 	"github.com/go-chi/chi/v5"
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog/log"
@@ -75,7 +75,7 @@ func (h *handler) editCharacterView(w http.ResponseWriter, r *http.Request) erro
 }
 
 func (h *handler) editCharacterPatchView(w http.ResponseWriter, r *http.Request) error {
-	patchID, err := uuid.FromString(chi.URLParam(r, "patch-id"))
+	patchID, err := uuid.Parse(chi.URLParam(r, "patch-id"))
 	if err != nil {
 		http.Error(w, "patch-id must be a valid uuid", http.StatusBadRequest)
 		return nil
@@ -265,7 +265,7 @@ func (h *handler) characterPatchDetailView(
 		return nil
 	}
 
-	id, err := uuid.FromString(patchID)
+	id, err := uuid.Parse(patchID)
 	if err != nil {
 		http.Error(w, "invalid patch id, must be uuid", http.StatusBadRequest)
 		return nil
@@ -408,7 +408,7 @@ func (h *handler) createCharacterEditPatch(w http.ResponseWriter, r *http.Reques
 	}
 
 	var changed bool
-	pk := uuid.Must(uuid.NewV7())
+	pk := uuid.NewV7()
 	var param = dal.CreateCharacterEditPatchParams{
 		ID:           pk,
 		CharacterID:  int32(characterID),
@@ -474,7 +474,7 @@ func (h *handler) createCharacterEditPatch(w http.ResponseWriter, r *http.Reques
 	if param.Infobox.Valid {
 		if _, err := wiki.Parse(param.Infobox.String); err != nil {
 			_ = h.q.CreateComment(ctx, dal.CreateCommentParams{
-				ID:        uuid.Must(uuid.NewV7()),
+				ID:        uuid.NewV7(),
 				PatchID:   param.ID,
 				PatchType: PatchTypeCharacter,
 				Text:      fmt.Sprintf("包含语法错误，请仔细检查\n\n%s", err.Error()),
@@ -494,7 +494,7 @@ func (h *handler) updateCharacterEditPatch(w http.ResponseWriter, r *http.Reques
 		return nil
 	}
 
-	patchID, err := uuid.FromString(chi.URLParam(r, "patch-id"))
+	patchID, err := uuid.Parse(chi.URLParam(r, "patch-id"))
 	if err != nil {
 		http.Error(w, "Invalid patch-id", http.StatusBadRequest)
 		return nil
@@ -635,7 +635,7 @@ func (h *handler) updateCharacterEditPatch(w http.ResponseWriter, r *http.Reques
 		}
 
 		_ = qx.CreateComment(ctx, dal.CreateCommentParams{
-			ID:        uuid.Must(uuid.NewV7()),
+			ID:        uuid.NewV7(),
 			PatchID:   param.ID,
 			PatchType: PatchTypeCharacter,
 			Text:      "作者进行了修改",
@@ -645,7 +645,7 @@ func (h *handler) updateCharacterEditPatch(w http.ResponseWriter, r *http.Reques
 		if param.Infobox.Valid {
 			if _, err := wiki.Parse(param.Infobox.String); err != nil {
 				_ = qx.CreateComment(ctx, dal.CreateCommentParams{
-					ID:        uuid.Must(uuid.NewV7()),
+					ID:        uuid.NewV7(),
 					PatchID:   param.ID,
 					PatchType: PatchTypeCharacter,
 					Text:      fmt.Sprintf("包含语法错误，请仔细检查\n\n%s", err.Error()),
@@ -676,7 +676,7 @@ type CreateCharacterPatch struct {
 }
 
 func (h *handler) deleteCharacterPatch(w http.ResponseWriter, r *http.Request) error {
-	patchID, err := uuid.FromString(chi.URLParam(r, "patch-id"))
+	patchID, err := uuid.Parse(chi.URLParam(r, "patch-id"))
 	if err != nil {
 		http.Error(w, "invalid patch id, must be uuid", http.StatusBadRequest)
 		return nil
@@ -861,7 +861,7 @@ func (h *handler) createCharacterEditPatchAPI(w http.ResponseWriter, r *http.Req
 		return nil
 	}
 
-	param.ID = uuid.Must(uuid.NewV7())
+	param.ID = uuid.NewV7()
 
 	err = h.q.CreateCharacterEditPatch(r.Context(), param)
 	if err != nil {

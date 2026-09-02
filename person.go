@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"uuid"
 
 	"github.com/bangumi/wiki-parser-go"
 	"github.com/go-chi/chi/v5"
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog/log"
@@ -75,7 +75,7 @@ func (h *handler) editPersonView(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *handler) editPersonPatchView(w http.ResponseWriter, r *http.Request) error {
-	patchID, err := uuid.FromString(chi.URLParam(r, "patch-id"))
+	patchID, err := uuid.Parse(chi.URLParam(r, "patch-id"))
 	if err != nil {
 		http.Error(w, "patch-id must be a valid uuid", http.StatusBadRequest)
 		return nil
@@ -265,7 +265,7 @@ func (h *handler) personPatchDetailView(
 		return nil
 	}
 
-	id, err := uuid.FromString(patchID)
+	id, err := uuid.Parse(patchID)
 	if err != nil {
 		http.Error(w, "invalid patch id, must be uuid", http.StatusBadRequest)
 		return nil
@@ -408,7 +408,7 @@ func (h *handler) createPersonEditPatch(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var changed bool
-	pk := uuid.Must(uuid.NewV7())
+	pk := uuid.NewV7()
 	var param = dal.CreatePersonEditPatchParams{
 		ID:           pk,
 		PersonID:     int32(personID),
@@ -474,7 +474,7 @@ func (h *handler) createPersonEditPatch(w http.ResponseWriter, r *http.Request) 
 	if param.Infobox.Valid {
 		if _, err := wiki.Parse(param.Infobox.String); err != nil {
 			_ = h.q.CreateComment(ctx, dal.CreateCommentParams{
-				ID:        uuid.Must(uuid.NewV7()),
+				ID:        uuid.NewV7(),
 				PatchID:   param.ID,
 				PatchType: PatchTypePerson,
 				Text:      fmt.Sprintf("包含语法错误，请仔细检查\n\n%s", err.Error()),
@@ -494,7 +494,7 @@ func (h *handler) updatePersonEditPatch(w http.ResponseWriter, r *http.Request) 
 		return nil
 	}
 
-	patchID, err := uuid.FromString(chi.URLParam(r, "patch-id"))
+	patchID, err := uuid.Parse(chi.URLParam(r, "patch-id"))
 	if err != nil {
 		http.Error(w, "Invalid patch-id", http.StatusBadRequest)
 		return nil
@@ -635,7 +635,7 @@ func (h *handler) updatePersonEditPatch(w http.ResponseWriter, r *http.Request) 
 		}
 
 		_ = qx.CreateComment(ctx, dal.CreateCommentParams{
-			ID:        uuid.Must(uuid.NewV7()),
+			ID:        uuid.NewV7(),
 			PatchID:   param.ID,
 			PatchType: PatchTypePerson,
 			Text:      "作者进行了修改",
@@ -645,7 +645,7 @@ func (h *handler) updatePersonEditPatch(w http.ResponseWriter, r *http.Request) 
 		if param.Infobox.Valid {
 			if _, err := wiki.Parse(param.Infobox.String); err != nil {
 				_ = qx.CreateComment(ctx, dal.CreateCommentParams{
-					ID:        uuid.Must(uuid.NewV7()),
+					ID:        uuid.NewV7(),
 					PatchID:   param.ID,
 					PatchType: PatchTypePerson,
 					Text:      fmt.Sprintf("包含语法错误，请仔细检查\n\n%s", err.Error()),
@@ -676,7 +676,7 @@ type CreatePersonPatch struct {
 }
 
 func (h *handler) deletePersonPatch(w http.ResponseWriter, r *http.Request) error {
-	patchID, err := uuid.FromString(chi.URLParam(r, "patch-id"))
+	patchID, err := uuid.Parse(chi.URLParam(r, "patch-id"))
 	if err != nil {
 		http.Error(w, "invalid patch id, must be uuid", http.StatusBadRequest)
 		return nil
@@ -861,7 +861,7 @@ func (h *handler) createPersonEditPatchAPI(w http.ResponseWriter, r *http.Reques
 		return nil
 	}
 
-	param.ID = uuid.Must(uuid.NewV7())
+	param.ID = uuid.NewV7()
 
 	err = h.q.CreatePersonEditPatch(r.Context(), param)
 	if err != nil {

@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"uuid"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/gofrs/uuid/v5"
 	"github.com/rs/zerolog/log"
 
 	"app/csrf"

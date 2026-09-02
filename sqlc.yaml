@@ -14,7 +14,7 @@ sql:
         overrides:
           - db_type: "uuid"
             go_type:
-              import: "github.com/gofrs/uuid/v5"
+              import: "uuid"
               type: "UUID"
     rules:
       - debug
