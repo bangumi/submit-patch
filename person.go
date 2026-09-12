@@ -304,24 +304,26 @@ func (h *handler) personPatchDetailView(
 
 	var changes = make([]view.Change, 0, 3)
 
+	contextLines := diffContextLines(r)
+
 	if patch.Name.Valid && patch.OriginalName != patch.Name.String {
 		changes = append(changes, view.Change{
 			Name: "人物名",
-			Diff: diff.Diff("name", patch.OriginalName, patch.Name.String),
+			Diff: diff.Diff("name", patch.OriginalName, patch.Name.String, contextLines),
 		})
 	}
 
 	if patch.OriginalInfobox.Valid && patch.Infobox.Valid {
 		changes = append(changes, view.Change{
 			Name: "wiki",
-			Diff: diff.Diff("wiki", patch.OriginalInfobox.String, patch.Infobox.String),
+			Diff: diff.Diff("wiki", patch.OriginalInfobox.String, patch.Infobox.String, contextLines),
 		})
 	}
 
 	if patch.OriginalSummary.Valid && patch.Summary.Valid {
 		changes = append(changes, view.Change{
 			Name: "简介",
-			Diff: diff.Diff("summary", patch.OriginalSummary.String, patch.Summary.String),
+			Diff: diff.Diff("summary", patch.OriginalSummary.String, patch.Summary.String, contextLines),
 		})
 	}
 
@@ -333,6 +335,7 @@ func (h *handler) personPatchDetailView(
 		reviewer,
 		comments,
 		changes,
+		contextLines,
 	).Render(r.Context(), w)
 }
 

@@ -16,6 +16,7 @@ templ EpisodePatchPage(
 	author dal.PatchUser,
 	reviewer *dal.PatchUser,
 	comments []dal.GetCommentsRow,
+	diffContextLines int,
 ) {
 	@Layout(
 		"",
@@ -27,6 +28,7 @@ templ EpisodePatchPage(
 			author,
 			reviewer,
 			comments,
+			diffContextLines,
 			time.Now(),
 		),
 	)
@@ -39,6 +41,7 @@ templ episodePatchDetailContent(
 	author dal.PatchUser,
 	reviewer *dal.PatchUser,
 	comments []dal.GetCommentsRow,
+	diffContextLines int,
 	now time.Time,
 ) {
 	@header("", user)
@@ -171,7 +174,14 @@ templ episodePatchDetailContent(
 			</blockquote>
 		</div>
 	}
-	<div class="row mb-2"><h2>具体变动</h2></div>
+	<div class="row mb-2 align-items-center">
+		<div class="col-auto">
+			<h2 class="mb-0">具体变动</h2>
+		</div>
+		<div class="col-auto">
+			@diffToggle(diffContextLines < 0)
+		</div>
+	</div>
 	if patch.OriginalName.String == patch.Name.String {
 		if patch.OriginalName.String != "" {
 			<div class="row mb-0">
@@ -187,7 +197,7 @@ templ episodePatchDetailContent(
 		<div class="row mb-4">
 			<div
 				id="nameDiffElement"
-				data-diff={ templ.JSONString(diff.Diff("标题", patch.OriginalName.String, patch.Name.String)) }
+				data-diff={ templ.JSONString(diff.Diff("标题", patch.OriginalName.String, patch.Name.String, diffContextLines)) }
 			></div>
 			<script>
 	     (() => {
@@ -225,7 +235,7 @@ templ episodePatchDetailContent(
 		<div class="row mb-4">
 			<div
 				id="nameCnDiffElement"
-				data-diff={ templ.JSONString(diff.Diff("中文标题", patch.OriginalNameCn.String, patch.NameCn.String)) }
+				data-diff={ templ.JSONString(diff.Diff("中文标题", patch.OriginalNameCn.String, patch.NameCn.String, diffContextLines)) }
 			></div>
 			<script>
 	     (() => {
@@ -265,7 +275,7 @@ templ episodePatchDetailContent(
 		<div class="row mb-4">
 			<div
 				id="durationDiffElement"
-				data-diff={ templ.JSONString(diff.Diff("时长", patch.OriginalDuration.String, patch.Duration.String)) }
+				data-diff={ templ.JSONString(diff.Diff("时长", patch.OriginalDuration.String, patch.Duration.String, diffContextLines)) }
 			></div>
 			<script>
 	     (() => {
@@ -305,7 +315,7 @@ templ episodePatchDetailContent(
 		<div class="row mb-4">
 			<div
 				id="airdateDiffElement"
-				data-diff={ templ.JSONString(diff.Diff("播出时间", patch.OriginalAirdate.String, patch.Airdate.String)) }
+				data-diff={ templ.JSONString(diff.Diff("播出时间", patch.OriginalAirdate.String, patch.Airdate.String, diffContextLines)) }
 			></div>
 			<script>
 	     (() => {
@@ -345,7 +355,7 @@ templ episodePatchDetailContent(
 		<div class="row mb-4">
 			<div
 				id="descriptionDiffElement"
-				data-diff={ templ.JSONString(diff.Diff("简介", patch.OriginalDescription.String, patch.Description.String)) }
+				data-diff={ templ.JSONString(diff.Diff("简介", patch.OriginalDescription.String, patch.Description.String, diffContextLines)) }
 			></div>
 			<script>
 	     (() => {

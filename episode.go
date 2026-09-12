@@ -341,6 +341,7 @@ func (h *handler) episodePatchDetailView(
 		author,
 		reviewer,
 		comments,
+		diffContextLines(r),
 	).Render(r.Context(), w)
 }
 

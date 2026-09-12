@@ -7,6 +7,7 @@ import (
 
 	"github.com/aymanbagabas/go-udiff"
 
+	"app/internal/diff"
 	"app/internal/myers"
 )
 
@@ -77,4 +78,14 @@ type HttpError struct {
 
 func (h *HttpError) Error() string {
 	return fmt.Sprintf("%d: %s", h.StatusCode, h.Message)
+}
+
+// diffContextLines reads the ?full query parameter used by the patch detail
+// pages to render a diff with the whole content instead of a partial one.
+func diffContextLines(r *http.Request) int {
+	if r.URL.Query().Get("full") != "" {
+		return diff.FullContext
+	}
+
+	return diff.DefaultContextLines
 }

@@ -15,6 +15,7 @@ templ SubjectPatchPage(
 	reviewer *dal.PatchUser,
 	comments []dal.GetCommentsRow,
 	changes []view.Change,
+	diffContextLines int,
 ) {
 	@Layout(
 		"",
@@ -26,6 +27,7 @@ templ SubjectPatchPage(
 			author,
 			reviewer,
 			comments, changes,
+			diffContextLines,
 			time.Now(),
 		),
 	)
@@ -69,6 +71,7 @@ templ subjectPatchDetailContent(
 	reviewer *dal.PatchUser,
 	comments []dal.GetCommentsRow,
 	changes []view.Change,
+	diffContextLines int,
 	now time.Time,
 ) {
 	@header("", user)
@@ -201,7 +204,14 @@ templ subjectPatchDetailContent(
 			</blockquote>
 		</div>
 	}
-	<h2>具体变动</h2>
+	<div class="row mb-2 align-items-center">
+		<div class="col-auto">
+			<h2 class="mb-0">具体变动</h2>
+		</div>
+		<div class="col-auto">
+			@diffToggle(diffContextLines < 0)
+		</div>
+	</div>
 	for _, change := range changes {
 		<div class="row mb-4">
 			<div id={ change.Name + "DiffElement" } data-diff={ templ.JSONString(change.Diff) }></div>

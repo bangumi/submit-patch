@@ -30,6 +30,14 @@ templ Comment(u *view.CurrentUser, s dal.GetCommentsRow) {
 	}
 }
 
+templ diffToggle(full bool) {
+	if full {
+		<a class="btn btn-sm btn-outline-secondary" href={ templ.SafeURL("?") }>显示部分 diff</a>
+	} else {
+		<a class="btn btn-sm btn-outline-secondary" href={ templ.SafeURL("?full=1") }>显示完整内容</a>
+	}
+}
+
 templ review(patchType string, user *view.CurrentUser, patchID string, csrfToken string) {
 	if user.AllowEdit() {
 		<hr/>
