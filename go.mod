@@ -16,7 +16,7 @@ require (
 	github.com/go-resty/resty/v2 v2.17.2
 	github.com/golang-migrate/migrate/v4 v4.20.1
 	github.com/gorilla/securecookie v1.1.2
-	github.com/jackc/pgx/v5 v5.10.0
+	github.com/jackc/pgx/v5 v5.11.0
 	github.com/redis/rueidis v1.0.78
 	github.com/rs/zerolog v1.35.1
 	github.com/samber/lo v1.53.0
