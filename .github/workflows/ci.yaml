@@ -20,7 +20,7 @@ jobs:
         with:
           cache-namespace: test
 
-      - uses: sigoden/install-binary@v1.2.0
+      - uses: sigoden/install-binary@v1.3.0
         with:
           repo: gotestyourself/gotestsum
           tag: v1.13.0
